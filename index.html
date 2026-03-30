@@ -8,6 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="KontrolPanelPro">
 <meta name="theme-color" content="#0a0a0f">
 <meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="/KontrolPanelPro/manifest.json">
 <title>📱 KontrolPanelPro</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://unpkg.com/@zxing/library@0.20.0/umd/index.js"></script>
@@ -470,6 +471,13 @@ function toast(msg,type=''){const el=document.getElementById('toast');if(!el)ret
 function rAll(){rDash();const act=document.querySelector('.page.active');const id=act?act.id.replace('page-',''):'';if(id==='stok')rStok();else if(id==='islemler')rIslemler();else if(id==='urunler')rUrunler();else if(id==='imei')rImei();rStok();rIslemler();}
 initTheme();
 init();
+</script>
+// Service Worker kaydı
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/KontrolPanelPro/sw.js')
+    .then(reg => console.log('Service Worker kaydedildi', reg))
+    .catch(err => console.error('Service Worker hatası:', err));
+}
 </script>
 </body>
 </html>
