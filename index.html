@@ -712,6 +712,32 @@ function toggleTheme() {
   localStorage.setItem('pt_theme', n);
   setTimeout(() => { if(charts.a) rCharts(); }, 100);
 }
+  function saveUrl() {
+  const urlInput = document.getElementById('urlInp');
+  if (!urlInput) {
+    alert('URL alanı bulunamadı!');
+    return;
+  }
+  
+  const url = urlInput.value.trim();
+  if (!url) {
+    alert('Lütfen bir URL girin!');
+    return;
+  }
+  
+  if (!url.startsWith('https://script.google.com')) {
+    alert('Geçerli bir Google Apps Script URL girin!');
+    return;
+  }
+  
+  localStorage.setItem('phonetrack_url', url);
+  window.URL2 = url;
+  
+  alert('URL kaydedildi, sayfa yenileniyor...');
+  setTimeout(() => {
+    location.reload();
+  }, 1000);
+}
 function isDarkMode() { return document.documentElement.getAttribute('data-theme') === 'dark'; }
 function getTextColor() { return isDarkMode() ? '#94a3b8' : '#475569'; }
 function getGridColor() { return isDarkMode() ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)'; }
