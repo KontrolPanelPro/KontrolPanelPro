@@ -472,12 +472,5 @@ function rAll(){rDash();const act=document.querySelector('.page.active');const i
 initTheme();
 init();
 </script>
-// Service Worker kaydı
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/KontrolPanelPro/sw.js')
-    .then(reg => console.log('Service Worker kaydedildi', reg))
-    .catch(err => console.error('Service Worker hatası:', err));
-}
-</script>
 </body>
 </html>
