@@ -13,6 +13,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://unpkg.com/@zxing/library@0.20.0/umd/index.js"></script>
 <style>
+/* ========== TÜM STİLLER (aynı, zoom transform kaldırıldı) ========== */
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 [data-theme="dark"]{--bg:#0a0a0f;--sf:#13131a;--sf2:#1c1c28;--sf3:#252535;--br:#2a2a3d;--tx:#e2e8f0;--tx2:#94a3b8;--tx3:#64748b;--sh:rgba(0,0,0,.4);--hbg:linear-gradient(135deg,#13131a,#1a1030)}
 [data-theme="light"]{--bg:#f1f5f9;--sf:#fff;--sf2:#f8fafc;--sf3:#e2e8f0;--br:#cbd5e1;--tx:#0f172a;--tx2:#475569;--tx3:#94a3b8;--sh:rgba(0,0,0,.08);--hbg:linear-gradient(135deg,#fff,#f0e8ff)}
@@ -338,12 +339,12 @@ input:focus,select:focus,textarea:focus{border-color:var(--ac);box-shadow:0 0 0 
     </div>
     <div class="sh2"><div class="stt">🕐 Son İşlemler</div></div>
     <div class="tw">
-       <table>
+        <table>
         <thead>
-          <tr><th>Tarih</th><th>Model</th><th>El</th><th>GB/RAM</th><th>Adet</th><th>Alış</th><th>Satış</th><th>Kar</th><th>Stok</th></tr>
+            <tr><th>Tarih</th><th>Model</th><th>El</th><th>GB/RAM</th><th>Adet</th><th>Alış</th><th>Satış</th><th>Kar</th><th>Stok</th></tr>
         </thead>
         <tbody id="sonTb"></tbody>
-       </table>
+        </table>
     </div>
   </div>
 
@@ -416,7 +417,6 @@ let chartPeriod = 'month';
 let analizSort = 'kar';
 let currentElFilter = 'all';
 let clockInterval = null;
-let currentZoom = 1;
 let currentVideoTrack = null;
 
 // ============================================================
@@ -464,7 +464,7 @@ async function clearAll(){if(!confirm('TÜM VERİLER SİLİNECEK!'))return;showL
 function rDash(){const tA=D.reduce((s,d)=>s+d.toplamAlis,0);const satilanlar=D.filter(d=>d.satılanAdet>0);const tS=satilanlar.reduce((s,d)=>s+(d.toplamSatis*(d.satılanAdet/d.adet)),0);const tK=satilanlar.reduce((s,d)=>s+(d.kar*(d.satılanAdet/d.adet)),0);const tI=satilanlar.reduce((s,d)=>s+(d.iskonto*(d.satılanAdet/d.adet)),0);const tAd=D.reduce((s,d)=>s+d.adet,0);const tSat=D.reduce((s,d)=>s+(d.satılanAdet||0),0);const tKal=tAd-tSat;const marj=tS>0?((tK/tS)*100).toFixed(1):0;const statsG=document.getElementById('statsG');if(statsG)statsG.innerHTML=`<div class="sc gn"><div class="si">💰</div><div class="sl">Satılan Ürün Karı</div><div class="sv gn">${fmt(tK)}</div><div class="ss">Marj: %${marj}</div></div><div class="sc cy"><div class="si">📈</div><div class="sl">Satılan Ürün Satışı</div><div class="sv cy">${fmt(tS)}</div><div class="ss">${fmtN(tSat)} adet</div></div><div class="sc rd"><div class="si">🛒</div><div class="sl">Toplam Alış (Tümü)</div><div class="sv rd">${fmt(tA)}</div><div class="ss">${D.length} işlem</div></div><div class="sc yw"><div class="si">🏷️</div><div class="sl">Satılan İskonto</div><div class="sv yw">${fmt(tI)}</div></div><div class="sc or"><div class="si">📦</div><div class="sl">Stokta Kalan</div><div class="sv or">${fmtN(tKal)}</div><div class="ss">/ ${fmtN(tAd)}</div></div><div class="sc"><div class="si">📝</div><div class="sl">Toplam İşlem</div><div class="sv">${D.length}</div></div>`;rCharts();rSon();}
 function updateElChart(){if(!charts.elChart)return;const filtered=D.filter(d=>currentElFilter==='all'||d.el===currentElFilter);const satilanlar=filtered.filter(d=>d.satılanAdet>0);let periodData={};satilanlar.forEach(d=>{let periodKey;let date=new Date(d.tarih);if(chartPeriod==='day')periodKey=d.tarih;else if(chartPeriod==='week'){const startOfWeek=new Date(date);startOfWeek.setDate(date.getDate()-date.getDay());periodKey=startOfWeek.toISOString().split('T')[0];}else{periodKey=`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`;}if(!periodData[periodKey])periodData[periodKey]={a:0,s:0,k:0};const oran=d.satılanAdet/d.adet;periodData[periodKey].a+=d.toplamAlis*oran;periodData[periodKey].s+=d.toplamSatis*oran;periodData[periodKey].k+=d.kar*oran;});const periods=Object.keys(periodData).sort();let labels=periods;if(chartPeriod==='week')labels=periods.map(p=>`Hafta ${p.slice(5)}`);else if(chartPeriod==='month'){const MN=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];labels=periods.map(p=>{const [y,m]=p.split('-');return MN[+m-1]+' '+y;});}charts.elChart.data.labels=labels.length?labels:['Veri yok'];charts.elChart.data.datasets[0].data=periods.map(p=>periodData[p].a);charts.elChart.data.datasets[1].data=periods.map(p=>periodData[p].s);charts.elChart.data.datasets[2].data=periods.map(p=>periodData[p].k);charts.elChart.update();}
 function rCharts(){Object.values(charts).forEach(c=>{try{c.destroy();}catch(e){}});charts={};const tc=getTextColor();const gc=getGridColor();const CLR=['#7c3aed','#06b6d4','#10b981','#f59e0b','#ef4444','#a855f7'];const satilanlar=D.filter(d=>d.satılanAdet>0);let periodData={};let labels=[];satilanlar.forEach(d=>{let periodKey;let date=new Date(d.tarih);if(chartPeriod==='day')periodKey=d.tarih;else if(chartPeriod==='week'){const startOfWeek=new Date(date);startOfWeek.setDate(date.getDate()-date.getDay());periodKey=startOfWeek.toISOString().split('T')[0];}else{periodKey=`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`;}if(!periodData[periodKey])periodData[periodKey]={a:0,s:0,k:0};const oran=d.satılanAdet/d.adet;periodData[periodKey].a+=d.toplamAlis*oran;periodData[periodKey].s+=d.toplamSatis*oran;periodData[periodKey].k+=d.kar*oran;});const periods=Object.keys(periodData).sort();if(chartPeriod==='week')labels=periods.map(p=>`Hafta ${p.slice(5)}`);else if(chartPeriod==='month'){const MN=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];labels=periods.map(p=>{const [y,m]=p.split('-');return MN[+m-1]+' '+y;});}else labels=periods;const cO=u=>({responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc,font:{size:11}}}},scales:{x:{grid:{color:gc},ticks:{color:tc}},y:{grid:{color:gc},ticks:{color:tc,callback:v=>`${u}${Number(v).toLocaleString('tr-TR')}`}}}});const ctxAy=document.getElementById('cAy')?.getContext('2d');if(ctxAy){charts.a=new Chart(ctxAy,{type:'bar',data:{labels:labels.length?labels:['Veri yok'],datasets:[{label:'Alış (Satılan)',data:periods.map(p=>periodData[p].a),backgroundColor:'rgba(239,68,68,.7)'},{label:'Satış',data:periods.map(p=>periodData[p].s),backgroundColor:'rgba(6,182,212,.7)'},{label:'Kar',data:periods.map(p=>periodData[p].k),backgroundColor:'rgba(16,185,129,.7)'}]},options:cO('₺')});}const mM={};D.forEach(d=>{mM[d.model]=(mM[d.model]||0)+d.adet;});const ms=Object.keys(mM);const ctxDo=document.getElementById('cDo')?.getContext('2d');if(ctxDo){charts.b=new Chart(ctxDo,{type:'doughnut',data:{labels:ms.length?ms:['Veri yok'],datasets:[{data:ms.length?ms.map(m=>mM[m]):[1],backgroundColor:CLR}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'right',labels:{color:tc,font:{size:10}}}}}});}const kM={};satilanlar.forEach(d=>{const karOran=d.kar*(d.satılanAdet/d.adet);kM[d.model]=(kM[d.model]||0)+karOran;});const km=Object.keys(kM).sort((a,b)=>kM[b]-kM[a]).slice(0,8);const ctxKar=document.getElementById('cKar')?.getContext('2d');if(ctxKar){charts.c=new Chart(ctxKar,{type:'bar',data:{labels:km.length?km:['Veri yok'],datasets:[{label:'Kar (Satılan)',data:km.map(m=>kM[m]),backgroundColor:km.map(m=>kM[m]>=0?'rgba(16,185,129,.75)':'rgba(239,68,68,.75)')}]},options:{...cO('₺'),indexAxis:'y'}});}const eM={'1.El':0,'2.El':0};D.forEach(d=>{eM[d.el]=(eM[d.el]||0)+d.adet;});const ctxEl=document.getElementById('cEl')?.getContext('2d');if(ctxEl){charts.elChart=new Chart(ctxEl,{type:'bar',data:{labels:[],datasets:[{label:'Alış (Satılan)',backgroundColor:'rgba(239,68,68,.7)'},{label:'Satış',backgroundColor:'rgba(6,182,212,.7)'},{label:'Kar',backgroundColor:'rgba(16,185,129,.7)'}]},options:cO('₺')});updateElChart();}}
-function rSon(){const son=[...D].sort((a,b)=>b.tarih.localeCompare(a.tarih)).slice(0,10);const tb=document.getElementById('sonTb');if(!tb)return;if(!son.length){tb.innerHTML='<tr><td colspan="9"><div class="empty"><i>📭</i>Henüz işlem yok</div></td></tr>';return;}tb.innerHTML=son.map(d=>`<tr class="${getDur(d)==='satildi'?'sr':''}"> <td>${formatTarih(d.tarih)}</td><td class="b">${d.model}</td><td><span class="badge ${d.el==='1.El'?'bpu':'bcy'}">${d.el}</span></td><td>${d.gb}GB/${d.ram}GB</td><td>${d.adet}</td><td class="trd">${fmt(d.toplamAlis)}</td><td class="tcy">${fmt(d.toplamSatis)}</td><td class="${d.kar>=0?'tgn':'trd'} b">${fmt(d.kar)}</td><td>${getDurB(d)}</td></tr>`).join('');}
+function rSon(){const son=[...D].sort((a,b)=>b.tarih.localeCompare(a.tarih)).slice(0,10);const tb=document.getElementById('sonTb');if(!tb)return;if(!son.length){tb.innerHTML='<tr><td colspan="9"><div class="empty"><i>📭</i>Henüz işlem yok</div></td></tr>';return;}tb.innerHTML=son.map(d=>`<tr class="${getDur(d)==='satildi'?'sr':''}"><td>${formatTarih(d.tarih)}</td><td class="b">${d.model}</td><td><span class="badge ${d.el==='1.El'?'bpu':'bcy'}">${d.el}</span></td><td>${d.gb}GB/${d.ram}GB</td><td>${d.adet}</td><td class="trd">${fmt(d.toplamAlis)}</td><td class="tcy">${fmt(d.toplamSatis)}</td><td class="${d.kar>=0?'tgn':'trd'} b">${fmt(d.kar)}</td><td>${getDurB(d)}</td></tr>`).join('');}
 function rStok(){const q=(document.getElementById('stokSrc')?.value||'').toLowerCase();let fl=D.filter(d=>!q||d.model.toLowerCase().includes(q)||d.el.toLowerCase().includes(q));const sort=sortState['stokTable'];if(sort)fl=sortData(fl,sort.field,sort.yon);else fl=fl.sort((a,b)=>b.tarih.localeCompare(a.tarih));const tb=document.getElementById('stokTb');if(!tb)return;if(!fl.length){tb.innerHTML='<tr><td colspan="11"><div class="empty"><i>📦</i>Stok verisi yok</div></td></tr>';return;}tb.innerHTML=fl.map(d=>{const kalan=d.adet-(d.satılanAdet||0);const tKar=kalan*(d.satis-d.alis);const sc=kalan<=0?'sby':kalan<d.adet?'sbk':'sbv';const st=kalan<=0?'🔴 Tükendi':kalan<d.adet?`🟡 ${kalan} kaldı`:`🟢 ${kalan} adet`;return `<tr class="${kalan<=0?'sr':''}"><td class="b">${d.model}</td><td><span class="badge ${d.el==='1.El'?'bpu':'bcy'}">${d.el}</span></td><td>${d.gb}GB</td><td>${d.ram}GB</td><td style="text-align:center"><b>${d.adet}</b></td><td style="text-align:center;color:var(--gn)"><b>${d.satılanAdet||0}</b></td><td><span class="sbg ${sc}">${st}</span></td><td class="trd">${fmt(d.alis)}</td><td class="tcy">${fmt(d.satis)}</td><td class="${tKar>=0?'tgn':'trd'}">${fmt(tKar)}</td><td><div style="display:flex;gap:5px"><button class="btn bs bsm" onclick="openSatMo('${d.id}')" ${kalan<=0?'disabled':''}>✅ Sat</button><button class="btn bg2 bsm" onclick="openModal('${d.id}')">✏️</button><button class="btn bd bsm" onclick="delIsl('${d.id}')">🗑</button></div></td></tr>`;}).join('');}
 function rIslemler(){const q=(document.getElementById('islSrc')?.value||'').toLowerCase();const df=(document.getElementById('islFil')?.value||'');let fl=D.filter(d=>{const qm=!q||d.model.toLowerCase().includes(q)||d.el.toLowerCase().includes(q)||(d.imeiList||[]).some(i=>i.includes(q))||d.tarih.includes(q);return qm&&(!df||getDur(d)===df);});const sort=sortState['islemlerTable'];if(sort)fl=sortData(fl,sort.field,sort.yon);else fl=fl.sort((a,b)=>b.tarih.localeCompare(a.tarih));const tb=document.getElementById('islTb');if(!tb)return;if(!fl.length){tb.innerHTML=`<tr><td colspan="17"><div class="empty"><i>📭</i>${q?'Sonuç bulunamadı':'Henüz işlem yok'}</div></td></tr>`;return;}tb.innerHTML=fl.map(d=>{const kalan=d.adet-(d.satılanAdet||0);return `<tr class="${getDur(d)==='satildi'?'sr':''}"><td>${formatTarih(d.tarih)}</td><td class="b">${d.model}</td><td><span class="badge ${d.el==='1.El'?'bpu':'bcy'}">${d.el}</span></td><td>${d.gb}GB</td><td>${d.ram}GB</td><td>${(d.imeiList||[]).map(i=>`<span class="itag ${(d.satildiImei||[]).includes(i)?'sat':''}">${i}</span>`).join('')||'-'}</td><td style="text-align:center">${d.adet}</td><td style="text-align:center;color:var(--gn)"><b>${d.satılanAdet||0}</b></td><td style="text-align:center" class="${kalan>0?'tor':'tgn'}"><b>${kalan}</b></td><td class="trd">${fmt(d.alis)}</td><td class="tcy">${fmt(d.satis)}</td><td class="tyw">${fmt(d.iskonto||0)}</td><td class="trd">${fmt(d.toplamAlis)}</td><td class="tcy">${fmt(d.toplamSatis)}</td><td class="${d.kar>=0?'tgn':'trd'} b">${fmt(d.kar)}</td><td>${getDurB(d)}</td><td><div style="display:flex;gap:4px"><button class="btn bs bsm" onclick="openSatMo('${d.id}')">✅</button><button class="btn bg2 bsm" onclick="openModal('${d.id}')">✏️</button><button class="btn bd bsm" onclick="delIsl('${d.id}')">🗑</button></div></td></tr>`;}).join('');}
 function rUrunler(){const mM={};D.forEach(d=>{if(!mM[d.model])mM[d.model]={model:d.model,adet:0,sat:0,tA:0,tS:0,kar:0,isk:0,kalan:0,karOrani:0};const m=mM[d.model];m.adet+=d.adet;m.sat+=(d.satılanAdet||0);m.tA+=d.toplamAlis;m.tS+=d.toplamSatis;m.kar+=d.kar;m.isk+=d.iskonto||0;m.kalan=m.adet-m.sat;m.karOrani=m.tS>0?((m.kar/m.tS)*100):0;});let models=Object.values(mM);if(analizSort==='kar')models.sort((a,b)=>b.kar-a.kar);else if(analizSort==='satis')models.sort((a,b)=>b.tS-a.tS);else if(analizSort==='adet')models.sort((a,b)=>b.adet-a.adet);else if(analizSort==='kalan')models.sort((a,b)=>b.kalan-a.kalan);else if(analizSort==='marj')models.sort((a,b)=>b.karOrani-a.karOrani);const c=document.getElementById('urunG');if(!c)return;if(!models.length){c.innerHTML='<div class="empty"><i>📭</i>Henüz veri yok</div>';return;}c.innerHTML=`<div class="g3">${models.map(m=>{const marj=m.tS>0?((m.kar/m.tS)*100).toFixed(1):0;const sPct=m.adet>0?((m.sat/m.adet)*100).toFixed(0):0;return `<div class="card" style="border-top:3px solid ${m.kar>=0?'var(--gn)':'var(--rd)'}"><div style="font-size:16px;font-weight:700;margin-bottom:14px">${m.model}</div><div class="sr2"><span class="sk">Toplam Alış</span><span class="sv2 trd">${fmt(m.tA)}</span></div><div class="sr2"><span class="sk">Toplam Satış</span><span class="sv2 tcy">${fmt(m.tS)}</span></div><div class="sr2"><span class="sk">İskonto</span><span class="sv2 tyw">${fmt(m.isk)}</span></div><div class="sr2"><span class="sk">Net Kar</span><span class="sv2 ${m.kar>=0?'tgn':'trd'}">${fmt(m.kar)}</span></div><div class="sr2"><span class="sk">Satılan/Toplam</span><span class="sv2">${m.sat}/${m.adet}</span></div><div class="sr2"><span class="sk">Stokta Kalan</span><span class="sv2 ${m.kalan>0?'tor':'tgn'}">${m.kalan} adet</span></div><div class="sr2"><span class="sk">Kar Marjı</span><span class="sv2 ${+marj>=0?'tgn':'trd'}">%${marj}</span></div><div style="margin-top:12px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:5px"><span>Satış Oranı</span><span>%${sPct}</span></div><div class="pb"><div class="pf" style="width:${sPct}%;background:linear-gradient(90deg,var(--ac),var(--ac3))"></div></div></div></div>`;}).join('')}</div>`;}
@@ -486,10 +486,87 @@ async function confirmEkle(){const model=document.getElementById('bf_m')?.value.
 function cancelEkle(){const eklP=document.getElementById('bEklP');if(eklP)eklP.style.display='none';}
 function toast(msg,type=''){const el=document.getElementById('toast');if(!el)return;el.textContent=msg;el.className='show'+(type?' '+type:'');setTimeout(()=>el.className='',3000);}
 function rAll(){rDash();const act=document.querySelector('.page.active');const id=act?act.id.replace('page-',''):'';if(id==='stok')rStok();else if(id==='islemler')rIslemler();else if(id==='urunler')rUrunler();else if(id==='imei')rImei();rStok();rIslemler();}
-function zoomIn(){const video=document.getElementById('bvideo');if(currentZoom<3){currentZoom+=0.25;video.style.transform=`scale(${currentZoom})`;video.style.transformOrigin='center center';}}
-function zoomOut(){const video=document.getElementById('bvideo');if(currentZoom>1){currentZoom-=0.25;video.style.transform=`scale(${currentZoom})`;video.style.transformOrigin='center center';}}
-async function toggleFlash(){if(!currentVideoTrack){toast('Kamera başlatılmamış, önce Tara butonuna basın','error');return;}const capabilities=currentVideoTrack.getCapabilities();if(capabilities.torch){const newState=!currentVideoTrack.getSettings().torch;await currentVideoTrack.applyConstraints({advanced:[{torch:newState}]});toast(newState?'💡 Flaş açık':'💡 Flaş kapalı','success');}else{toast('❌ Bu cihaz flaşı desteklemiyor','error');}}
-function setupFocusOnTouch(){const video=document.getElementById('bvideo');if(!video)return;video.addEventListener('click',async(e)=>{if(!currentVideoTrack){toast('Kamera başlatılmamış, önce Tara butonuna basın','error');return;}const rect=video.getBoundingClientRect();const x=(e.clientX-rect.left)/rect.width;const y=(e.clientY-rect.top)/rect.height;const point={x:Math.min(1,Math.max(0,x)),y:Math.min(1,Math.max(0,y))};try{const capabilities=currentVideoTrack.getCapabilities();if(capabilities.focusMode&&capabilities.focusMode.includes('continuous')&&capabilities.pointsOfInterest){await currentVideoTrack.applyConstraints({advanced:[{focusMode:'continuous'},{pointsOfInterest:[point]}]});toast('🔍 Odaklandı','success');}else if(capabilities.focusMode&&capabilities.focusMode.includes('auto')){await currentVideoTrack.applyConstraints({advanced:[{focusMode:'auto'}]});toast('🔍 Otomatik odaklandı','success');}else{toast('⚠️ Bu cihaz dokunmayla odaklamayı desteklemiyor','error');}}catch(err){console.error('Odaklama hatası:',err);toast('Odaklama başarısız','error');}});}
+// ==================== KAMERA ZOOM (CSS transform YOK) ====================
+async function zoomIn() {
+  if (!currentVideoTrack) {
+    toast('Kamera başlatılmamış, önce Tara butonuna basın', 'error');
+    return;
+  }
+  const capabilities = currentVideoTrack.getCapabilities();
+  if (capabilities.zoom) {
+    const currentZoom = currentVideoTrack.getSettings().zoom || 1;
+    const maxZoom = capabilities.zoom.max;
+    const newZoom = Math.min(maxZoom, currentZoom + 0.5);
+    await currentVideoTrack.applyConstraints({ advanced: [{ zoom: newZoom }] });
+    toast(`Zoom: %${Math.round(newZoom * 100)}`, 'success');
+  } else {
+    toast('Bu cihaz zoom desteklemiyor', 'error');
+  }
+}
+async function zoomOut() {
+  if (!currentVideoTrack) {
+    toast('Kamera başlatılmamış, önce Tara butonuna basın', 'error');
+    return;
+  }
+  const capabilities = currentVideoTrack.getCapabilities();
+  if (capabilities.zoom) {
+    const currentZoom = currentVideoTrack.getSettings().zoom || 1;
+    const minZoom = capabilities.zoom.min || 1;
+    const newZoom = Math.max(minZoom, currentZoom - 0.5);
+    await currentVideoTrack.applyConstraints({ advanced: [{ zoom: newZoom }] });
+    toast(`Zoom: %${Math.round(newZoom * 100)}`, 'success');
+  } else {
+    toast('Bu cihaz zoom desteklemiyor', 'error');
+  }
+}
+async function toggleFlash() {
+  if (!currentVideoTrack) {
+    toast('Kamera başlatılmamış, önce Tara butonuna basın', 'error');
+    return;
+  }
+  const capabilities = currentVideoTrack.getCapabilities();
+  if (capabilities.torch) {
+    const newState = !currentVideoTrack.getSettings().torch;
+    await currentVideoTrack.applyConstraints({ advanced: [{ torch: newState }] });
+    toast(newState ? '💡 Flaş açık' : '💡 Flaş kapalı', 'success');
+  } else {
+    toast('❌ Bu cihaz flaşı desteklemiyor', 'error');
+  }
+}
+function setupFocusOnTouch() {
+  const video = document.getElementById('bvideo');
+  if (!video) return;
+  video.addEventListener('click', async (e) => {
+    if (!currentVideoTrack) {
+      toast('Kamera başlatılmamış, önce Tara butonuna basın', 'error');
+      return;
+    }
+    const rect = video.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+    const point = { x: Math.min(1, Math.max(0, x)), y: Math.min(1, Math.max(0, y)) };
+    try {
+      const capabilities = currentVideoTrack.getCapabilities();
+      if (capabilities.focusMode && capabilities.focusMode.includes('continuous') && capabilities.pointsOfInterest) {
+        await currentVideoTrack.applyConstraints({
+          advanced: [
+            { focusMode: 'continuous' },
+            { pointsOfInterest: [point] }
+          ]
+        });
+        toast('🔍 Odaklandı', 'success');
+      } else if (capabilities.focusMode && capabilities.focusMode.includes('auto')) {
+        await currentVideoTrack.applyConstraints({ advanced: [{ focusMode: 'auto' }] });
+        toast('🔍 Otomatik odaklandı', 'success');
+      } else {
+        toast('⚠️ Bu cihaz dokunmayla odaklamayı desteklemiyor', 'error');
+      }
+    } catch (err) {
+      console.error('Odaklama hatası:', err);
+      toast('Odaklama başarısız', 'error');
+    }
+  });
+}
 initTheme();
 init();
 </script>
