@@ -487,6 +487,25 @@ async function startScan() {
   if (sln) sln.classList.remove('pau');
   try {
     bScan = true;
+
+    // Kamera yüksek çözünürlük ayarı, arka kamera, portrait uyumlu
+    const constraints = {
+      video: {
+        facingMode: { exact: "environment" },
+        width: { ideal: 1920 },
+        height: { ideal: 1080 },
+        aspectRatio: { ideal: window.innerWidth / window.innerHeight } // mevcut ekran oranına göre
+      }
+    };
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    const videoEl = document.getElementById('bvideo');
+    videoEl.srcObject = stream;
+    await videoEl.play();
+    
+    // Kamera track'ini al (zoom/flaş için)
+    const tracks = stream.getVideoTracks();
+    if (tracks.length) currentVideoTrack = tracks[0];
+
     const hints = new Map();
     hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
       ZXing.BarcodeFormat.QR_CODE,
@@ -500,11 +519,9 @@ async function startScan() {
       ZXing.BarcodeFormat.CODABAR
     ]);
     hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+    
     bReader = new ZXing.BrowserMultiFormatReader(hints);
-    const devices = await bReader.listVideoInputDevices();
-    if (!devices.length) throw new Error("Kamera bulunamadı");
-    const backCamera = devices.find(d => d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('arka') || d.label.toLowerCase().includes('environment')) || devices[0];
-    await bReader.decodeFromVideoDevice(backCamera.deviceId, 'bvideo', (result, err) => {
+    await bReader.decodeFromStream(stream, videoEl, (result, err) => {
       if (result) {
         const code = result.getText();
         if (code && code !== bCode) {
@@ -515,6 +532,20 @@ async function startScan() {
         }
       }
     });
+    
+    if (cst) cst.textContent = '✅ Kamera aktif, barkod okutun';
+  } catch (e) {
+    bScan = false;
+    if (cst) {
+      cst.textContent = '⚠️ Kamera hatası: ' + e.message;
+      cst.className = 'cst er';
+    }
+    if (startBtn) startBtn.style.display = 'flex';
+    if (stopBtn) stopBtn.style.display = 'none';
+    if (sln) sln.classList.add('pau');
+    console.error("Kamera hatası:", e);
+  }
+}
     // Kamera track'ini al (zoom ve flaş için)
     setTimeout(() => {
       const videoEl = document.getElementById('bvideo');
@@ -543,7 +574,15 @@ function stopScan() {
       bReader = null;
     } catch(e) {}
   }
-  currentVideoTrack = null;
+  if (currentVideoTrack) {
+    currentVideoTrack.stop();
+    currentVideoTrack = null;
+  }
+  const videoEl = document.getElementById('bvideo');
+  if (videoEl && videoEl.srcObject) {
+    videoEl.srcObject.getTracks().forEach(track => track.stop());
+    videoEl.srcObject = null;
+  }
   bScan = false;
   bCode = '';
   const startBtn = document.getElementById('bStartB');
