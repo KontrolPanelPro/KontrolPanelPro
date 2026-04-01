@@ -147,7 +147,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--ac);box-shadow:0 0 0 
 .blayout{display:grid;grid-template-columns:1fr;gap:16px}
 @media(min-width:600px){.blayout{grid-template-columns:1fr 1fr}}
 .cambox{position:relative;border-radius:16px;overflow:hidden;background:#000;aspect-ratio:1;border:2px solid var(--br);max-width:100%;width:100%}
-#bvideo{width:100%;height:100%;object-fit:cover;display:block}
+#bvideo{width:100%;height:100%;object-fit:cover;display:block;cursor:pointer}
 .sovl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
 .sfr{width:70%;aspect-ratio:1;position:relative}
 .sfr::before,.sfr::after,.sctr,.scbl{content:'';position:absolute;width:22px;height:22px;border-color:var(--ac2);border-style:solid}
@@ -338,12 +338,12 @@ input:focus,select:focus,textarea:focus{border-color:var(--ac);box-shadow:0 0 0 
     </div>
     <div class="sh2"><div class="stt">🕐 Son İşlemler</div></div>
     <div class="tw">
-       <table>
+        <table>
         <thead>
-           <tr><th>Tarih</th><th>Model</th><th>El</th><th>GB/RAM</th><th>Adet</th><th>Alış</th><th>Satış</th><th>Kar</th><th>Stok</th></tr>
+            <tr><th>Tarih</th><th>Model</th><th>El</th><th>GB/RAM</th><th>Adet</th><th>Alış</th><th>Satış</th><th>Kar</th><th>Stok</th></tr>
         </thead>
         <tbody id="sonTb"></tbody>
-       </table>
+        </table>
     </div>
   </div>
 
@@ -415,7 +415,7 @@ let analizSort = 'kar';
 let currentElFilter = 'all';
 let clockInterval = null;
 let currentZoom = 1;
-let flashTrack = null;
+let currentVideoTrack = null;   // kamera track'i flaş ve odaklama için
 
 function initTheme(){const s=localStorage.getItem('pt_theme')||'dark';document.documentElement.setAttribute('data-theme',s);const b=document.getElementById('ttb');if(b)b.textContent=s==='dark'?'☀️':'🌙';}
 function toggleTheme(){const c=document.documentElement.getAttribute('data-theme');const n=c==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);const btn=document.getElementById('ttb');if(btn)btn.textContent=n==='dark'?'☀️':'🌙';localStorage.setItem('pt_theme',n);setTimeout(()=>{if(charts.a)rCharts();},100);}
@@ -436,7 +436,7 @@ function tryP(s){try{const v=JSON.parse(s||'[]');return Array.isArray(v)?v:[];}c
 function norm(d){let tarih=String(d.tarih||'');if(tarih.includes('T'))tarih=tarih.split('T')[0];return{...d,id:String(d.id||''),tarih:tarih,model:String(d.model||''),el:String(d.el||'1.El'),gb:String(d.gb||'256'),ram:+d.ram||8,renk:String(d.renk||''),not:String(d.not||''),adet:+d.adet||0,alis:+d.alis||0,satis:+d.satis||0,iskonto:+d.iskonto||0,toplamAlis:+d.toplamAlis||0,toplamSatis:+d.toplamSatis||0,kar:+d.kar||0,satılanAdet:+d.satılanAdet||0,imeiList:Array.isArray(d.imeiList)?d.imeiList:tryP(d.imeiList),satildiImei:Array.isArray(d.satildiImei)?d.satildiImei:tryP(d.satildiImei)};}
 function saveUrl(){const u=document.getElementById('urlInp')?.value.trim();if(!u||!u.startsWith('https://script.google.com')){toast('Geçerli URL girin!','error');return;}URL2=u;localStorage.setItem(SK,u);init();}
 function changeUrl(){const n=prompt('Yeni Apps Script URL:',URL2);if(n&&n.trim()){URL2=n.trim();localStorage.setItem(SK,URL2);syncData();}}
-async function init(){initTheme();startClock();if(!URL2){const setup=document.getElementById('setupScr');if(setup)setup.style.display='flex';return;}const setup=document.getElementById('setupScr');if(setup)setup.style.display='none';const hdr=document.getElementById('hdr');if(hdr)hdr.style.display='flex';const nav=document.getElementById('nav');if(nav)nav.style.display='flex';const main=document.getElementById('mainC');if(main)main.style.display='block';await syncData();initSortable();initChartButtons();initAnalizButtons();initElChartButtons();}
+async function init(){initTheme();startClock();if(!URL2){const setup=document.getElementById('setupScr');if(setup)setup.style.display='flex';return;}const setup=document.getElementById('setupScr');if(setup)setup.style.display='none';const hdr=document.getElementById('hdr');if(hdr)hdr.style.display='flex';const nav=document.getElementById('nav');if(nav)nav.style.display='flex';const main=document.getElementById('mainC');if(main)main.style.display='block';await syncData();initSortable();initChartButtons();initAnalizButtons();initElChartButtons();setupFocusOnTouch();}
 function initChartButtons(){const btns=document.querySelectorAll('#chartPeriodButtons .chart-btn');btns.forEach(btn=>{btn.addEventListener('click',()=>{btns.forEach(b=>b.classList.remove('active'));btn.classList.add('active');chartPeriod=btn.dataset.period;rCharts();});});}
 function initAnalizButtons(){const btns=document.querySelectorAll('#analizSortButtons .analiz-sort-btn');btns.forEach(btn=>{btn.addEventListener('click',()=>{btns.forEach(b=>b.classList.remove('active'));btn.classList.add('active');analizSort=btn.dataset.sort;rUrunler();});});}
 function initElChartButtons(){const btns=document.querySelectorAll('#elChartButtons .el-chart-btn');btns.forEach(btn=>{btn.addEventListener('click',()=>{btns.forEach(b=>b.classList.remove('active'));btn.classList.add('active');currentElFilter=btn.dataset.el;updateElChart();});});}
@@ -466,8 +466,8 @@ function rUrunler(){const mM={};D.forEach(d=>{if(!mM[d.model])mM[d.model]={model
 function rImei(){const q=(document.getElementById('imeiSrc')?.value||'').toLowerCase();const f=(document.getElementById('imeiFil')?.value||'');let rows=[];D.forEach(d=>{(d.imeiList||[]).forEach(im=>{const isSat=(d.satildiImei||[]).includes(im);const dm=!f||(f==='satildi'&&isSat)||(f==='stokta'&&!isSat);if(dm&&(!q||im.toLowerCase().includes(q)||d.model.toLowerCase().includes(q)))rows.push({...d,im,isSat,imei:im});});});const sort=sortState['imeiTable'];if(sort)rows=sortData(rows,sort.field,sort.yon);else rows=rows.sort((a,b)=>b.tarih.localeCompare(a.tarih));const tb=document.getElementById('imeiTb');if(!tb)return;if(!rows.length){tb.innerHTML=`<tr><td colspan="11"><div class="empty"><i>🔍</i>${q?'Sonuç bulunamadı':'IMEI kaydı yok'}</div></td></tr>`;return;}tb.innerHTML=rows.map(r=>`<tr class="${r.isSat?'sr':''}"><td>${formatTarih(r.tarih)}</td><td><span class="itag ${r.isSat?'sat':''}">${r.im}</span></td><td class="b">${r.model}</td><td>${r.gb}GB</td><td>${r.ram}GB</td><td><span class="badge ${r.el==='1.El'?'bpu':'bcy'}">${r.el}</span></td><td class="trd">${fmt(r.alis)}</td><td class="tcy">${fmt(r.satis)}</td><td class="tyw">${fmt(r.iskonto||0)}</td><td class="${r.kar>=0?'tgn':'trd'}">${fmt(r.kar/Math.max(r.adet,1))}</td><td>${r.isSat?'<span class="badge bgn">✓ Satıldı</span>':'<span class="badge bcy">📦 Stokta</span>'}</td></tr>`).join('');}
 function setBMod(mod){bMod=mod;document.querySelectorAll('.mbt').forEach(b=>b.classList.remove('act'));const btn=document.getElementById('bm-'+mod);if(btn)btn.classList.add('act');hideBPanels();}
 function hideBPanels(){const satP=document.getElementById('bSatP');if(satP)satP.style.display='none';const eklP=document.getElementById('bEklP');if(eklP)eklP.style.display='none';}
-async function startScan(){if(bScan)return;const startBtn=document.getElementById('bStartB');const stopBtn=document.getElementById('bStopB');const cst=document.getElementById('cst');const sln=document.getElementById('sln');if(startBtn)startBtn.style.display='none';if(stopBtn)stopBtn.style.display='flex';if(cst){cst.textContent='📷 Barkod okutun...';cst.className='cst act';}if(sln)sln.classList.remove('pau');try{bScan=true;const hints=new Map();hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS,[ZXing.BarcodeFormat.QR_CODE,ZXing.BarcodeFormat.CODE_128,ZXing.BarcodeFormat.EAN_13,ZXing.BarcodeFormat.EAN_8,ZXing.BarcodeFormat.CODE_39]);bReader=new ZXing.BrowserMultiFormatReader(hints);const devices=await bReader.listVideoInputDevices();if(!devices.length)throw new Error("Kamera bulunamadı");const backCamera=devices.find(d=>d.label.toLowerCase().includes('back')||d.label.toLowerCase().includes('arka')||d.label.toLowerCase().includes('environment'))||devices[0];await bReader.decodeFromVideoDevice(backCamera.deviceId,'bvideo',(result,err)=>{if(result){const code=result.getText();if(code&&code!==bCode){bCode=code;if(navigator.vibrate)navigator.vibrate(80);stopScan();onRead(code);}}});if(cst)cst.textContent='✅ Kamera aktif, barkod okutun';}catch(e){bScan=false;if(cst){cst.textContent='⚠️ Kamera hatası: '+e.message;cst.className='cst er';}if(startBtn)startBtn.style.display='flex';if(stopBtn)stopBtn.style.display='none';if(sln)sln.classList.add('pau');console.error("Kamera hatası:",e);}}
-function stopScan(){if(bReader){try{bReader.reset();bReader=null;}catch(e){}}bScan=false;bCode='';const startBtn=document.getElementById('bStartB');const stopBtn=document.getElementById('bStopB');const cst=document.getElementById('cst');const sln=document.getElementById('sln');if(startBtn)startBtn.style.display='flex';if(stopBtn)stopBtn.style.display='none';if(cst){cst.textContent='Tara butonuna bas';cst.className='cst';}if(sln)sln.classList.add('pau');}
+async function startScan(){if(bScan)return;const startBtn=document.getElementById('bStartB');const stopBtn=document.getElementById('bStopB');const cst=document.getElementById('cst');const sln=document.getElementById('sln');if(startBtn)startBtn.style.display='none';if(stopBtn)stopBtn.style.display='flex';if(cst){cst.textContent='📷 Barkod okutun...';cst.className='cst act';}if(sln)sln.classList.remove('pau');try{bScan=true;const hints=new Map();hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS,[ZXing.BarcodeFormat.QR_CODE,ZXing.BarcodeFormat.CODE_128,ZXing.BarcodeFormat.EAN_13,ZXing.BarcodeFormat.EAN_8,ZXing.BarcodeFormat.CODE_39]);bReader=new ZXing.BrowserMultiFormatReader(hints);const devices=await bReader.listVideoInputDevices();if(!devices.length)throw new Error("Kamera bulunamadı");const backCamera=devices.find(d=>d.label.toLowerCase().includes('back')||d.label.toLowerCase().includes('arka')||d.label.toLowerCase().includes('environment'))||devices[0];await bReader.decodeFromVideoDevice(backCamera.deviceId,'bvideo',(result,err)=>{if(result){const code=result.getText();if(code&&code!==bCode){bCode=code;if(navigator.vibrate)navigator.vibrate(80);stopScan();onRead(code);}}});if(bReader && bReader.stream && bReader.stream.getVideoTracks().length){currentVideoTrack = bReader.stream.getVideoTracks()[0];}if(cst)cst.textContent='✅ Kamera aktif, barkod okutun';}catch(e){bScan=false;if(cst){cst.textContent='⚠️ Kamera hatası: '+e.message;cst.className='cst er';}if(startBtn)startBtn.style.display='flex';if(stopBtn)stopBtn.style.display='none';if(sln)sln.classList.add('pau');console.error("Kamera hatası:",e);}}
+function stopScan(){if(bReader){try{bReader.reset();bReader=null;}catch(e){}}currentVideoTrack=null;bScan=false;bCode='';const startBtn=document.getElementById('bStartB');const stopBtn=document.getElementById('bStopB');const cst=document.getElementById('cst');const sln=document.getElementById('sln');if(startBtn)startBtn.style.display='flex';if(stopBtn)stopBtn.style.display='none';if(cst){cst.textContent='Tara butonuna bas';cst.className='cst';}if(sln)sln.classList.add('pau');}
 function onRead(code){stopScan();const cst=document.getElementById('cst');if(cst){cst.textContent='✓ Okundu: '+code;cst.className='cst fd2';}procCode(code);}
 function procCode(code){const rcode=document.getElementById('rcode');if(rcode)rcode.textContent=code;const bres=document.getElementById('bres');if(bres)bres.className='bres show';hideBPanels();let found=D.find(d=>(d.imeiList||[]).includes(code));if(!found)found=D.find(d=>d.model.toLowerCase()===code.toLowerCase());if(found){const kalan=found.adet-(found.satılanAdet||0);if(bres)bres.className='bres show fp';const rbody=document.getElementById('rbody');if(rbody)rbody.innerHTML=`<div class="rnm">${found.model}</div><div class="rdt">${found.el} · ${found.gb}GB · ${found.ram}GB RAM</div><div class="rmst"><div class="rms"><div class="rmv ${kalan>0?'tgn':'trd'}">${kalan}</div><div class="rmk">Stokta</div></div><div class="rms"><div class="rmv tcy">${fmt(found.satis)}</div><div class="rmk">Satış</div></div><div class="rms"><div class="rmv ${found.kar>=0?'tgn':'trd'}">${fmt(found.kar)}</div><div class="rmk">Kar</div></div></div><div class="qas"><button class="qab qasat" onclick="openBSat('${found.id}')" ${kalan<=0?'disabled':''}>✅ ${kalan<=0?'Stok Yok':'Sat ('+kalan+' adet)'}</button><button class="qab qaduz" onclick="openModal('${found.id}')">✏️ Düzenle</button></div>`;if(bMod==='sat'&&kalan>0)openBSat(found.id);if(bMod==='ekle')openBEkl(found.id);}else{if(bres)bres.className='bres show nf';const rbody=document.getElementById('rbody');if(rbody)rbody.innerHTML=`<div style="color:var(--yw);font-weight:700;margin-bottom:6px">⚠️ Sistemde bulunamadı</div><div style="font-size:12px;margin-bottom:12px">Yeni ürün ekleyebilirsiniz</div><button class="qab qaekl" onclick="openBEkl(null,'${code}')">➕ Yeni Ürün Ekle</button>`;if(bMod==='ekle')openBEkl(null,code);}}
 function manuelGir(){const code=prompt('Barkod / IMEI / Model girin:');if(code&&code.trim()){bCode=code.trim();onRead(bCode);}}
@@ -482,7 +482,7 @@ function cancelEkle(){const eklP=document.getElementById('bEklP');if(eklP)eklP.s
 function toast(msg,type=''){const el=document.getElementById('toast');if(!el)return;el.textContent=msg;el.className='show'+(type?' '+type:'');setTimeout(()=>el.className='',3000);}
 function rAll(){rDash();const act=document.querySelector('.page.active');const id=act?act.id.replace('page-',''):'';if(id==='stok')rStok();else if(id==='islemler')rIslemler();else if(id==='urunler')rUrunler();else if(id==='imei')rImei();rStok();rIslemler();}
 
-// ==================== YENİ EKLENEN ZOOM VE FLASH FONKSİYONLARI ====================
+// ==================== ZOOM, FLASH ve DOKUNMA ODAKLAMA ====================
 function zoomIn() {
   const video = document.getElementById('bvideo');
   if (currentZoom < 3) {
@@ -500,23 +500,54 @@ function zoomOut() {
   }
 }
 async function toggleFlash() {
-  if (!flashTrack) {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      flashTrack = stream.getVideoTracks()[0];
-    } catch (e) {
-      toast('Kamera erişilemedi', 'error');
-      return;
-    }
+  if (!currentVideoTrack) {
+    toast('Kamera başlatılmamış, önce Tara butonuna basın', 'error');
+    return;
   }
-  const capabilities = flashTrack.getCapabilities();
+  const capabilities = currentVideoTrack.getCapabilities();
   if (capabilities.torch) {
-    const newState = !flashTrack.getSettings().torch;
-    await flashTrack.applyConstraints({ advanced: [{ torch: newState }] });
+    const newState = !currentVideoTrack.getSettings().torch;
+    await currentVideoTrack.applyConstraints({ advanced: [{ torch: newState }] });
     toast(newState ? '💡 Flaş açık' : '💡 Flaş kapalı', 'success');
   } else {
-    toast('Bu cihaz flaşı desteklemiyor', 'error');
+    toast('❌ Bu cihaz flaşı desteklemiyor', 'error');
   }
+}
+function setupFocusOnTouch() {
+  const video = document.getElementById('bvideo');
+  if (!video) return;
+  
+  video.addEventListener('click', async (e) => {
+    if (!currentVideoTrack) {
+      toast('Kamera başlatılmamış, önce Tara butonuna basın', 'error');
+      return;
+    }
+    const rect = video.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+    const point = { x: Math.min(1, Math.max(0, x)), y: Math.min(1, Math.max(0, y)) };
+    try {
+      const capabilities = currentVideoTrack.getCapabilities();
+      if (capabilities.focusMode && capabilities.focusMode.includes('continuous') && capabilities.pointsOfInterest) {
+        await currentVideoTrack.applyConstraints({
+          advanced: [
+            { focusMode: 'continuous' },
+            { pointsOfInterest: [point] }
+          ]
+        });
+        toast('🔍 Odaklandı', 'success');
+      } else if (capabilities.focusMode && capabilities.focusMode.includes('auto')) {
+        await currentVideoTrack.applyConstraints({ advanced: [{ focusMode: 'auto' }] });
+        toast('🔍 Otomatik odaklandı', 'success');
+      } else {
+        console.log('Odaklama desteği yok');
+        toast('⚠️ Bu cihaz dokunmayla odaklamayı desteklemiyor', 'error');
+      }
+    } catch (err) {
+      console.error('Odaklama hatası:', err);
+      toast('Odaklama başarısız', 'error');
+    }
+  });
 }
 
 initTheme();
