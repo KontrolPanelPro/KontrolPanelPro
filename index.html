@@ -338,12 +338,12 @@ input:focus,select:focus,textarea:focus{border-color:var(--ac);box-shadow:0 0 0 
     </div>
     <div class="sh2"><div class="stt">🕐 Son İşlemler</div></div>
     <div class="tw">
-      <table>
+       <table>
         <thead>
-          <tr><th>Tarih</th><th>Model</th><th>El</th><th>GB/RAM</th><th>Adet</th><th>Alış</th><th>Satış</th><th>Kar</th><th>Stok</th></tr>
+           <tr><th>Tarih</th><th>Model</th><th>El</th><th>GB/RAM</th><th>Adet</th><th>Alış</th><th>Satış</th><th>Kar</th><th>Stok</th></tr>
         </thead>
         <tbody id="sonTb"></tbody>
-      </table>
+       </table>
     </div>
   </div>
 
@@ -374,7 +374,17 @@ input:focus,select:focus,textarea:focus{border-color:var(--ac);box-shadow:0 0 0 
         <div class="msel"><button class="mbt act" id="bm-ara" onclick="setBMod('ara')"><span>🔍</span>Ara</button><button class="mbt" id="bm-sat" onclick="setBMod('sat')"><span>✅</span>Sat</button><button class="mbt" id="bm-ekle" onclick="setBMod('ekle')"><span>➕</span>Ekle</button></div>
         <div class="cambox" id="cambox"><video id="bvideo" playsinline autoplay muted></video><div class="sovl"><div class="sfr"><div class="sctr"></div><div class="scbl"></div><div class="sln pau" id="sln"></div></div></div></div>
         <div class="cst" id="cst">Tara butonuna bas</div>
-        <div style="display:flex;gap:8px;margin-top:10px"><button class="btn bp" id="bStartB" onclick="startScan()" style="flex:1">📷 Tara</button><button class="btn bg2" id="bStopB" onclick="stopScan()" style="flex:1;display:none">⏹ Durdur</button><button class="btn bg2" onclick="manuelGir()" style="flex:1">⌨️ Manuel</button></div>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;justify-content:center">
+          <button class="btn bp" id="bStartB" onclick="startScan()" style="flex:1">📷 Tara</button>
+          <button class="btn bg2" id="bStopB" onclick="stopScan()" style="flex:1;display:none">⏹ Durdur</button>
+          <button class="btn bg2" onclick="manuelGir()" style="flex:1">⌨️ Manuel</button>
+        </div>
+        <!-- YENİ: Zoom ve Flaş butonları -->
+        <div style="display:flex;gap:8px;margin-top:8px;justify-content:center">
+          <button class="btn bg2" onclick="zoomIn()">🔍 + Zoom</button>
+          <button class="btn bg2" onclick="zoomOut()">🔍 - Zoom</button>
+          <button class="btn bg2" onclick="toggleFlash()">💡 Flaş</button>
+        </div>
       </div>
       <div>
         <div class="bres" id="bres"><div class="rlbl">Okunan Barkod</div><div class="rcode" id="rcode"></div><div id="rbody"></div></div>
@@ -404,6 +414,8 @@ let chartPeriod = 'month';
 let analizSort = 'kar';
 let currentElFilter = 'all';
 let clockInterval = null;
+let currentZoom = 1;
+let flashTrack = null;
 
 function initTheme(){const s=localStorage.getItem('pt_theme')||'dark';document.documentElement.setAttribute('data-theme',s);const b=document.getElementById('ttb');if(b)b.textContent=s==='dark'?'☀️':'🌙';}
 function toggleTheme(){const c=document.documentElement.getAttribute('data-theme');const n=c==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);const btn=document.getElementById('ttb');if(btn)btn.textContent=n==='dark'?'☀️':'🌙';localStorage.setItem('pt_theme',n);setTimeout(()=>{if(charts.a)rCharts();},100);}
@@ -469,8 +481,54 @@ async function confirmEkle(){const model=document.getElementById('bf_m')?.value.
 function cancelEkle(){const eklP=document.getElementById('bEklP');if(eklP)eklP.style.display='none';}
 function toast(msg,type=''){const el=document.getElementById('toast');if(!el)return;el.textContent=msg;el.className='show'+(type?' '+type:'');setTimeout(()=>el.className='',3000);}
 function rAll(){rDash();const act=document.querySelector('.page.active');const id=act?act.id.replace('page-',''):'';if(id==='stok')rStok();else if(id==='islemler')rIslemler();else if(id==='urunler')rUrunler();else if(id==='imei')rImei();rStok();rIslemler();}
+
+// ==================== YENİ EKLENEN ZOOM VE FLASH FONKSİYONLARI ====================
+function zoomIn() {
+  const video = document.getElementById('bvideo');
+  if (currentZoom < 3) {
+    currentZoom += 0.25;
+    video.style.transform = `scale(${currentZoom})`;
+    video.style.transformOrigin = 'center center';
+  }
+}
+function zoomOut() {
+  const video = document.getElementById('bvideo');
+  if (currentZoom > 1) {
+    currentZoom -= 0.25;
+    video.style.transform = `scale(${currentZoom})`;
+    video.style.transformOrigin = 'center center';
+  }
+}
+async function toggleFlash() {
+  if (!flashTrack) {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      flashTrack = stream.getVideoTracks()[0];
+    } catch (e) {
+      toast('Kamera erişilemedi', 'error');
+      return;
+    }
+  }
+  const capabilities = flashTrack.getCapabilities();
+  if (capabilities.torch) {
+    const newState = !flashTrack.getSettings().torch;
+    await flashTrack.applyConstraints({ advanced: [{ torch: newState }] });
+    toast(newState ? '💡 Flaş açık' : '💡 Flaş kapalı', 'success');
+  } else {
+    toast('Bu cihaz flaşı desteklemiyor', 'error');
+  }
+}
+
 initTheme();
 init();
+</script>
+<script>
+// Service Worker kaydı
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/KontrolPanelPro/sw.js')
+    .then(reg => console.log('Service Worker kaydedildi', reg))
+    .catch(err => console.error('Service Worker hatası:', err));
+}
 </script>
 </body>
 </html>
