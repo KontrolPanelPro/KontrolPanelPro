@@ -13,7 +13,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://unpkg.com/@zxing/library@0.20.0/umd/index.js"></script>
 <style>
-/* ========== TÜM STİLLER (aynı, zoom transform kaldırıldı) ========== */
+/* ========== TÜM STİLLER (CSS zoom yok, sadece kamera zoom) ========== */
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 [data-theme="dark"]{--bg:#0a0a0f;--sf:#13131a;--sf2:#1c1c28;--sf3:#252535;--br:#2a2a3d;--tx:#e2e8f0;--tx2:#94a3b8;--tx3:#64748b;--sh:rgba(0,0,0,.4);--hbg:linear-gradient(135deg,#13131a,#1a1030)}
 [data-theme="light"]{--bg:#f1f5f9;--sf:#fff;--sf2:#f8fafc;--sf3:#e2e8f0;--br:#cbd5e1;--tx:#0f172a;--tx2:#475569;--tx3:#94a3b8;--sh:rgba(0,0,0,.08);--hbg:linear-gradient(135deg,#fff,#f0e8ff)}
@@ -339,12 +339,12 @@ input:focus,select:focus,textarea:focus{border-color:var(--ac);box-shadow:0 0 0 
     </div>
     <div class="sh2"><div class="stt">🕐 Son İşlemler</div></div>
     <div class="tw">
-        <table>
-        <thead>
-            <tr><th>Tarih</th><th>Model</th><th>El</th><th>GB/RAM</th><th>Adet</th><th>Alış</th><th>Satış</th><th>Kar</th><th>Stok</th></tr>
-        </thead>
-        <tbody id="sonTb"></tbody>
-        </table>
+         <table>
+           <thead>
+              <tr><th>Tarih</th><th>Model</th><th>El</th><th>GB/RAM</th><th>Adet</th><th>Alış</th><th>Satış</th><th>Kar</th><th>Stok</th></tr>
+           </thead>
+           <tbody id="sonTb"></tbody>
+         </table>
     </div>
   </div>
 
@@ -404,7 +404,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--ac);box-shadow:0 0 0 
 
 <script>
 // ============================================================
-// STATE
+// STATE (tüm mevcut kodlar aynı, sadece barkod tarama fonksiyonları değişti)
 // ============================================================
 const SK = 'phonetrack_url';
 let URL2 = localStorage.getItem(SK) || '';
@@ -417,10 +417,10 @@ let chartPeriod = 'month';
 let analizSort = 'kar';
 let currentElFilter = 'all';
 let clockInterval = null;
-let currentVideoTrack = null;
+let currentVideoTrack = null;  // kamera track'i zoom/flaş için
 
 // ============================================================
-// TEMA
+// TEMA, SAAT, SIRALAMA, vs. (değişmedi)
 // ============================================================
 function initTheme(){const s=localStorage.getItem('pt_theme')||'dark';document.documentElement.setAttribute('data-theme',s);const b=document.getElementById('ttb');if(b)b.textContent=s==='dark'?'☀️':'🌙';}
 function toggleTheme(){const c=document.documentElement.getAttribute('data-theme');const n=c==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);const btn=document.getElementById('ttb');if(btn)btn.textContent=n==='dark'?'☀️':'🌙';localStorage.setItem('pt_theme',n);setTimeout(()=>{if(charts.a)rCharts();},100);}
@@ -471,8 +471,93 @@ function rUrunler(){const mM={};D.forEach(d=>{if(!mM[d.model])mM[d.model]={model
 function rImei(){const q=(document.getElementById('imeiSrc')?.value||'').toLowerCase();const f=(document.getElementById('imeiFil')?.value||'');let rows=[];D.forEach(d=>{(d.imeiList||[]).forEach(im=>{const isSat=(d.satildiImei||[]).includes(im);const dm=!f||(f==='satildi'&&isSat)||(f==='stokta'&&!isSat);if(dm&&(!q||im.toLowerCase().includes(q)||d.model.toLowerCase().includes(q)))rows.push({...d,im,isSat,imei:im});});});const sort=sortState['imeiTable'];if(sort)rows=sortData(rows,sort.field,sort.yon);else rows=rows.sort((a,b)=>b.tarih.localeCompare(a.tarih));const tb=document.getElementById('imeiTb');if(!tb)return;if(!rows.length){tb.innerHTML=`<tr><td colspan="11"><div class="empty"><i>🔍</i>${q?'Sonuç bulunamadı':'IMEI kaydı yok'}</div></td></tr>`;return;}tb.innerHTML=rows.map(r=>`<tr class="${r.isSat?'sr':''}"><td>${formatTarih(r.tarih)}</td><td><span class="itag ${r.isSat?'sat':''}">${r.im}</span></td><td class="b">${r.model}</td><td>${r.gb}GB</td><td>${r.ram}GB</td><td><span class="badge ${r.el==='1.El'?'bpu':'bcy'}">${r.el}</span></td><td class="trd">${fmt(r.alis)}</td><td class="tcy">${fmt(r.satis)}</td><td class="tyw">${fmt(r.iskonto||0)}</td><td class="${r.kar>=0?'tgn':'trd'}">${fmt(r.kar/Math.max(r.adet,1))}</td><td>${r.isSat?'<span class="badge bgn">✓ Satıldı</span>':'<span class="badge bcy">📦 Stokta</span>'}</td></tr>`).join('');}
 function setBMod(mod){bMod=mod;document.querySelectorAll('.mbt').forEach(b=>b.classList.remove('act'));const btn=document.getElementById('bm-'+mod);if(btn)btn.classList.add('act');hideBPanels();}
 function hideBPanels(){const satP=document.getElementById('bSatP');if(satP)satP.style.display='none';const eklP=document.getElementById('bEklP');if(eklP)eklP.style.display='none';}
-async function startScan(){if(bScan)return;const startBtn=document.getElementById('bStartB');const stopBtn=document.getElementById('bStopB');const cst=document.getElementById('cst');const sln=document.getElementById('sln');if(startBtn)startBtn.style.display='none';if(stopBtn)stopBtn.style.display='flex';if(cst){cst.textContent='📷 Barkod okutun...';cst.className='cst act';}if(sln)sln.classList.remove('pau');try{bScan=true;const constraints={video:{facingMode:{exact:"environment"},width:{ideal:1920},height:{ideal:1080},aspectRatio:{ideal:1.7777777778}}};const stream=await navigator.mediaDevices.getUserMedia(constraints);currentVideoTrack=stream.getVideoTracks()[0];const videoEl=document.getElementById('bvideo');videoEl.srcObject=stream;await videoEl.play();const hints=new Map();hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS,[ZXing.BarcodeFormat.QR_CODE,ZXing.BarcodeFormat.CODE_128,ZXing.BarcodeFormat.EAN_13,ZXing.BarcodeFormat.EAN_8,ZXing.BarcodeFormat.CODE_39,ZXing.BarcodeFormat.UPC_A,ZXing.BarcodeFormat.UPC_E,ZXing.BarcodeFormat.ITF,ZXing.BarcodeFormat.CODABAR]);hints.set(ZXing.DecodeHintType.TRY_HARDER,true);bReader=new ZXing.BrowserMultiFormatReader(hints);await bReader.decodeFromStream(stream,videoEl,(result,err)=>{if(result){const code=result.getText();if(code&&code!==bCode){bCode=code;if(navigator.vibrate)navigator.vibrate(80);stopScan();onRead(code);}}});if(cst)cst.textContent='✅ Kamera aktif, barkod okutun';}catch(e){bScan=false;if(cst){cst.textContent='⚠️ Kamera hatası: '+e.message;cst.className='cst er';}if(startBtn)startBtn.style.display='flex';if(stopBtn)stopBtn.style.display='none';if(sln)sln.classList.add('pau');console.error("Kamera hatası:",e);}}
-function stopScan(){if(bReader){try{bReader.reset();bReader=null;}catch(e){}}if(currentVideoTrack){currentVideoTrack.stop();currentVideoTrack=null;}const videoEl=document.getElementById('bvideo');if(videoEl&&videoEl.srcObject){videoEl.srcObject.getTracks().forEach(track=>track.stop());videoEl.srcObject=null;}bScan=false;bCode='';const startBtn=document.getElementById('bStartB');const stopBtn=document.getElementById('bStopB');const cst=document.getElementById('cst');const sln=document.getElementById('sln');if(startBtn)startBtn.style.display='flex';if(stopBtn)stopBtn.style.display='none';if(cst){cst.textContent='Tara butonuna bas';cst.className='cst';}if(sln)sln.classList.add('pau');}
+// ==================== ORİJİNAL ÇALIŞAN startScan (decodeFromVideoDevice) ====================
+async function startScan() {
+  if (bScan) return;
+  const startBtn = document.getElementById('bStartB');
+  const stopBtn = document.getElementById('bStopB');
+  const cst = document.getElementById('cst');
+  const sln = document.getElementById('sln');
+  if (startBtn) startBtn.style.display = 'none';
+  if (stopBtn) stopBtn.style.display = 'flex';
+  if (cst) {
+    cst.textContent = '📷 Barkod okutun...';
+    cst.className = 'cst act';
+  }
+  if (sln) sln.classList.remove('pau');
+  try {
+    bScan = true;
+    const hints = new Map();
+    hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+      ZXing.BarcodeFormat.QR_CODE,
+      ZXing.BarcodeFormat.CODE_128,
+      ZXing.BarcodeFormat.EAN_13,
+      ZXing.BarcodeFormat.EAN_8,
+      ZXing.BarcodeFormat.CODE_39,
+      ZXing.BarcodeFormat.UPC_A,
+      ZXing.BarcodeFormat.UPC_E,
+      ZXing.BarcodeFormat.ITF,
+      ZXing.BarcodeFormat.CODABAR
+    ]);
+    hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+    bReader = new ZXing.BrowserMultiFormatReader(hints);
+    const devices = await bReader.listVideoInputDevices();
+    if (!devices.length) throw new Error("Kamera bulunamadı");
+    const backCamera = devices.find(d => d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('arka') || d.label.toLowerCase().includes('environment')) || devices[0];
+    await bReader.decodeFromVideoDevice(backCamera.deviceId, 'bvideo', (result, err) => {
+      if (result) {
+        const code = result.getText();
+        if (code && code !== bCode) {
+          bCode = code;
+          if (navigator.vibrate) navigator.vibrate(80);
+          stopScan();
+          onRead(code);
+        }
+      }
+    });
+    // Kamera track'ini al (zoom ve flaş için)
+    setTimeout(() => {
+      const videoEl = document.getElementById('bvideo');
+      if (videoEl && videoEl.srcObject) {
+        const tracks = videoEl.srcObject.getVideoTracks();
+        if (tracks.length) currentVideoTrack = tracks[0];
+      }
+    }, 500);
+    if (cst) cst.textContent = '✅ Kamera aktif, barkod okutun';
+  } catch (e) {
+    bScan = false;
+    if (cst) {
+      cst.textContent = '⚠️ Kamera hatası: ' + e.message;
+      cst.className = 'cst er';
+    }
+    if (startBtn) startBtn.style.display = 'flex';
+    if (stopBtn) stopBtn.style.display = 'none';
+    if (sln) sln.classList.add('pau');
+    console.error("Kamera hatası:", e);
+  }
+}
+function stopScan() {
+  if (bReader) {
+    try {
+      bReader.reset();
+      bReader = null;
+    } catch(e) {}
+  }
+  currentVideoTrack = null;
+  bScan = false;
+  bCode = '';
+  const startBtn = document.getElementById('bStartB');
+  const stopBtn = document.getElementById('bStopB');
+  const cst = document.getElementById('cst');
+  const sln = document.getElementById('sln');
+  if (startBtn) startBtn.style.display = 'flex';
+  if (stopBtn) stopBtn.style.display = 'none';
+  if (cst) {
+    cst.textContent = 'Tara butonuna bas';
+    cst.className = 'cst';
+  }
+  if (sln) sln.classList.add('pau');
+}
 function onRead(code){stopScan();const cst=document.getElementById('cst');if(cst){cst.textContent='✓ Okundu: '+code;cst.className='cst fd2';}procCode(code);}
 function procCode(code){const rcode=document.getElementById('rcode');if(rcode)rcode.textContent=code;const bres=document.getElementById('bres');if(bres)bres.className='bres show';hideBPanels();let found=D.find(d=>(d.imeiList||[]).includes(code));if(!found)found=D.find(d=>d.model.toLowerCase()===code.toLowerCase());if(found){const kalan=found.adet-(found.satılanAdet||0);if(bres)bres.className='bres show fp';const rbody=document.getElementById('rbody');if(rbody)rbody.innerHTML=`<div class="rnm">${found.model}</div><div class="rdt">${found.el} · ${found.gb}GB · ${found.ram}GB RAM</div><div class="rmst"><div class="rms"><div class="rmv ${kalan>0?'tgn':'trd'}">${kalan}</div><div class="rmk">Stokta</div></div><div class="rms"><div class="rmv tcy">${fmt(found.satis)}</div><div class="rmk">Satış</div></div><div class="rms"><div class="rmv ${found.kar>=0?'tgn':'trd'}">${fmt(found.kar)}</div><div class="rmk">Kar</div></div></div><div class="qas"><button class="qab qasat" onclick="openBSat('${found.id}')" ${kalan<=0?'disabled':''}>✅ ${kalan<=0?'Stok Yok':'Sat ('+kalan+' adet)'}</button><button class="qab qaduz" onclick="openModal('${found.id}')">✏️ Düzenle</button></div>`;if(bMod==='sat'&&kalan>0)openBSat(found.id);if(bMod==='ekle')openBEkl(found.id);}else{if(bres)bres.className='bres show nf';const rbody=document.getElementById('rbody');if(rbody)rbody.innerHTML=`<div style="color:var(--yw);font-weight:700;margin-bottom:6px">⚠️ Sistemde bulunamadı</div><div style="font-size:12px;margin-bottom:12px">Yeni ürün ekleyebilirsiniz</div><button class="qab qaekl" onclick="openBEkl(null,'${code}')">➕ Yeni Ürün Ekle</button>`;if(bMod==='ekle')openBEkl(null,code);}}
 function manuelGir(){const code=prompt('Barkod / IMEI / Model girin:');if(code&&code.trim()){bCode=code.trim();onRead(bCode);}}
@@ -486,7 +571,7 @@ async function confirmEkle(){const model=document.getElementById('bf_m')?.value.
 function cancelEkle(){const eklP=document.getElementById('bEklP');if(eklP)eklP.style.display='none';}
 function toast(msg,type=''){const el=document.getElementById('toast');if(!el)return;el.textContent=msg;el.className='show'+(type?' '+type:'');setTimeout(()=>el.className='',3000);}
 function rAll(){rDash();const act=document.querySelector('.page.active');const id=act?act.id.replace('page-',''):'';if(id==='stok')rStok();else if(id==='islemler')rIslemler();else if(id==='urunler')rUrunler();else if(id==='imei')rImei();rStok();rIslemler();}
-// ==================== KAMERA ZOOM (CSS transform YOK) ====================
+// ==================== ZOOM, FLASH, DOKUNMA ====================
 async function zoomIn() {
   if (!currentVideoTrack) {
     toast('Kamera başlatılmamış, önce Tara butonuna basın', 'error');
