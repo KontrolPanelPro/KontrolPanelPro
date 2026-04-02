@@ -484,29 +484,28 @@ async function startScan() {
   if (sln) sln.classList.remove('pau');
   try {
     bScan = true;
-    // Arka kamera için önce cihazları listele
-    const tempReader = new ZXing.BrowserMultiFormatReader();
-    const devices = await tempReader.listVideoInputDevices();
-    const backCamera = devices.find(d =>
-      d.label.toLowerCase().includes('back') ||
-      d.label.toLowerCase().includes('arka') ||
-      d.label.toLowerCase().includes('environment') ||
-      d.label.toLowerCase().includes('rear')
-    ) || devices[0];
-    if (!backCamera) throw new Error('Kamera bulunamadı');
 
-    // Stream'i al
+    // 1. Arka kamera stream'ini al (yüksek çözünürlük)
     const stream = await navigator.mediaDevices.getUserMedia({
-      video: { deviceId: { exact: backCamera.deviceId } }
+      video: {
+        facingMode: { exact: 'environment' },
+        width: { ideal: 1920 },
+        height: { ideal: 1080 }
+      }
     });
     const videoEl = document.getElementById('bvideo');
     videoEl.srcObject = stream;
     await videoEl.play();
 
-    // Zoom ve flaş için track'i kaydet
+    // 2. Kamera track'ini kaydet (zoom/flaş için)
     currentVideoTrack = stream.getVideoTracks()[0];
 
-    // Format listesi (hem QR hem çizgili)
+    // 3. Video elementine CSS rotate uygulama (gerekirse)
+    // Mobilde bazı cihazlar için döndürme gerekebilir, genelde environment doğru yön verir.
+    // Eğer görüntü hala ters/yataysa aşağıdaki satırın yorumunu kaldırın:
+    // videoEl.style.transform = 'rotate(0deg)'; // veya 'rotate(90deg)' deneyin
+
+    // 4. ZXing format listesi
     const hints = new Map();
     hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
       ZXing.BarcodeFormat.QR_CODE,
