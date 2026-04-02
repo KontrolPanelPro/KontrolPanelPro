@@ -710,6 +710,10 @@ function stopScan() {
   const stopBtn = document.getElementById('bStopB');
   const cst = document.getElementById('cst');
   const sln = document.getElementById('sln');
+  const startQR = document.getElementById('bStartQR');
+  const startBarcode = document.getElementById('bStartBarcode');
+  if (startQR) startQR.style.display = 'flex';
+  if (startBarcode) startBarcode.style.display = 'flex';
   if (startBtn) startBtn.style.display = 'flex';
   if (stopBtn) stopBtn.style.display = 'none';
   if (cst) { cst.textContent = 'Tara butonuna bas'; cst.className = 'cst'; }
