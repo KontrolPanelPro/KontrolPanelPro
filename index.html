@@ -10,6 +10,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="manifest" href="/KontrolPanelPro/manifest.json">
 <title>📱 KontrolPanelPro</title>
+fle<script src="https://cdn.jsdelivr.net/npm/instascan@1.0.0/instascan.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://unpkg.com/@zxing/library@0.20.0/umd/index.js"></script>
 <style>
@@ -376,7 +377,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--ac);box-shadow:0 0 0 
         <div class="cambox" id="cambox"><video id="bvideo" playsinline autoplay muted></video><div class="sovl"><div class="sfr"><div class="sctr"></div><div class="scbl"></div><div class="sln pau" id="sln"></div></div></div></div>
         <div class="cst" id="cst">Tara butonuna bas</div>
         <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;justify-content:center">
-          <button class="btn bp" id="bStartB" onclick="startScanQR()" style="flex:1">📷 Tara (QR)</button>
+          <button class="btn bp" id="bStartB" onclick="startScanInsta()" style="flex:1">📷 QR Tara</button>
           <button class="btn bg2" id="bStopB" onclick="stopScan()" style="flex:1;display:none">⏹ Durdur</button>
           <button class="btn bg2" onclick="manuelGir()" style="flex:1">⌨️ Manuel</button>
         </div>
@@ -418,6 +419,8 @@ let analizSort = 'kar';
 let currentElFilter = 'all';
 let clockInterval = null;
 let currentVideoTrack = null;
+let scanner = null;
+ 
 
 // ============================================================
 // TEMA, SAAT, SIRALAMA, vs. (tüm mevcut fonksiyonlar)
@@ -542,6 +545,49 @@ async function startScan() {
     console.error('Kamera hatası:', e);
   }
 }
+  async function startScanInsta() {
+  if (bScan) return;
+  const startBtn = document.getElementById('bStartB');
+  const stopBtn = document.getElementById('bStopB');
+  const cst = document.getElementById('cst');
+  const sln = document.getElementById('sln');
+  
+  if (startBtn) startBtn.style.display = 'none';
+  if (stopBtn) stopBtn.style.display = 'flex';
+  if (cst) { cst.textContent = '📷 QR kod okutun (Instascan)...'; cst.className = 'cst act'; }
+  if (sln) sln.classList.remove('pau');
+  
+  try {
+    bScan = true;
+    scanner = new Instascan.Scanner({ video: document.getElementById('bvideo') });
+    
+    scanner.addListener('scan', function(content) {
+      if (content && content !== bCode) {
+        bCode = content;
+        if (navigator.vibrate) navigator.vibrate(80);
+        stopScan();
+        onRead(content);
+      }
+    });
+    
+    const cameras = await Instascan.Camera.getCameras();
+    const backCamera = cameras.find(c => c.name.toLowerCase().includes('back') || c.name.toLowerCase().includes('rear')) || cameras[0];
+    
+    if (backCamera) {
+      scanner.start(backCamera);
+      if (cst) cst.textContent = '✅ Instascan aktif, QR kod okutun';
+    } else {
+      throw new Error('Arka kamera bulunamadı');
+    }
+  } catch (e) {
+    bScan = false;
+    if (cst) { cst.textContent = '⚠️ Instascan hatası: ' + e.message; cst.className = 'cst er'; }
+    if (startBtn) startBtn.style.display = 'flex';
+    if (stopBtn) stopBtn.style.display = 'none';
+    if (sln) sln.classList.add('pau');
+    console.error("Instascan hatası:", e);
+  }
+}
 async function startScanQR() {
   if (bScan) return;
   const startBtn = document.getElementById('bStartB');
@@ -584,6 +630,10 @@ async function startScanQR() {
   }
 }
 function stopScan() {
+  if (scanner) {
+  try { scanner.stop(); } catch(e) {}
+  scanner = null;
+}
   if (bReader) {
     try { bReader.reset(); } catch(e) {}
     bReader = null;
