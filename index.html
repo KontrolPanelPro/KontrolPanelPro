@@ -476,82 +476,99 @@ async function startScan() {
   if (bScan) return;
   const startBtn = document.getElementById('bStartB');
   const stopBtn = document.getElementById('bStopB');
+  const cst = document.getElementById('cst');
+  const sln = document.getElementById('sln');
   if (startBtn) startBtn.style.display = 'none';
   if (stopBtn) stopBtn.style.display = 'flex';
-  const cst = document.getElementById('cst');
-  if (cst) { cst.textContent = 'Barkod okutun...'; cst.className = 'cst act'; }
-  const sln = document.getElementById('sln');
+  if (cst) { cst.textContent = '📷 Kamera açılıyor...'; cst.className = 'cst act'; }
   if (sln) sln.classList.remove('pau');
   try {
-    // Önce getUserMedia ile arka kamerayı direkt aç — yan çevirme sorunu çözülür
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: { ideal: 'environment' },  // arka kamera
-        width: { ideal: 1280 },
-        height: { ideal: 720 }
-      }
-    });
-    const video = document.getElementById('bvideo');
-    if (video) { video.srcObject = stream; video.play(); }
+    bScan = true;
+    // Arka kamera için önce cihazları listele
+    const tempReader = new ZXing.BrowserMultiFormatReader();
+    const devices = await tempReader.listVideoInputDevices();
+    const backCamera = devices.find(d =>
+      d.label.toLowerCase().includes('back') ||
+      d.label.toLowerCase().includes('arka') ||
+      d.label.toLowerCase().includes('environment') ||
+      d.label.toLowerCase().includes('rear')
+    ) || devices[0];
+    if (!backCamera) throw new Error('Kamera bulunamadı');
 
+    // Stream'i al
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { deviceId: { exact: backCamera.deviceId } }
+    });
+    const videoEl = document.getElementById('bvideo');
+    videoEl.srcObject = stream;
+    await videoEl.play();
+
+    // Zoom ve flaş için track'i kaydet
+    currentVideoTrack = stream.getVideoTracks()[0];
+
+    // Format listesi (hem QR hem çizgili)
     const hints = new Map();
     hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
-      ZXing.BarcodeFormat.QR_CODE,       // QR kod
-      ZXing.BarcodeFormat.CODE_128,      // çizgili barkod
-      ZXing.BarcodeFormat.EAN_13,        // market barkodu
+      ZXing.BarcodeFormat.QR_CODE,
+      ZXing.BarcodeFormat.CODE_128,
+      ZXing.BarcodeFormat.EAN_13,
       ZXing.BarcodeFormat.EAN_8,
       ZXing.BarcodeFormat.CODE_39,
-      ZXing.BarcodeFormat.DATA_MATRIX,   // kare barkod
+      ZXing.BarcodeFormat.DATA_MATRIX,
       ZXing.BarcodeFormat.ITF,
       ZXing.BarcodeFormat.PDF_417,
       ZXing.BarcodeFormat.AZTEC
     ]);
-    hints.set(ZXing.DecodeHintType.TRY_HARDER, true); // daha iyi okuma
+    hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
 
     bReader = new ZXing.BrowserMultiFormatReader(hints);
-    bScan = true;
-
-    // Kamerayı direkt stream üzerinden bağla
-    bReader.decodeFromStream(stream, video, (result, err) => {
+    await bReader.decodeFromStream(stream, videoEl, (result, err) => {
       if (result) {
         const code = result.getText();
         if (code && code !== bCode) {
           bCode = code;
-          if (navigator.vibrate) navigator.vibrate([100]);
+          if (navigator.vibrate) navigator.vibrate(80);
+          stopScan();
           onRead(code);
         }
       }
     });
+    if (cst) cst.textContent = '✅ Kamera aktif, barkod okutun';
   } catch (e) {
     bScan = false;
-    const cst = document.getElementById('cst');
-    if (cst) { cst.textContent = '⚠️ Kamera açılamadı: ' + e.message; cst.className = 'cst er'; }
-    const startBtn = document.getElementById('bStartB');
-    const stopBtn = document.getElementById('bStopB');
+    if (cst) { cst.textContent = '⚠️ Kamera hatası: ' + e.message; cst.className = 'cst er'; }
     if (startBtn) startBtn.style.display = 'flex';
     if (stopBtn) stopBtn.style.display = 'none';
+    if (sln) sln.classList.add('pau');
+    console.error('Kamera hatası:', e);
   }
 }
 
 function stopScan() {
-  if (bReader) try { bReader.reset(); } catch(e) {}
-  // Stream'i durdur
-  const video = document.getElementById('bvideo');
-  if (video && video.srcObject) {
-    video.srcObject.getTracks().forEach(t => t.stop());
-    video.srcObject = null;
+  if (bReader) {
+    try { bReader.reset(); } catch(e) {}
+    bReader = null;
   }
-  bScan = false; bCode = '';
+  if (currentVideoTrack) {
+    currentVideoTrack.stop();
+    currentVideoTrack = null;
+  }
+  const videoEl = document.getElementById('bvideo');
+  if (videoEl && videoEl.srcObject) {
+    videoEl.srcObject.getTracks().forEach(t => t.stop());
+    videoEl.srcObject = null;
+  }
+  bScan = false;
+  bCode = '';
   const startBtn = document.getElementById('bStartB');
   const stopBtn = document.getElementById('bStopB');
+  const cst = document.getElementById('cst');
+  const sln = document.getElementById('sln');
   if (startBtn) startBtn.style.display = 'flex';
   if (stopBtn) stopBtn.style.display = 'none';
-  const cst = document.getElementById('cst');
-  if (cst) { cst.textContent = 'Tarama durduruldu'; cst.className = 'cst'; }
-  const sln = document.getElementById('sln');
+  if (cst) { cst.textContent = 'Tara butonuna bas'; cst.className = 'cst'; }
   if (sln) sln.classList.add('pau');
 }
-
 function onRead(code) {
   stopScan();
   const cst = document.getElementById('cst');
