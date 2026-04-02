@@ -727,56 +727,33 @@ function onRead(code) {
 }
 
 function procCode(code) {
+  // Eğer okunan kod bir URL ise, otomatik aç
+  if (code.startsWith('http://') || code.startsWith('https://')) {
+    window.open(code, '_blank');
+    toast('🔗 Link açılıyor: ' + code, 'success');
+    return; // İşlem bitti, ürün araması yapma
+  }
+
   const rcode = document.getElementById('rcode');
   if (rcode) rcode.textContent = code;
   const bres = document.getElementById('bres');
   if (bres) bres.className = 'bres show';
   hideBPanels();
-
-  // Link kontrolü — http/https ile başlıyorsa direkt aç
-  if (code.startsWith('http://') || code.startsWith('https://')) {
-    if (bres) bres.className = 'bres show fp';
-    const rbody = document.getElementById('rbody');
-    if (rbody) rbody.innerHTML = `
-      <div style="font-size:15px;font-weight:700;margin-bottom:8px">🔗 Link Bulundu</div>
-      <div style="font-size:12px;color:var(--tx2);margin-bottom:14px;word-break:break-all">${code}</div>
-      <button class="qab qaekl" onclick="window.open('${code}','_blank')" style="margin-bottom:8px">🌐 Linki Aç</button>
-      <button class="qab qaduz" onclick="navigator.clipboard?.writeText('${code}');toast('Kopyalandı ✓','success')">📋 Kopyala</button>`;
-    return;
-  }
-
-  // Sistemde ara
+  
   let found = D.find(d => (d.imeiList || []).includes(code));
   if (!found) found = D.find(d => d.model.toLowerCase() === code.toLowerCase());
-
+  
   if (found) {
     const kalan = found.adet - (found.satılanAdet || 0);
     if (bres) bres.className = 'bres show fp';
     const rbody = document.getElementById('rbody');
-    if (rbody) rbody.innerHTML = `
-      <div class="rnm">${found.model}</div>
-      <div class="rdt">${found.el} · ${found.gb}GB · ${found.ram}GB RAM</div>
-      <div class="rmst">
-        <div class="rms"><div class="rmv ${kalan > 0 ? 'tgn' : 'trd'}">${kalan}</div><div class="rmk">Stokta</div></div>
-        <div class="rms"><div class="rmv tcy">${fmt(found.satis)}</div><div class="rmk">Satış</div></div>
-        <div class="rms"><div class="rmv ${found.kar >= 0 ? 'tgn' : 'trd'}">${fmt(found.kar)}</div><div class="rmk">Kar</div></div>
-      </div>
-      <div class="qas">
-        <button class="qab qasat" onclick="openBSat('${found.id}')" ${kalan <= 0 ? 'disabled' : ''}>✅ ${kalan <= 0 ? 'Stok Yok' : 'Sat (' + kalan + ' adet)'}</button>
-        <button class="qab qaduz" onclick="openModal('${found.id}')">✏️ Düzenle</button>
-      </div>`;
+    if (rbody) rbody.innerHTML = `<div class="rnm">${found.model}</div><div class="rdt">${found.el} · ${found.gb}GB · ${found.ram}GB RAM</div><div class="rmst"><div class="rms"><div class="rmv ${kalan>0?'tgn':'trd'}">${kalan}</div><div class="rmk">Stokta</div></div><div class="rms"><div class="rmv tcy">${fmt(found.satis)}</div><div class="rmk">Satış</div></div><div class="rms"><div class="rmv ${found.kar>=0?'tgn':'trd'}">${fmt(found.kar)}</div><div class="rmk">Kar</div></div></div><div class="qas"><button class="qab qasat" onclick="openBSat('${found.id}')" ${kalan<=0?'disabled':''}>✅ ${kalan<=0?'Stok Yok':'Sat ('+kalan+' adet)'}</button><button class="qab qaduz" onclick="openModal('${found.id}')">✏️ Düzenle</button></div>`;
     if (bMod === 'sat' && kalan > 0) openBSat(found.id);
     if (bMod === 'ekle') openBEkl(found.id);
   } else {
     if (bres) bres.className = 'bres show nf';
     const rbody = document.getElementById('rbody');
-    if (rbody) rbody.innerHTML = `
-      <div style="color:var(--yw);font-weight:700;margin-bottom:6px">⚠️ Sistemde bulunamadı</div>
-      <div style="font-size:13px;margin-bottom:12px">Barkod: <span style="font-family:monospace">${code}</span></div>
-      <div class="qas">
-        <button class="qab qaekl" onclick="openBEkl(null,'${code}')">➕ Yeni Ürün Ekle</button>
-        <button class="qab qaduz" onclick="navigator.clipboard?.writeText('${code}');toast('Kopyalandı ✓','success')">📋 Kopyala</button>
-      </div>`;
+    if (rbody) rbody.innerHTML = `<div style="color:var(--yw);font-weight:700;margin-bottom:6px">⚠️ Sistemde bulunamadı</div><div style="font-size:12px;margin-bottom:12px">Yeni ürün ekleyebilirsiniz</div><button class="qab qaekl" onclick="openBEkl(null,'${code}')">➕ Yeni Ürün Ekle</button>`;
     if (bMod === 'ekle') openBEkl(null, code);
   }
 }
