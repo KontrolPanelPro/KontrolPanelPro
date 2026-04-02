@@ -10,11 +10,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="manifest" href="/KontrolPanelPro/manifest.json">
 <title>📱 KontrolPanelPro</title>
-<script src="https://cdn.jsdelivr.net/npm/instascan@1.0.0/instascan.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://unpkg.com/@zxing/library@0.20.0/umd/index.js"></script>
 <style>
-/* ========== TÜM STİLLER (object-fit: contain olarak değiştirildi) ========== */
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 [data-theme="dark"]{--bg:#0a0a0f;--sf:#13131a;--sf2:#1c1c28;--sf3:#252535;--br:#2a2a3d;--tx:#e2e8f0;--tx2:#94a3b8;--tx3:#64748b;--sh:rgba(0,0,0,.4);--hbg:linear-gradient(135deg,#13131a,#1a1030)}
 [data-theme="light"]{--bg:#f1f5f9;--sf:#fff;--sf2:#f8fafc;--sf3:#e2e8f0;--br:#cbd5e1;--tx:#0f172a;--tx2:#475569;--tx3:#94a3b8;--sh:rgba(0,0,0,.08);--hbg:linear-gradient(135deg,#fff,#f0e8ff)}
@@ -149,7 +147,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--ac);box-shadow:0 0 0 
 .blayout{display:grid;grid-template-columns:1fr;gap:16px}
 @media(min-width:600px){.blayout{grid-template-columns:1fr 1fr}}
 .cambox{position:relative;border-radius:16px;overflow:hidden;background:#000;aspect-ratio:1;border:2px solid var(--br);max-width:100%;width:100%}
-#bvideo{width:100%;height:100%;object-fit:contain;display:block;cursor:pointer}  /* değişiklik: cover -> contain */
+#bvideo{width:100%;height:100%;object-fit:cover;display:block;cursor:pointer}
 .sovl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
 .sfr{width:70%;aspect-ratio:1;position:relative}
 .sfr::before,.sfr::after,.sctr,.scbl{content:'';position:absolute;width:22px;height:22px;border-color:var(--ac2);border-style:solid}
@@ -340,23 +338,23 @@ input:focus,select:focus,textarea:focus{border-color:var(--ac);box-shadow:0 0 0 
     </div>
     <div class="sh2"><div class="stt">🕐 Son İşlemler</div></div>
     <div class="tw">
-        <table>
-          <thead>
-            <tr><th>Tarih</th><th>Model</th><th>El</th><th>GB/RAM</th><th>Adet</th><th>Alış</th><th>Satış</th><th>Kar</th><th>Stok</th></tr>
-          </thead>
-          <tbody id="sonTb"></tbody>
-        </table>
+      <table>
+        <thead>
+          <tr><th>Tarih</th><th>Model</th><th>El</th><th>GB/RAM</th><th>Adet</th><th>Alış</th><th>Satış</th><th>Kar</th><th>Stok</th></tr>
+        </thead>
+        <tbody id="sonTb"></tbody>
+      </table>
     </div>
   </div>
 
   <div class="page" id="page-stok">
     <div class="sh2"><div class="stt">📦 Stok Durumu</div><input type="text" id="stokSrc" placeholder="🔍 Ara..." style="width:170px" oninput="rStok()"></div>
-    <div class="tw" id="stokTable"><table><thead><tr><th class="sortable" data-sort="model">Model</th><th class="sortable" data-sort="el">El</th><th class="sortable" data-sort="gb">GB</th><th class="sortable" data-sort="ram">RAM</th><th class="sortable" data-sort="adet">Toplam</th><th class="sortable" data-sort="satilan">Satılan</th><th class="sortable" data-sort="kalan">Kalan</th><th class="sortable" data-sort="alis">Alış/B</th><th class="sortable" data-sort="satis">Satış/B</th><th class="sortable" data-sort="kar">Tahmini Kar</th><th>İşlem</th></tr></thead><tbody id="stokTb"></tbody></table></div>
+    <div class="tw" id="stokTable"><table><thead><tr><th class="sortable" data-sort="model">Model</th><th class="sortable" data-sort="el">El</th><th class="sortable" data-sort="gb">GB</th><th class="sortable" data-sort="ram">RAM</th><th class="sortable" data-sort="adet">Toplam</th><th class="sortable" data-sort="satilan">Satılan</th><th class="sortable" data-sort="kalan">Kalan</th><th class="sortable" data-sort="alis">Alış/B</th><th class="sortable" data-sort="satis">Satış/B</th><th class="sortable" data-sort="kar">Tahmini Kar</th><th>İşlem</th></tr></thead><tbody id="stokTb"></tbody></td></div>
   </div>
 
   <div class="page" id="page-islemler">
     <div class="sh2"><div class="stt">📋 Tüm İşlemler</div><div style="display:flex;gap:8px;flex-wrap:wrap"><input type="text" id="islSrc" placeholder="🔍 Ara..." style="width:170px" oninput="rIslemler()"><select id="islFil" onchange="rIslemler()" style="width:110px"><option value="">Tümü</option><option value="stokta">Stokta</option><option value="kismi">Kısmen</option><option value="satildi">Satıldı</option></select><button class="btn bd bsm" onclick="clearAll()">🗑 Tümünü Sil</button></div></div>
-    <div class="tw" id="islemlerTable"><table><thead><tr><th class="sortable" data-sort="tarih">Tarih</th><th class="sortable" data-sort="model">Model</th><th class="sortable" data-sort="el">El</th><th class="sortable" data-sort="gb">GB</th><th class="sortable" data-sort="ram">RAM</th><th>IMEI</th><th class="sortable" data-sort="adet">Adet</th><th class="sortable" data-sort="satilan">Satılan</th><th class="sortable" data-sort="kalan">Kalan</th><th class="sortable" data-sort="alis">Alış/B</th><th class="sortable" data-sort="satis">Satış/B</th><th class="sortable" data-sort="iskonto">İsk.</th><th class="sortable" data-sort="toplamAlis">T.Alış</th><th class="sortable" data-sort="toplamSatis">T.Satış</th><th class="sortable" data-sort="kar">Kar</th><th>Durum</th><th>İşlem</th></tr></thead><tbody id="islTb"></tbody></table></div>
+    <div class="tw" id="islemlerTable"><tr><thead><tr><th class="sortable" data-sort="tarih">Tarih</th><th class="sortable" data-sort="model">Model</th><th class="sortable" data-sort="el">El</th><th class="sortable" data-sort="gb">GB</th><th class="sortable" data-sort="ram">RAM</th><th>IMEI</th><th class="sortable" data-sort="adet">Adet</th><th class="sortable" data-sort="satilan">Satılan</th><th class="sortable" data-sort="kalan">Kalan</th><th class="sortable" data-sort="alis">Alış/B</th><th class="sortable" data-sort="satis">Satış/B</th><th class="sortable" data-sort="iskonto">İsk.</th><th class="sortable" data-sort="toplamAlis">T.Alış</th><th class="sortable" data-sort="toplamSatis">T.Satış</th><th class="sortable" data-sort="kar">Kar</th><th>Durum</th><th>İşlem</th></tr></thead><tbody id="islTb"></tbody></table></div>
   </div>
 
   <div class="page" id="page-urunler">
@@ -377,11 +375,12 @@ input:focus,select:focus,textarea:focus{border-color:var(--ac);box-shadow:0 0 0 
         <div class="cambox" id="cambox"><video id="bvideo" playsinline autoplay muted></video><div class="sovl"><div class="sfr"><div class="sctr"></div><div class="scbl"></div><div class="sln pau" id="sln"></div></div></div></div>
         <div class="cst" id="cst">Tara butonuna bas</div>
         <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;justify-content:center">
+          <button class="btn bp" id="bStartAuto" onclick="startScanAuto()" style="flex:1">🔄 Tek Tuş</button>
           <button class="btn bp" id="bStartQR" onclick="startScanQR()" style="flex:1">📱 QR Kod</button>
           <button class="btn bp" id="bStartBarcode" onclick="startScanBarcode()" style="flex:1">📊 Barkod</button>
           <button class="btn bg2" id="bStopB" onclick="stopScan()" style="flex:1;display:none">⏹ Durdur</button>
           <button class="btn bg2" onclick="manuelGir()" style="flex:1">⌨️ Manuel</button>
-      </div>
+        </div>
         <div style="display:flex;gap:8px;margin-top:8px;justify-content:center">
           <button class="btn bg2" onclick="zoomIn()">🔍 + Zoom</button>
           <button class="btn bg2" onclick="zoomOut()">🔍 - Zoom</button>
@@ -420,13 +419,19 @@ let analizSort = 'kar';
 let currentElFilter = 'all';
 let clockInterval = null;
 let currentVideoTrack = null;
-let scanner = null;
- 
 
 // ============================================================
-// TEMA, SAAT, SIRALAMA, vs. (tüm mevcut fonksiyonlar)
+// TEMA (otomatik algılama)
 // ============================================================
-function initTheme(){const s=localStorage.getItem('pt_theme')||'dark';document.documentElement.setAttribute('data-theme',s);const b=document.getElementById('ttb');if(b)b.textContent=s==='dark'?'☀️':'🌙';}
+function initTheme() {
+  let s = localStorage.getItem('pt_theme');
+  if (!s) {
+    s = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  document.documentElement.setAttribute('data-theme', s);
+  const b = document.getElementById('ttb');
+  if (b) b.textContent = s === 'dark' ? '☀️' : '🌙';
+}
 function toggleTheme(){const c=document.documentElement.getAttribute('data-theme');const n=c==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);const btn=document.getElementById('ttb');if(btn)btn.textContent=n==='dark'?'☀️':'🌙';localStorage.setItem('pt_theme',n);setTimeout(()=>{if(charts.a)rCharts();},100);}
 function isDarkMode(){return document.documentElement.getAttribute('data-theme')==='dark';}
 function getTextColor(){return isDarkMode()?'#94a3b8':'#475569';}
@@ -469,156 +474,39 @@ function rDash(){const tA=D.reduce((s,d)=>s+d.toplamAlis,0);const satilanlar=D.f
 function updateElChart(){if(!charts.elChart)return;const filtered=D.filter(d=>currentElFilter==='all'||d.el===currentElFilter);const satilanlar=filtered.filter(d=>d.satılanAdet>0);let periodData={};satilanlar.forEach(d=>{let periodKey;let date=new Date(d.tarih);if(chartPeriod==='day')periodKey=d.tarih;else if(chartPeriod==='week'){const startOfWeek=new Date(date);startOfWeek.setDate(date.getDate()-date.getDay());periodKey=startOfWeek.toISOString().split('T')[0];}else{periodKey=`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`;}if(!periodData[periodKey])periodData[periodKey]={a:0,s:0,k:0};const oran=d.satılanAdet/d.adet;periodData[periodKey].a+=d.toplamAlis*oran;periodData[periodKey].s+=d.toplamSatis*oran;periodData[periodKey].k+=d.kar*oran;});const periods=Object.keys(periodData).sort();let labels=periods;if(chartPeriod==='week')labels=periods.map(p=>`Hafta ${p.slice(5)}`);else if(chartPeriod==='month'){const MN=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];labels=periods.map(p=>{const [y,m]=p.split('-');return MN[+m-1]+' '+y;});}charts.elChart.data.labels=labels.length?labels:['Veri yok'];charts.elChart.data.datasets[0].data=periods.map(p=>periodData[p].a);charts.elChart.data.datasets[1].data=periods.map(p=>periodData[p].s);charts.elChart.data.datasets[2].data=periods.map(p=>periodData[p].k);charts.elChart.update();}
 function rCharts(){Object.values(charts).forEach(c=>{try{c.destroy();}catch(e){}});charts={};const tc=getTextColor();const gc=getGridColor();const CLR=['#7c3aed','#06b6d4','#10b981','#f59e0b','#ef4444','#a855f7'];const satilanlar=D.filter(d=>d.satılanAdet>0);let periodData={};let labels=[];satilanlar.forEach(d=>{let periodKey;let date=new Date(d.tarih);if(chartPeriod==='day')periodKey=d.tarih;else if(chartPeriod==='week'){const startOfWeek=new Date(date);startOfWeek.setDate(date.getDate()-date.getDay());periodKey=startOfWeek.toISOString().split('T')[0];}else{periodKey=`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`;}if(!periodData[periodKey])periodData[periodKey]={a:0,s:0,k:0};const oran=d.satılanAdet/d.adet;periodData[periodKey].a+=d.toplamAlis*oran;periodData[periodKey].s+=d.toplamSatis*oran;periodData[periodKey].k+=d.kar*oran;});const periods=Object.keys(periodData).sort();if(chartPeriod==='week')labels=periods.map(p=>`Hafta ${p.slice(5)}`);else if(chartPeriod==='month'){const MN=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];labels=periods.map(p=>{const [y,m]=p.split('-');return MN[+m-1]+' '+y;});}else labels=periods;const cO=u=>({responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc,font:{size:11}}}},scales:{x:{grid:{color:gc},ticks:{color:tc}},y:{grid:{color:gc},ticks:{color:tc,callback:v=>`${u}${Number(v).toLocaleString('tr-TR')}`}}}});const ctxAy=document.getElementById('cAy')?.getContext('2d');if(ctxAy){charts.a=new Chart(ctxAy,{type:'bar',data:{labels:labels.length?labels:['Veri yok'],datasets:[{label:'Alış (Satılan)',data:periods.map(p=>periodData[p].a),backgroundColor:'rgba(239,68,68,.7)'},{label:'Satış',data:periods.map(p=>periodData[p].s),backgroundColor:'rgba(6,182,212,.7)'},{label:'Kar',data:periods.map(p=>periodData[p].k),backgroundColor:'rgba(16,185,129,.7)'}]},options:cO('₺')});}const mM={};D.forEach(d=>{mM[d.model]=(mM[d.model]||0)+d.adet;});const ms=Object.keys(mM);const ctxDo=document.getElementById('cDo')?.getContext('2d');if(ctxDo){charts.b=new Chart(ctxDo,{type:'doughnut',data:{labels:ms.length?ms:['Veri yok'],datasets:[{data:ms.length?ms.map(m=>mM[m]):[1],backgroundColor:CLR}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'right',labels:{color:tc,font:{size:10}}}}}});}const kM={};satilanlar.forEach(d=>{const karOran=d.kar*(d.satılanAdet/d.adet);kM[d.model]=(kM[d.model]||0)+karOran;});const km=Object.keys(kM).sort((a,b)=>kM[b]-kM[a]).slice(0,8);const ctxKar=document.getElementById('cKar')?.getContext('2d');if(ctxKar){charts.c=new Chart(ctxKar,{type:'bar',data:{labels:km.length?km:['Veri yok'],datasets:[{label:'Kar (Satılan)',data:km.map(m=>kM[m]),backgroundColor:km.map(m=>kM[m]>=0?'rgba(16,185,129,.75)':'rgba(239,68,68,.75)')}]},options:{...cO('₺'),indexAxis:'y'}});}const eM={'1.El':0,'2.El':0};D.forEach(d=>{eM[d.el]=(eM[d.el]||0)+d.adet;});const ctxEl=document.getElementById('cEl')?.getContext('2d');if(ctxEl){charts.elChart=new Chart(ctxEl,{type:'bar',data:{labels:[],datasets:[{label:'Alış (Satılan)',backgroundColor:'rgba(239,68,68,.7)'},{label:'Satış',backgroundColor:'rgba(6,182,212,.7)'},{label:'Kar',backgroundColor:'rgba(16,185,129,.7)'}]},options:cO('₺')});updateElChart();}}
 function rSon(){const son=[...D].sort((a,b)=>b.tarih.localeCompare(a.tarih)).slice(0,10);const tb=document.getElementById('sonTb');if(!tb)return;if(!son.length){tb.innerHTML='<tr><td colspan="9"><div class="empty"><i>📭</i>Henüz işlem yok</div></td></tr>';return;}tb.innerHTML=son.map(d=>`<tr class="${getDur(d)==='satildi'?'sr':''}"><td>${formatTarih(d.tarih)}</td><td class="b">${d.model}</td><td><span class="badge ${d.el==='1.El'?'bpu':'bcy'}">${d.el}</span></td><td>${d.gb}GB/${d.ram}GB</td><td>${d.adet}</td><td class="trd">${fmt(d.toplamAlis)}</td><td class="tcy">${fmt(d.toplamSatis)}</td><td class="${d.kar>=0?'tgn':'trd'} b">${fmt(d.kar)}</td><td>${getDurB(d)}</td></tr>`).join('');}
-function rStok(){const q=(document.getElementById('stokSrc')?.value||'').toLowerCase();let fl=D.filter(d=>!q||d.model.toLowerCase().includes(q)||d.el.toLowerCase().includes(q));const sort=sortState['stokTable'];if(sort)fl=sortData(fl,sort.field,sort.yon);else fl=fl.sort((a,b)=>b.tarih.localeCompare(a.tarih));const tb=document.getElementById('stokTb');if(!tb)return;if(!fl.length){tb.innerHTML='<tr><td colspan="11"><div class="empty"><i>📦</i>Stok verisi yok</div></td></tr>';return;}tb.innerHTML=fl.map(d=>{const kalan=d.adet-(d.satılanAdet||0);const tKar=kalan*(d.satis-d.alis);const sc=kalan<=0?'sby':kalan<d.adet?'sbk':'sbv';const st=kalan<=0?'🔴 Tükendi':kalan<d.adet?`🟡 ${kalan} kaldı`:`🟢 ${kalan} adet`;return `<tr class="${kalan<=0?'sr':''}"><td class="b">${d.model}</td><td><span class="badge ${d.el==='1.El'?'bpu':'bcy'}">${d.el}</span></td><td>${d.gb}GB</td><td>${d.ram}GB</td><td style="text-align:center"><b>${d.adet}</b></td><td style="text-align:center;color:var(--gn)"><b>${d.satılanAdet||0}</b></td><td><span class="sbg ${sc}">${st}</span></td><td class="trd">${fmt(d.alis)}</td><td class="tcy">${fmt(d.satis)}</td><td class="${tKar>=0?'tgn':'trd'}">${fmt(tKar)}</td><td><div style="display:flex;gap:5px"><button class="btn bs bsm" onclick="openSatMo('${d.id}')" ${kalan<=0?'disabled':''}>✅ Sat</button><button class="btn bg2 bsm" onclick="openModal('${d.id}')">✏️</button><button class="btn bd bsm" onclick="delIsl('${d.id}')">🗑</button></div></td></tr>`;}).join('');}
+function rStok(){const q=(document.getElementById('stokSrc')?.value||'').toLowerCase();let fl=D.filter(d=>!q||d.model.toLowerCase().includes(q)||d.el.toLowerCase().includes(q));const sort=sortState['stokTable'];if(sort)fl=sortData(fl,sort.field,sort.yon);else fl=fl.sort((a,b)=>b.tarih.localeCompare(a.tarih));const tb=document.getElementById('stokTb');if(!tb)return;if(!fl.length){tb.innerHTML='<tr><td colspan="11"><div class="empty"><i>📦</i>Stok verisi yok</div></td></tr>';return;}tb.innerHTML=fl.map(d=>{const kalan=d.adet-(d.satılanAdet||0);const tKar=kalan*(d.satis-d.alis);const sc=kalan<=0?'sby':kalan<d.adet?'sbk':'sbv';const st=kalan<=0?'🔴 Tükendi':kalan<d.adet?`🟡 ${kalan} kaldı`:`🟢 ${kalan} adet`;return `<tr class="${kalan<=0?'sr':''}"><td class="b">${d.model}</td><td><span class="badge ${d.el==='1.El'?'bpu':'bcy'}">${d.el}</span></td><td>${d.gb}GB</td><td>${d.ram}GB</td><td style="text-align:center"><b>${d.adet}</b></td><td style="text-align:center;color:var(--gn)"><b>${d.satılanAdet||0}</b></td><td><span class="sbg ${sc}">${st}</span></td><td class="trd">${fmt(d.alis)}</td><td class="tcy">${fmt(d.satis)}</td><td class="${tKar>=0?'tgn':'trd'}">${fmt(tKar)}</td><td><div style="display:flex;gap:5px"><button class="btn bs bsm" onclick="openSatMo('${d.id}')" ${kalan<=0?'disabled':''}>✅ Sat</button><button class="btn bg2 bsm" onclick="openModal('${d.id}')">✏️</button><button class="btn bd bsm" onclick="delIsl('${d.id}')">🗑</button></div>}</td></tr>`;}).join('');}
 function rIslemler(){const q=(document.getElementById('islSrc')?.value||'').toLowerCase();const df=(document.getElementById('islFil')?.value||'');let fl=D.filter(d=>{const qm=!q||d.model.toLowerCase().includes(q)||d.el.toLowerCase().includes(q)||(d.imeiList||[]).some(i=>i.includes(q))||d.tarih.includes(q);return qm&&(!df||getDur(d)===df);});const sort=sortState['islemlerTable'];if(sort)fl=sortData(fl,sort.field,sort.yon);else fl=fl.sort((a,b)=>b.tarih.localeCompare(a.tarih));const tb=document.getElementById('islTb');if(!tb)return;if(!fl.length){tb.innerHTML=`<tr><td colspan="17"><div class="empty"><i>📭</i>${q?'Sonuç bulunamadı':'Henüz işlem yok'}</div></td></tr>`;return;}tb.innerHTML=fl.map(d=>{const kalan=d.adet-(d.satılanAdet||0);return `<tr class="${getDur(d)==='satildi'?'sr':''}"><td>${formatTarih(d.tarih)}</td><td class="b">${d.model}</td><td><span class="badge ${d.el==='1.El'?'bpu':'bcy'}">${d.el}</span></td><td>${d.gb}GB</td><td>${d.ram}GB</td><td>${(d.imeiList||[]).map(i=>`<span class="itag ${(d.satildiImei||[]).includes(i)?'sat':''}">${i}</span>`).join('')||'-'}</td><td style="text-align:center">${d.adet}</td><td style="text-align:center;color:var(--gn)"><b>${d.satılanAdet||0}</b></td><td style="text-align:center" class="${kalan>0?'tor':'tgn'}"><b>${kalan}</b></td><td class="trd">${fmt(d.alis)}</td><td class="tcy">${fmt(d.satis)}</td><td class="tyw">${fmt(d.iskonto||0)}</td><td class="trd">${fmt(d.toplamAlis)}</td><td class="tcy">${fmt(d.toplamSatis)}</td><td class="${d.kar>=0?'tgn':'trd'} b">${fmt(d.kar)}</td><td>${getDurB(d)}</td><td><div style="display:flex;gap:4px"><button class="btn bs bsm" onclick="openSatMo('${d.id}')">✅</button><button class="btn bg2 bsm" onclick="openModal('${d.id}')">✏️</button><button class="btn bd bsm" onclick="delIsl('${d.id}')">🗑</button></div></td></tr>`;}).join('');}
 function rUrunler(){const mM={};D.forEach(d=>{if(!mM[d.model])mM[d.model]={model:d.model,adet:0,sat:0,tA:0,tS:0,kar:0,isk:0,kalan:0,karOrani:0};const m=mM[d.model];m.adet+=d.adet;m.sat+=(d.satılanAdet||0);m.tA+=d.toplamAlis;m.tS+=d.toplamSatis;m.kar+=d.kar;m.isk+=d.iskonto||0;m.kalan=m.adet-m.sat;m.karOrani=m.tS>0?((m.kar/m.tS)*100):0;});let models=Object.values(mM);if(analizSort==='kar')models.sort((a,b)=>b.kar-a.kar);else if(analizSort==='satis')models.sort((a,b)=>b.tS-a.tS);else if(analizSort==='adet')models.sort((a,b)=>b.adet-a.adet);else if(analizSort==='kalan')models.sort((a,b)=>b.kalan-a.kalan);else if(analizSort==='marj')models.sort((a,b)=>b.karOrani-a.karOrani);const c=document.getElementById('urunG');if(!c)return;if(!models.length){c.innerHTML='<div class="empty"><i>📭</i>Henüz veri yok</div>';return;}c.innerHTML=`<div class="g3">${models.map(m=>{const marj=m.tS>0?((m.kar/m.tS)*100).toFixed(1):0;const sPct=m.adet>0?((m.sat/m.adet)*100).toFixed(0):0;return `<div class="card" style="border-top:3px solid ${m.kar>=0?'var(--gn)':'var(--rd)'}"><div style="font-size:16px;font-weight:700;margin-bottom:14px">${m.model}</div><div class="sr2"><span class="sk">Toplam Alış</span><span class="sv2 trd">${fmt(m.tA)}</span></div><div class="sr2"><span class="sk">Toplam Satış</span><span class="sv2 tcy">${fmt(m.tS)}</span></div><div class="sr2"><span class="sk">İskonto</span><span class="sv2 tyw">${fmt(m.isk)}</span></div><div class="sr2"><span class="sk">Net Kar</span><span class="sv2 ${m.kar>=0?'tgn':'trd'}">${fmt(m.kar)}</span></div><div class="sr2"><span class="sk">Satılan/Toplam</span><span class="sv2">${m.sat}/${m.adet}</span></div><div class="sr2"><span class="sk">Stokta Kalan</span><span class="sv2 ${m.kalan>0?'tor':'tgn'}">${m.kalan} adet</span></div><div class="sr2"><span class="sk">Kar Marjı</span><span class="sv2 ${+marj>=0?'tgn':'trd'}">%${marj}</span></div><div style="margin-top:12px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:5px"><span>Satış Oranı</span><span>%${sPct}</span></div><div class="pb"><div class="pf" style="width:${sPct}%;background:linear-gradient(90deg,var(--ac),var(--ac3))"></div></div></div></div>`;}).join('')}</div>`;}
-function rImei(){const q=(document.getElementById('imeiSrc')?.value||'').toLowerCase();const f=(document.getElementById('imeiFil')?.value||'');let rows=[];D.forEach(d=>{(d.imeiList||[]).forEach(im=>{const isSat=(d.satildiImei||[]).includes(im);const dm=!f||(f==='satildi'&&isSat)||(f==='stokta'&&!isSat);if(dm&&(!q||im.toLowerCase().includes(q)||d.model.toLowerCase().includes(q)))rows.push({...d,im,isSat,imei:im});});});const sort=sortState['imeiTable'];if(sort)rows=sortData(rows,sort.field,sort.yon);else rows=rows.sort((a,b)=>b.tarih.localeCompare(a.tarih));const tb=document.getElementById('imeiTb');if(!tb)return;if(!rows.length){tb.innerHTML=`<tr><td colspan="11"><div class="empty"><i>🔍</i>${q?'Sonuç bulunamadı':'IMEI kaydı yok'}</div></td></tr>`;return;}tb.innerHTML=rows.map(r=>`<tr class="${r.isSat?'sr':''}"><td>${formatTarih(r.tarih)}</td><td><span class="itag ${r.isSat?'sat':''}">${r.im}</span></td><td class="b">${r.model}</td><td>${r.gb}GB</td><td>${r.ram}GB</td><td><span class="badge ${r.el==='1.El'?'bpu':'bcy'}">${r.el}</span></td><td class="trd">${fmt(r.alis)}</td><td class="tcy">${fmt(r.satis)}</td><td class="tyw">${fmt(r.iskonto||0)}</td><td class="${r.kar>=0?'tgn':'trd'}">${fmt(r.kar/Math.max(r.adet,1))}</td><td>${r.isSat?'<span class="badge bgn">✓ Satıldı</span>':'<span class="badge bcy">📦 Stokta</span>'}</td></tr>`).join('');}
+function rImei(){const q=(document.getElementById('imeiSrc')?.value||'').toLowerCase();const f=(document.getElementById('imeiFil')?.value||'');let rows=[];D.forEach(d=>{(d.imeiList||[]).forEach(im=>{const isSat=(d.satildiImei||[]).includes(im);const dm=!f||(f==='satildi'&&isSat)||(f==='stokta'&&!isSat);if(dm&&(!q||im.toLowerCase().includes(q)||d.model.toLowerCase().includes(q)))rows.push({...d,im,isSat,imei:im});});});const sort=sortState['imeiTable'];if(sort)rows=sortData(rows,sort.field,sort.yon);else rows=rows.sort((a,b)=>b.tarih.localeCompare(a.tarih));const tb=document.getElementById('imeiTb');if(!tb)return;if(!rows.length){tb.innerHTML=`<tr><td colspan="11"><div class="empty"><i>🔍</i>${q?'Sonuç bulunamadı':'IMEI kaydı yok'}</div><tr></tr>`;return;}tb.innerHTML=rows.map(r=>`<tr class="${r.isSat?'sr':''}"><td>${formatTarih(r.tarih)}</td><td><span class="itag ${r.isSat?'sat':''}">${r.im}</span></td><td class="b">${r.model}</td><td>${r.gb}GB</td><td>${r.ram}GB</td><td><span class="badge ${r.el==='1.El'?'bpu':'bcy'}">${r.el}</span></td><td class="trd">${fmt(r.alis)}</td><td class="tcy">${fmt(r.satis)}</td><td class="tyw">${fmt(r.iskonto||0)}</td><td class="${r.kar>=0?'tgn':'trd'}">${fmt(r.kar/Math.max(r.adet,1))}</td><td>${r.isSat?'<span class="badge bgn">✓ Satıldı</span>':'<span class="badge bcy">📦 Stokta</span>'}</td></tr>`).join('');}
 function setBMod(mod){bMod=mod;document.querySelectorAll('.mbt').forEach(b=>b.classList.remove('act'));const btn=document.getElementById('bm-'+mod);if(btn)btn.classList.add('act');hideBPanels();}
 function hideBPanels(){const satP=document.getElementById('bSatP');if(satP)satP.style.display='none';const eklP=document.getElementById('bEklP');if(eklP)eklP.style.display='none';}
-// ==================== ORİJİNAL ÇALIŞAN startScan ====================
-async function startScan() {
-  if (bScan) return;
-  const startBtn = document.getElementById('bStartB');
-  const stopBtn = document.getElementById('bStopB');
-  const cst = document.getElementById('cst');
-  const sln = document.getElementById('sln');
-  if (startBtn) startBtn.style.display = 'none';
-  if (stopBtn) stopBtn.style.display = 'flex';
-  if (cst) { cst.textContent = '📷 Kamera açılıyor...'; cst.className = 'cst act'; }
-  if (sln) sln.classList.remove('pau');
-  try {
-    bScan = true;
-
-    // Arka kamera stream'i (yüksek çözünürlük)
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: { exact: 'environment' },
-        width: { ideal: 1920 },
-        height: { ideal: 1080 }
-      }
-    });
-    const videoEl = document.getElementById('bvideo');
-    videoEl.srcObject = stream;
-    await videoEl.play();
-
-    // Kamera track'ini kaydet (zoom/flaş için)
-    currentVideoTrack = stream.getVideoTracks()[0];
-
-    // QR kod için video yönünü düzelt (dikeyde okuma için)
-    // Bazı cihazlarda görüntü ters olabilir, rotate ile düzeltin
-    videoEl.style.transform = 'rotate(0deg)';
-    videoEl.style.objectFit = 'cover';
-
-    // Format listesi - QR_CODE ilk sırada
-    const hints = new Map();
-    hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
-      ZXing.BarcodeFormat.QR_CODE,
-      ZXing.BarcodeFormat.CODE_128,
-      ZXing.BarcodeFormat.EAN_13,
-      ZXing.BarcodeFormat.EAN_8,
-      ZXing.BarcodeFormat.CODE_39,
-      ZXing.BarcodeFormat.DATA_MATRIX,
-      ZXing.BarcodeFormat.ITF,
-      ZXing.BarcodeFormat.PDF_417,
-      ZXing.BarcodeFormat.AZTEC
-    ]);
-    hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
-
-    bReader = new ZXing.BrowserMultiFormatReader(hints);
-    await bReader.decodeFromStream(stream, videoEl, (result, err) => {
-      if (result) {
-        const code = result.getText();
-        if (code && code !== bCode) {
-          bCode = code;
-          if (navigator.vibrate) navigator.vibrate(80);
-          stopScan();
-          onRead(code);
-        }
-      }
-    });
-    if (cst) cst.textContent = '✅ Kamera aktif, barkod okutun';
-  } catch (e) {
-    bScan = false;
-    if (cst) { cst.textContent = '⚠️ Kamera hatası: ' + e.message; cst.className = 'cst er'; }
-    if (startBtn) startBtn.style.display = 'flex';
-    if (stopBtn) stopBtn.style.display = 'none';
-    if (sln) sln.classList.add('pau');
-    console.error('Kamera hatası:', e);
-  }
-}
-  async function startScanInsta() {
-  if (bScan) return;
-  const startBtn = document.getElementById('bStartB');
-  const stopBtn = document.getElementById('bStopB');
-  const cst = document.getElementById('cst');
-  const sln = document.getElementById('sln');
-  
-  if (startBtn) startBtn.style.display = 'none';
-  if (stopBtn) stopBtn.style.display = 'flex';
-  if (cst) { cst.textContent = '📷 QR kod okutun (Instascan)...'; cst.className = 'cst act'; }
-  if (sln) sln.classList.remove('pau');
-  
-  try {
-    bScan = true;
-    scanner = new Instascan.Scanner({ video: document.getElementById('bvideo') });
-    
-    scanner.addListener('scan', function(content) {
-      if (content && content !== bCode) {
-        bCode = content;
-        if (navigator.vibrate) navigator.vibrate(80);
-        stopScan();
-        onRead(content);
-      }
-    });
-    
-    const cameras = await Instascan.Camera.getCameras();
-    const backCamera = cameras.find(c => c.name.toLowerCase().includes('back') || c.name.toLowerCase().includes('rear')) || cameras[0];
-    
-    if (backCamera) {
-      scanner.start(backCamera);
-      if (cst) cst.textContent = '✅ Instascan aktif, QR kod okutun';
-    } else {
-      throw new Error('Arka kamera bulunamadı');
-    }
-  } catch (e) {
-    bScan = false;
-    if (cst) { cst.textContent = '⚠️ Instascan hatası: ' + e.message; cst.className = 'cst er'; }
-    if (startBtn) startBtn.style.display = 'flex';
-    if (stopBtn) stopBtn.style.display = 'none';
-    if (sln) sln.classList.add('pau');
-    console.error("Instascan hatası:", e);
-  }
-}
+// ==================== QR KOD İÇİN ====================
 async function startScanQR() {
   if (bScan) return;
   const startBtn = document.getElementById('bStartQR');
   const stopBtn = document.getElementById('bStopB');
   const cst = document.getElementById('cst');
   const sln = document.getElementById('sln');
-  
   if (startBtn) startBtn.style.display = 'none';
   if (stopBtn) stopBtn.style.display = 'flex';
   if (cst) { cst.textContent = '📱 QR kod okutun...'; cst.className = 'cst act'; }
   if (sln) sln.classList.remove('pau');
-  
   try {
     bScan = true;
     const hints = new Map();
     hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [ZXing.BarcodeFormat.QR_CODE]);
     hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
-    
     bReader = new ZXing.BrowserMultiFormatReader(hints);
     const devices = await bReader.listVideoInputDevices();
     if (!devices.length) throw new Error("Kamera bulunamadı");
-    
     const backCamera = devices.find(d => d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('arka')) || devices[0];
-    
     await bReader.decodeFromVideoDevice(backCamera.deviceId, 'bvideo', (result, err) => {
       if (result) {
         const code = result.getText();
         if (code && code !== bCode) {
           bCode = code;
           if (navigator.vibrate) navigator.vibrate(80);
+          playBeep();
           stopScan();
           onRead(code);
         }
@@ -633,18 +521,17 @@ async function startScanQR() {
     if (sln) sln.classList.add('pau');
   }
 }
-  async function startScanBarcode() {
+// ==================== ÇİZGİLİ BARKOD İÇİN ====================
+async function startScanBarcode() {
   if (bScan) return;
   const startBtn = document.getElementById('bStartBarcode');
   const stopBtn = document.getElementById('bStopB');
   const cst = document.getElementById('cst');
   const sln = document.getElementById('sln');
-  
   if (startBtn) startBtn.style.display = 'none';
   if (stopBtn) stopBtn.style.display = 'flex';
   if (cst) { cst.textContent = '📊 Barkod okutun...'; cst.className = 'cst act'; }
   if (sln) sln.classList.remove('pau');
-  
   try {
     bScan = true;
     const hints = new Map();
@@ -659,19 +546,17 @@ async function startScanQR() {
       ZXing.BarcodeFormat.CODABAR
     ]);
     hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
-    
     bReader = new ZXing.BrowserMultiFormatReader(hints);
     const devices = await bReader.listVideoInputDevices();
     if (!devices.length) throw new Error("Kamera bulunamadı");
-    
     const backCamera = devices.find(d => d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('arka')) || devices[0];
-    
     await bReader.decodeFromVideoDevice(backCamera.deviceId, 'bvideo', (result, err) => {
       if (result) {
         const code = result.getText();
         if (code && code !== bCode) {
           bCode = code;
           if (navigator.vibrate) navigator.vibrate(80);
+          playBeep();
           stopScan();
           onRead(code);
         }
@@ -686,97 +571,117 @@ async function startScanQR() {
     if (sln) sln.classList.add('pau');
   }
 }
-function stopScan() {
-  if (scanner) {
-  try { scanner.stop(); } catch(e) {}
-  scanner = null;
-}
-  if (bReader) {
-    try { bReader.reset(); } catch(e) {}
-    bReader = null;
-  }
-  if (currentVideoTrack) {
-    currentVideoTrack.stop();
-    currentVideoTrack = null;
-  }
-  const videoEl = document.getElementById('bvideo');
-  if (videoEl && videoEl.srcObject) {
-    videoEl.srcObject.getTracks().forEach(t => t.stop());
-    videoEl.srcObject = null;
-  }
-  bScan = false;
-  bCode = '';
-  const startBtn = document.getElementById('bStartB');
+// ==================== TEK TUŞ (OTOMATİK) ====================
+async function startScanAuto() {
+  if (bScan) return;
+  const startBtn = document.getElementById('bStartAuto');
   const stopBtn = document.getElementById('bStopB');
   const cst = document.getElementById('cst');
   const sln = document.getElementById('sln');
+  if (startBtn) startBtn.style.display = 'none';
+  if (stopBtn) stopBtn.style.display = 'flex';
+  if (cst) { cst.textContent = '🔄 Otomatik tarama...'; cst.className = 'cst act'; }
+  if (sln) sln.classList.remove('pau');
+  try {
+    bScan = true;
+    const hints = new Map();
+    hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+      ZXing.BarcodeFormat.QR_CODE,
+      ZXing.BarcodeFormat.CODE_128,
+      ZXing.BarcodeFormat.EAN_13,
+      ZXing.BarcodeFormat.EAN_8,
+      ZXing.BarcodeFormat.CODE_39,
+      ZXing.BarcodeFormat.UPC_A,
+      ZXing.BarcodeFormat.UPC_E,
+      ZXing.BarcodeFormat.ITF,
+      ZXing.BarcodeFormat.CODABAR
+    ]);
+    hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+    bReader = new ZXing.BrowserMultiFormatReader(hints);
+    const devices = await bReader.listVideoInputDevices();
+    if (!devices.length) throw new Error("Kamera bulunamadı");
+    const backCamera = devices.find(d => d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('arka')) || devices[0];
+    await bReader.decodeFromVideoDevice(backCamera.deviceId, 'bvideo', (result, err) => {
+      if (result) {
+        const code = result.getText();
+        if (code && code !== bCode) {
+          bCode = code;
+          if (navigator.vibrate) navigator.vibrate(80);
+          playBeep();
+          stopScan();
+          onRead(code);
+        }
+      }
+    });
+    if (cst) cst.textContent = '✅ Otomatik mod aktif';
+  } catch (e) {
+    bScan = false;
+    if (cst) { cst.textContent = '⚠️ Hata: ' + e.message; cst.className = 'cst er'; }
+    if (startBtn) startBtn.style.display = 'flex';
+    if (stopBtn) stopBtn.style.display = 'none';
+    if (sln) sln.classList.add('pau');
+  }
+}
+// ==================== SESLİ BİLDİRİM ====================
+function playBeep() {
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    oscillator.frequency.value = 880;
+    gainNode.gain.value = 0.2;
+    oscillator.start();
+    gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.3);
+    oscillator.stop(audioCtx.currentTime + 0.3);
+  } catch(e) { console.log("Ses çalınamadı", e); }
+}
+// ==================== ORTAK DURDURMA ====================
+function stopScan() {
+  if (bReader) {
+    try { bReader.reset(); bReader = null; } catch(e) {}
+  }
+  bScan = false;
+  bCode = '';
+  const startAuto = document.getElementById('bStartAuto');
   const startQR = document.getElementById('bStartQR');
   const startBarcode = document.getElementById('bStartBarcode');
+  const stopBtn = document.getElementById('bStopB');
+  const cst = document.getElementById('cst');
+  const sln = document.getElementById('sln');
+  if (startAuto) startAuto.style.display = 'flex';
   if (startQR) startQR.style.display = 'flex';
   if (startBarcode) startBarcode.style.display = 'flex';
-  if (startBtn) startBtn.style.display = 'flex';
   if (stopBtn) stopBtn.style.display = 'none';
   if (cst) { cst.textContent = 'Tara butonuna bas'; cst.className = 'cst'; }
   if (sln) sln.classList.add('pau');
 }
-function onRead(code) {
-  stopScan();
-  const cst = document.getElementById('cst');
-  if (cst) { cst.textContent = '✓ Okundu: ' + code; cst.className = 'cst fd2'; }
-  procCode(code);
-}
-
+function onRead(code){stopScan();const cst=document.getElementById('cst');if(cst){cst.textContent='✓ Okundu: '+code;cst.className='cst fd2';}procCode(code);}
 function procCode(code) {
+  if (code.startsWith('http://') || code.startsWith('https://')) {
+    window.open(code, '_blank');
+    toast('🔗 Link açılıyor: ' + code, 'success');
+    return;
+  }
   const rcode = document.getElementById('rcode');
   if (rcode) rcode.textContent = code;
   const bres = document.getElementById('bres');
   if (bres) bres.className = 'bres show';
   hideBPanels();
-
-  // Link kontrolü — http/https ile başlıyorsa direkt aç
-  if (code.startsWith('http://') || code.startsWith('https://')) {
-    if (bres) bres.className = 'bres show fp';
-    const rbody = document.getElementById('rbody');
-    if (rbody) rbody.innerHTML = `
-      <div style="font-size:15px;font-weight:700;margin-bottom:8px">🔗 Link Bulundu</div>
-      <div style="font-size:12px;color:var(--tx2);margin-bottom:14px;word-break:break-all">${code}</div>
-      <button class="qab qaekl" onclick="window.open('${code}','_blank')" style="margin-bottom:8px">🌐 Linki Aç</button>
-      <button class="qab qaduz" onclick="navigator.clipboard?.writeText('${code}');toast('Kopyalandı ✓','success')">📋 Kopyala</button>`;
-    return;
-  }
-
-  // Sistemde ara
   let found = D.find(d => (d.imeiList || []).includes(code));
   if (!found) found = D.find(d => d.model.toLowerCase() === code.toLowerCase());
-
   if (found) {
     const kalan = found.adet - (found.satılanAdet || 0);
     if (bres) bres.className = 'bres show fp';
     const rbody = document.getElementById('rbody');
-    if (rbody) rbody.innerHTML = `
-      <div class="rnm">${found.model}</div>
-      <div class="rdt">${found.el} · ${found.gb}GB · ${found.ram}GB RAM</div>
-      <div class="rmst">
-        <div class="rms"><div class="rmv ${kalan > 0 ? 'tgn' : 'trd'}">${kalan}</div><div class="rmk">Stokta</div></div>
-        <div class="rms"><div class="rmv tcy">${fmt(found.satis)}</div><div class="rmk">Satış</div></div>
-        <div class="rms"><div class="rmv ${found.kar >= 0 ? 'tgn' : 'trd'}">${fmt(found.kar)}</div><div class="rmk">Kar</div></div>
-      </div>
-      <div class="qas">
-        <button class="qab qasat" onclick="openBSat('${found.id}')" ${kalan <= 0 ? 'disabled' : ''}>✅ ${kalan <= 0 ? 'Stok Yok' : 'Sat (' + kalan + ' adet)'}</button>
-        <button class="qab qaduz" onclick="openModal('${found.id}')">✏️ Düzenle</button>
-      </div>`;
+    if (rbody) rbody.innerHTML = `<div class="rnm">${found.model}</div><div class="rdt">${found.el} · ${found.gb}GB · ${found.ram}GB RAM</div><div class="rmst"><div class="rms"><div class="rmv ${kalan>0?'tgn':'trd'}">${kalan}</div><div class="rmk">Stokta</div></div><div class="rms"><div class="rmv tcy">${fmt(found.satis)}</div><div class="rmk">Satış</div></div><div class="rms"><div class="rmv ${found.kar>=0?'tgn':'trd'}">${fmt(found.kar)}</div><div class="rmk">Kar</div></div></div><div class="qas"><button class="qab qasat" onclick="openBSat('${found.id}')" ${kalan<=0?'disabled':''}>✅ ${kalan<=0?'Stok Yok':'Sat ('+kalan+' adet)'}</button><button class="qab qaduz" onclick="openModal('${found.id}')">✏️ Düzenle</button></div>`;
     if (bMod === 'sat' && kalan > 0) openBSat(found.id);
     if (bMod === 'ekle') openBEkl(found.id);
   } else {
     if (bres) bres.className = 'bres show nf';
     const rbody = document.getElementById('rbody');
-    if (rbody) rbody.innerHTML = `
-      <div style="color:var(--yw);font-weight:700;margin-bottom:6px">⚠️ Sistemde bulunamadı</div>
-      <div style="font-size:13px;margin-bottom:12px">Barkod: <span style="font-family:monospace">${code}</span></div>
-      <div class="qas">
-        <button class="qab qaekl" onclick="openBEkl(null,'${code}')">➕ Yeni Ürün Ekle</button>
-        <button class="qab qaduz" onclick="navigator.clipboard?.writeText('${code}');toast('Kopyalandı ✓','success')">📋 Kopyala</button>
-      </div>`;
+    if (rbody) rbody.innerHTML = `<div style="color:var(--yw);font-weight:700;margin-bottom:6px">⚠️ Sistemde bulunamadı</div><div style="font-size:12px;margin-bottom:12px">Yeni ürün ekleyebilirsiniz</div><button class="qab qaekl" onclick="openBEkl(null,'${code}')">➕ Yeni Ürün Ekle</button>`;
     if (bMod === 'ekle') openBEkl(null, code);
   }
 }
