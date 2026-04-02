@@ -597,11 +597,20 @@ async function startScanAuto() {
       ZXing.BarcodeFormat.CODABAR
     ]);
     hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+    
     bReader = new ZXing.BrowserMultiFormatReader(hints);
     const devices = await bReader.listVideoInputDevices();
     if (!devices.length) throw new Error("Kamera bulunamadı");
     const backCamera = devices.find(d => d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('arka')) || devices[0];
-    await bReader.decodeFromVideoDevice(backCamera.deviceId, 'bvideo', (result, err) => {
+    
+    // Stream'i al ve track'i kaydet
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: backCamera.deviceId } } });
+    const videoEl = document.getElementById('bvideo');
+    videoEl.srcObject = stream;
+    await videoEl.play();
+    currentVideoTrack = stream.getVideoTracks()[0];
+    
+    await bReader.decodeFromStream(stream, videoEl, (result, err) => {
       if (result) {
         const code = result.getText();
         if (code && code !== bCode) {
