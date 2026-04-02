@@ -476,117 +476,140 @@ async function startScan() {
   if (bScan) return;
   const startBtn = document.getElementById('bStartB');
   const stopBtn = document.getElementById('bStopB');
-  const cst = document.getElementById('cst');
-  const sln = document.getElementById('sln');
   if (startBtn) startBtn.style.display = 'none';
   if (stopBtn) stopBtn.style.display = 'flex';
-  if (cst) {
-    cst.textContent = '📷 Barkod okutun...';
-    cst.className = 'cst act';
-  }
+  const cst = document.getElementById('cst');
+  if (cst) { cst.textContent = 'Barkod okutun...'; cst.className = 'cst act'; }
+  const sln = document.getElementById('sln');
   if (sln) sln.classList.remove('pau');
   try {
-    bScan = true;
+    // Önce getUserMedia ile arka kamerayı direkt aç — yan çevirme sorunu çözülür
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: { ideal: 'environment' },  // arka kamera
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
+      }
+    });
+    const video = document.getElementById('bvideo');
+    if (video) { video.srcObject = stream; video.play(); }
+
     const hints = new Map();
     hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
-      ZXing.BarcodeFormat.QR_CODE,
-      ZXing.BarcodeFormat.CODE_128,
-      ZXing.BarcodeFormat.EAN_13,
+      ZXing.BarcodeFormat.QR_CODE,       // QR kod
+      ZXing.BarcodeFormat.CODE_128,      // çizgili barkod
+      ZXing.BarcodeFormat.EAN_13,        // market barkodu
       ZXing.BarcodeFormat.EAN_8,
       ZXing.BarcodeFormat.CODE_39,
-      ZXing.BarcodeFormat.UPC_A,
-      ZXing.BarcodeFormat.UPC_E,
+      ZXing.BarcodeFormat.DATA_MATRIX,   // kare barkod
       ZXing.BarcodeFormat.ITF,
-      ZXing.BarcodeFormat.CODABAR
+      ZXing.BarcodeFormat.PDF_417,
+      ZXing.BarcodeFormat.AZTEC
     ]);
-    hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+    hints.set(ZXing.DecodeHintType.TRY_HARDER, true); // daha iyi okuma
+
     bReader = new ZXing.BrowserMultiFormatReader(hints);
-    const devices = await bReader.listVideoInputDevices();
-    if (!devices.length) throw new Error("Kamera bulunamadı");
-    const backCamera = devices.find(d => d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('arka') || d.label.toLowerCase().includes('environment')) || devices[0];
-    await bReader.decodeFromVideoDevice(backCamera.deviceId, 'bvideo', (result, err) => {
+    bScan = true;
+
+    // Kamerayı direkt stream üzerinden bağla
+    bReader.decodeFromStream(stream, video, (result, err) => {
       if (result) {
         const code = result.getText();
         if (code && code !== bCode) {
           bCode = code;
-          if (navigator.vibrate) navigator.vibrate(80);
-          stopScan();
+          if (navigator.vibrate) navigator.vibrate([100]);
           onRead(code);
         }
       }
     });
-    // Kamera track'ini al (zoom ve flaş için)
-    setTimeout(() => {
-      const videoEl = document.getElementById('bvideo');
-      if (videoEl && videoEl.srcObject) {
-        const tracks = videoEl.srcObject.getVideoTracks();
-        if (tracks.length) currentVideoTrack = tracks[0];
-      }
-    }, 500);
-    if (cst) cst.textContent = '✅ Kamera aktif, barkod okutun';
   } catch (e) {
     bScan = false;
-    if (cst) {
-      cst.textContent = '⚠️ Kamera hatası: ' + e.message;
-      cst.className = 'cst er';
-    }
+    const cst = document.getElementById('cst');
+    if (cst) { cst.textContent = '⚠️ Kamera açılamadı: ' + e.message; cst.className = 'cst er'; }
+    const startBtn = document.getElementById('bStartB');
+    const stopBtn = document.getElementById('bStopB');
     if (startBtn) startBtn.style.display = 'flex';
     if (stopBtn) stopBtn.style.display = 'none';
-    if (sln) sln.classList.add('pau');
-    console.error("Kamera hatası:", e);
   }
 }
+
 function stopScan() {
-  if (bReader) {
-    try {
-      bReader.reset();
-      bReader = null;
-    } catch(e) {}
+  if (bReader) try { bReader.reset(); } catch(e) {}
+  // Stream'i durdur
+  const video = document.getElementById('bvideo');
+  if (video && video.srcObject) {
+    video.srcObject.getTracks().forEach(t => t.stop());
+    video.srcObject = null;
   }
-  currentVideoTrack = null;
-  bScan = false;
-  bCode = '';
+  bScan = false; bCode = '';
   const startBtn = document.getElementById('bStartB');
   const stopBtn = document.getElementById('bStopB');
-  const cst = document.getElementById('cst');
-  const sln = document.getElementById('sln');
   if (startBtn) startBtn.style.display = 'flex';
   if (stopBtn) stopBtn.style.display = 'none';
-  if (cst) {
-    cst.textContent = 'Tara butonuna bas';
-    cst.className = 'cst';
-  }
+  const cst = document.getElementById('cst');
+  if (cst) { cst.textContent = 'Tarama durduruldu'; cst.className = 'cst'; }
+  const sln = document.getElementById('sln');
   if (sln) sln.classList.add('pau');
 }
-function onRead(code){stopScan();const cst=document.getElementById('cst');if(cst){cst.textContent='✓ Okundu: '+code;cst.className='cst fd2';}procCode(code);}
-// ==================== procCode GÜNCELLENDİ (URL kontrolü) ====================
-function procCode(code) {
-  // Eğer okunan kod bir URL ise, otomatik aç
-  if (code.startsWith('http://') || code.startsWith('https://')) {
-    window.open(code, '_blank');
-    toast('🔗 Link açılıyor: ' + code, 'success');
-    // İşlem bitti, ürün araması yapma
-    return;
-  }
 
+function onRead(code) {
+  stopScan();
+  const cst = document.getElementById('cst');
+  if (cst) { cst.textContent = '✓ Okundu: ' + code; cst.className = 'cst fd2'; }
+  procCode(code);
+}
+
+function procCode(code) {
   const rcode = document.getElementById('rcode');
   if (rcode) rcode.textContent = code;
   const bres = document.getElementById('bres');
   if (bres) bres.className = 'bres show';
   hideBPanels();
+
+  // Link kontrolü — http/https ile başlıyorsa direkt aç
+  if (code.startsWith('http://') || code.startsWith('https://')) {
+    if (bres) bres.className = 'bres show fp';
+    const rbody = document.getElementById('rbody');
+    if (rbody) rbody.innerHTML = `
+      <div style="font-size:15px;font-weight:700;margin-bottom:8px">🔗 Link Bulundu</div>
+      <div style="font-size:12px;color:var(--tx2);margin-bottom:14px;word-break:break-all">${code}</div>
+      <button class="qab qaekl" onclick="window.open('${code}','_blank')" style="margin-bottom:8px">🌐 Linki Aç</button>
+      <button class="qab qaduz" onclick="navigator.clipboard?.writeText('${code}');toast('Kopyalandı ✓','success')">📋 Kopyala</button>`;
+    return;
+  }
+
+  // Sistemde ara
   let found = D.find(d => (d.imeiList || []).includes(code));
   if (!found) found = D.find(d => d.model.toLowerCase() === code.toLowerCase());
+
   if (found) {
     const kalan = found.adet - (found.satılanAdet || 0);
     if (bres) bres.className = 'bres show fp';
     const rbody = document.getElementById('rbody');
-    if (rbody) rbody.innerHTML = `<div class="rnm">${found.model}</div><div class="rdt">${found.el} · ${found.gb}GB · ${found.ram}GB RAM</div><div class="rmst"><div class="rms"><div class="rmv ${kalan>0?'tgn':'trd'}">${kalan}</div><div class="rmk">Stokta</div></div><div class="rms"><div class="rmv tcy">${fmt(found.satis)}</div><div class="rmk">Satış</div></div><div class="rms"><div class="rmv ${found.kar>=0?'tgn':'trd'}">${fmt(found.kar)}</div><div class="rmk">Kar</div></div></div><div class="qas"><button class="qab qasat" onclick="openBSat('${found.id}')" ${kalan<=0?'disabled':''}>✅ ${kalan<=0?'Stok Yok':'Sat ('+kalan+' adet)'}</button><button class="qab qaduz" onclick="openModal('${found.id}')">✏️ Düzenle</button></div>`;
+    if (rbody) rbody.innerHTML = `
+      <div class="rnm">${found.model}</div>
+      <div class="rdt">${found.el} · ${found.gb}GB · ${found.ram}GB RAM</div>
+      <div class="rmst">
+        <div class="rms"><div class="rmv ${kalan > 0 ? 'tgn' : 'trd'}">${kalan}</div><div class="rmk">Stokta</div></div>
+        <div class="rms"><div class="rmv tcy">${fmt(found.satis)}</div><div class="rmk">Satış</div></div>
+        <div class="rms"><div class="rmv ${found.kar >= 0 ? 'tgn' : 'trd'}">${fmt(found.kar)}</div><div class="rmk">Kar</div></div>
+      </div>
+      <div class="qas">
+        <button class="qab qasat" onclick="openBSat('${found.id}')" ${kalan <= 0 ? 'disabled' : ''}>✅ ${kalan <= 0 ? 'Stok Yok' : 'Sat (' + kalan + ' adet)'}</button>
+        <button class="qab qaduz" onclick="openModal('${found.id}')">✏️ Düzenle</button>
+      </div>`;
     if (bMod === 'sat' && kalan > 0) openBSat(found.id);
     if (bMod === 'ekle') openBEkl(found.id);
   } else {
     if (bres) bres.className = 'bres show nf';
     const rbody = document.getElementById('rbody');
-    if (rbody) rbody.innerHTML = `<div style="color:var(--yw);font-weight:700;margin-bottom:6px">⚠️ Sistemde bulunamadı</div><div style="font-size:12px;margin-bottom:12px">Yeni ürün ekleyebilirsiniz</div><button class="qab qaekl" onclick="openBEkl(null,'${code}')">➕ Yeni Ürün Ekle</button>`;
+    if (rbody) rbody.innerHTML = `
+      <div style="color:var(--yw);font-weight:700;margin-bottom:6px">⚠️ Sistemde bulunamadı</div>
+      <div style="font-size:13px;margin-bottom:12px">Barkod: <span style="font-family:monospace">${code}</span></div>
+      <div class="qas">
+        <button class="qab qaekl" onclick="openBEkl(null,'${code}')">➕ Yeni Ürün Ekle</button>
+        <button class="qab qaduz" onclick="navigator.clipboard?.writeText('${code}');toast('Kopyalandı ✓','success')">📋 Kopyala</button>
+      </div>`;
     if (bMod === 'ekle') openBEkl(null, code);
   }
 }
