@@ -376,7 +376,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--ac);box-shadow:0 0 0 
         <div class="cambox" id="cambox"><video id="bvideo" playsinline autoplay muted></video><div class="sovl"><div class="sfr"><div class="sctr"></div><div class="scbl"></div><div class="sln pau" id="sln"></div></div></div></div>
         <div class="cst" id="cst">Tara butonuna bas</div>
         <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;justify-content:center">
-          <button class="btn bp" id="bStartB" onclick="startScan()" style="flex:1">📷 Tara</button>
+          <button class="btn bp" id="bStartB" onclick="startScanQR()" style="flex:1">📷 Tara (QR)</button>
           <button class="btn bg2" id="bStopB" onclick="stopScan()" style="flex:1;display:none">⏹ Durdur</button>
           <button class="btn bg2" onclick="manuelGir()" style="flex:1">⌨️ Manuel</button>
         </div>
@@ -542,7 +542,47 @@ async function startScan() {
     console.error('Kamera hatası:', e);
   }
 }
-
+async function startScanQR() {
+  if (bScan) return;
+  const startBtn = document.getElementById('bStartB');
+  const stopBtn = document.getElementById('bStopB');
+  const cst = document.getElementById('cst');
+  const sln = document.getElementById('sln');
+  if (startBtn) startBtn.style.display = 'none';
+  if (stopBtn) stopBtn.style.display = 'flex';
+  if (cst) { cst.textContent = '📷 QR kod okutun...'; cst.className = 'cst act'; }
+  if (sln) sln.classList.remove('pau');
+  try {
+    bScan = true;
+    const hints = new Map();
+    hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [ZXing.BarcodeFormat.QR_CODE]);
+    hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+    hints.set(ZXing.DecodeHintType.PURE_BARCODE, true);
+    bReader = new ZXing.BrowserMultiFormatReader(hints);
+    const devices = await bReader.listVideoInputDevices();
+    if (!devices.length) throw new Error("Kamera bulunamadı");
+    const backCamera = devices.find(d => d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('arka') || d.label.toLowerCase().includes('environment')) || devices[0];
+    await bReader.decodeFromVideoDevice(backCamera.deviceId, 'bvideo', (result, err) => {
+      if (result) {
+        const code = result.getText();
+        if (code && code !== bCode) {
+          bCode = code;
+          if (navigator.vibrate) navigator.vibrate(80);
+          stopScan();
+          onRead(code);
+        }
+      }
+    });
+    if (cst) cst.textContent = '✅ QR kod için kamera aktif';
+  } catch (e) {
+    bScan = false;
+    if (cst) { cst.textContent = '⚠️ QR kod hatası: ' + e.message; cst.className = 'cst er'; }
+    if (startBtn) startBtn.style.display = 'flex';
+    if (stopBtn) stopBtn.style.display = 'none';
+    if (sln) sln.classList.add('pau');
+    console.error("QR kod hatası:", e);
+  }
+}
 function stopScan() {
   if (bReader) {
     try { bReader.reset(); } catch(e) {}
