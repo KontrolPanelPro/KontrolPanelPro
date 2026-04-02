@@ -485,7 +485,7 @@ async function startScan() {
   try {
     bScan = true;
 
-    // 1. Arka kamera stream'ini al (yüksek çözünürlük)
+    // Arka kamera stream'i (yüksek çözünürlük)
     const stream = await navigator.mediaDevices.getUserMedia({
       video: {
         facingMode: { exact: 'environment' },
@@ -496,23 +496,16 @@ async function startScan() {
     const videoEl = document.getElementById('bvideo');
     videoEl.srcObject = stream;
     await videoEl.play();
-    // Görüntü döndürme (gerekirse)
-const screenOrientation = screen.orientation?.type || window.orientation;
-if (screenOrientation.includes('portrait')) {
-  videoEl.style.transform = 'rotate(90deg)';
-  videoEl.style.width = 'auto';
-  videoEl.style.height = '100%';
-}
 
-    // 2. Kamera track'ini kaydet (zoom/flaş için)
+    // Kamera track'ini kaydet (zoom/flaş için)
     currentVideoTrack = stream.getVideoTracks()[0];
 
-    // 3. Video elementine CSS rotate uygulama (gerekirse)
-    // Mobilde bazı cihazlar için döndürme gerekebilir, genelde environment doğru yön verir.
-    // Eğer görüntü hala ters/yataysa aşağıdaki satırın yorumunu kaldırın:
-    // videoEl.style.transform = 'rotate(0deg)'; // veya 'rotate(90deg)' deneyin
+    // QR kod için video yönünü düzelt (dikeyde okuma için)
+    // Bazı cihazlarda görüntü ters olabilir, rotate ile düzeltin
+    videoEl.style.transform = 'rotate(0deg)';
+    videoEl.style.objectFit = 'cover';
 
-    // 4. ZXing format listesi
+    // Format listesi - QR_CODE ilk sırada
     const hints = new Map();
     hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
       ZXing.BarcodeFormat.QR_CODE,
