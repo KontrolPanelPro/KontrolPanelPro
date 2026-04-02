@@ -496,6 +496,13 @@ async function startScan() {
     const videoEl = document.getElementById('bvideo');
     videoEl.srcObject = stream;
     await videoEl.play();
+    // Görüntü döndürme (gerekirse)
+const screenOrientation = screen.orientation?.type || window.orientation;
+if (screenOrientation.includes('portrait')) {
+  videoEl.style.transform = 'rotate(90deg)';
+  videoEl.style.width = 'auto';
+  videoEl.style.height = '100%';
+}
 
     // 2. Kamera track'ini kaydet (zoom/flaş için)
     currentVideoTrack = stream.getVideoTracks()[0];
