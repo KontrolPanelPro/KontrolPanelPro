@@ -514,5 +514,21 @@ async function toggleFlash(){if(!currentVideoTrack){toast('Kamera başlatılmam�
 function setupFocusOnTouch(){const video=document.getElementById('bvideo');if(!video)return;video.addEventListener('click',async(e)=>{if(!currentVideoTrack){toast('Kamera başlatılmamış, önce Tara butonuna basın','error');return;}const rect=video.getBoundingClientRect();const x=(e.clientX-rect.left)/rect.width;const y=(e.clientY-rect.top)/rect.height;const point={x:Math.min(1,Math.max(0,x)),y:Math.min(1,Math.max(0,y))};try{const capabilities=currentVideoTrack.getCapabilities();if(capabilities.focusMode&&capabilities.focusMode.includes('continuous')&&capabilities.pointsOfInterest){await currentVideoTrack.applyConstraints({advanced:[{focusMode:'continuous'},{pointsOfInterest:[point]}]});toast('🔍 Odaklandı','success');}else if(capabilities.focusMode&&capabilities.focusMode.includes('auto')){await currentVideoTrack.applyConstraints({advanced:[{focusMode:'auto'}]});toast('🔍 Otomatik odaklandı','success');}else{toast('⚠️ Bu cihaz dokunmayla odaklamayı desteklemiyor','error');}}catch(err){console.error('Odaklama hatası:',err);toast('Odaklama başarısız','error');}});}
 initTheme();init();
 </script>
+    <div id="setupScr" class="setup" style="display:flex; position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:9999; align-items:center; justify-content:center">
+  <div class="scard">
+    <div class="sico">🔗</div>
+    <div class="stit">Google Sheets Bağlantısı</div>
+    <div class="ssub">Apps Script Web App URL'ini gir. Bir kez yapılır, veriler kalıcı saklanır.</div>
+    <div class="shint">
+      <b>📱 Kurulum:</b><br>
+      1. Google Sheets → <b>Uzantılar → Apps Script</b><br>
+      2. Kodu yapıştır → Kaydet → ▶ Çalıştır → İzin ver<br>
+      3. <b>Dağıt → Yeni dağıtım → Web uygulaması</b><br>
+      4. Erişim: <b>Herkes</b> → Dağıt → URL kopyala
+    </div>
+    <input class="sinp" type="text" id="urlInp" placeholder="https://script.google.com/macros/s/..." autocomplete="off"/>
+    <button class="btn bp" style="width:100%;padding:14px;font-size:15px" onclick="saveUrl()">✓ Bağlan ve Başla</button>
+  </div>
+</div>
 </body>
 </html>
