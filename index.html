@@ -8,12 +8,13 @@
 <meta name="apple-mobile-web-app-title" content="KontrolPanelPro">
 <meta name="theme-color" content="#0a0a0f">
 <meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="/KontrolPanelPro/manifest.json">
 <title>📱 KontrolPanelPro</title>
 <script src="https://cdn.jsdelivr.net/npm/instascan@1.0.0/instascan.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://unpkg.com/@zxing/library@0.20.0/umd/index.js"></script>
 <style>
-/* ========== TÜM STİLLER ========== */
+/* ========== TÜM STİLLER (object-fit: contain olarak değiştirildi) ========== */
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 [data-theme="dark"]{--bg:#0a0a0f;--sf:#13131a;--sf2:#1c1c28;--sf3:#252535;--br:#2a2a3d;--tx:#e2e8f0;--tx2:#94a3b8;--tx3:#64748b;--sh:rgba(0,0,0,.4);--hbg:linear-gradient(135deg,#13131a,#1a1030)}
 [data-theme="light"]{--bg:#f1f5f9;--sf:#fff;--sf2:#f8fafc;--sf3:#e2e8f0;--br:#cbd5e1;--tx:#0f172a;--tx2:#475569;--tx3:#94a3b8;--sh:rgba(0,0,0,.08);--hbg:linear-gradient(135deg,#fff,#f0e8ff)}
@@ -148,7 +149,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--ac);box-shadow:0 0 0 
 .blayout{display:grid;grid-template-columns:1fr;gap:16px}
 @media(min-width:600px){.blayout{grid-template-columns:1fr 1fr}}
 .cambox{position:relative;border-radius:16px;overflow:hidden;background:#000;aspect-ratio:1;border:2px solid var(--br);max-width:100%;width:100%}
-#bvideo{width:100%;height:100%;object-fit:contain;display:block;cursor:pointer}
+#bvideo{width:100%;height:100%;object-fit:contain;display:block;cursor:pointer}  /* değişiklik: cover -> contain */
 .sovl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
 .sfr{width:70%;aspect-ratio:1;position:relative}
 .sfr::before,.sfr::after,.sctr,.scbl{content:'';position:absolute;width:22px;height:22px;border-color:var(--ac2);border-style:solid}
@@ -186,7 +187,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--ac);box-shadow:0 0 0 
 .qbtn.mi{border-color:var(--rd);color:var(--rd)}
 .qbtn.pl{border-color:var(--gn);color:var(--gn)}
 .qnum{font-size:28px;font-weight:800;min-width:55px;text-align:center}
-.setup{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:var(--bg)}
+.setup{display:flex;align-items:center;justify-content:center;min-height:80vh;padding:20px}
 .scard{background:var(--sf);border:1px solid var(--br);border-radius:24px;padding:28px;max-width:480px;width:100%;text-align:center}
 .sico{font-size:56px;margin-bottom:16px}
 .stit{font-size:20px;font-weight:800;color:var(--tx);margin-bottom:8px}
@@ -290,7 +291,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--ac);box-shadow:0 0 0 
   <div class="tab" onclick="goPage('barkod',this)">📷 Barkod</div>
 </div>
 
-<div id="setupScr" class="setup" style="display:flex">
+<div id="setupScr" class="setup">
   <div class="scard">
     <div class="sico">🔗</div>
     <div class="stit">Google Sheets Bağlantısı</div>
@@ -350,7 +351,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--ac);box-shadow:0 0 0 
 
   <div class="page" id="page-stok">
     <div class="sh2"><div class="stt">📦 Stok Durumu</div><input type="text" id="stokSrc" placeholder="🔍 Ara..." style="width:170px" oninput="rStok()"></div>
-    <div class="tw" id="stokTable"><table><thead><tr><th class="sortable" data-sort="model">Model</th><th class="sortable" data-sort="el">El</th><th class="sortable" data-sort="gb">GB</th><th class="sortable" data-sort="ram">RAM</th><th class="sortable" data-sort="adet">Toplam</th><th class="sortable" data-sort="satilan">Satılan</th><th class="sortable" data-sort="kalan">Kalan</th><th class="sortable" data-sort="alis">Alış/B</th><th class="sortable" data-sort="satis">Satış/B</th><th class="sortable" data-sort="kar">Tahmini Kar</th><th>İşlem</th></tr></thead><tbody id="stokTb"></tbody></tr></div>
+    <div class="tw" id="stokTable"><table><thead><tr><th class="sortable" data-sort="model">Model</th><th class="sortable" data-sort="el">El</th><th class="sortable" data-sort="gb">GB</th><th class="sortable" data-sort="ram">RAM</th><th class="sortable" data-sort="adet">Toplam</th><th class="sortable" data-sort="satilan">Satılan</th><th class="sortable" data-sort="kalan">Kalan</th><th class="sortable" data-sort="alis">Alış/B</th><th class="sortable" data-sort="satis">Satış/B</th><th class="sortable" data-sort="kar">Tahmini Kar</th><th>İşlem</th></tr></thead><tbody id="stokTb"></tbody></table></div>
   </div>
 
   <div class="page" id="page-islemler">
@@ -444,7 +445,7 @@ function tryP(s){try{const v=JSON.parse(s||'[]');return Array.isArray(v)?v:[];}c
 function norm(d){let tarih=String(d.tarih||'');if(tarih.includes('T'))tarih=tarih.split('T')[0];return{...d,id:String(d.id||''),tarih:tarih,model:String(d.model||''),el:String(d.el||'1.El'),gb:String(d.gb||'256'),ram:+d.ram||8,renk:String(d.renk||''),not:String(d.not||''),adet:+d.adet||0,alis:+d.alis||0,satis:+d.satis||0,iskonto:+d.iskonto||0,toplamAlis:+d.toplamAlis||0,toplamSatis:+d.toplamSatis||0,kar:+d.kar||0,satılanAdet:+d.satılanAdet||0,imeiList:Array.isArray(d.imeiList)?d.imeiList:tryP(d.imeiList),satildiImei:Array.isArray(d.satildiImei)?d.satildiImei:tryP(d.satildiImei)};}
 function saveUrl(){const u=document.getElementById('urlInp')?.value.trim();if(!u||!u.startsWith('https://script.google.com')){toast('Geçerli URL girin!','error');return;}URL2=u;localStorage.setItem(SK,u);init();}
 function changeUrl(){const n=prompt('Yeni Apps Script URL:',URL2);if(n&&n.trim()){URL2=n.trim();localStorage.setItem(SK,URL2);syncData();}}
-async function init(){initTheme();startClock();if(!URL2){const setup=document.getElementById('setupScr');if(setup)setup.style.display='flex';const main=document.getElementById('mainC');if(main)main.style.display='none';const hdr=document.getElementById('hdr');if(hdr)hdr.style.display='none';const nav=document.getElementById('nav');if(nav)nav.style.display='none';return;}const setup=document.getElementById('setupScr');if(setup)setup.style.display='none';const hdr=document.getElementById('hdr');if(hdr)hdr.style.display='flex';const nav=document.getElementById('nav');if(nav)nav.style.display='flex';const main=document.getElementById('mainC');if(main)main.style.display='block';await syncData();initSortable();initChartButtons();initAnalizButtons();initElChartButtons();setupFocusOnTouch();}
+async function init(){initTheme();startClock();if(!URL2){const setup=document.getElementById('setupScr');if(setup)setup.style.display='flex';return;}const setup=document.getElementById('setupScr');if(setup)setup.style.display='none';const hdr=document.getElementById('hdr');if(hdr)hdr.style.display='flex';const nav=document.getElementById('nav');if(nav)nav.style.display='flex';const main=document.getElementById('mainC');if(main)main.style.display='block';await syncData();initSortable();initChartButtons();initAnalizButtons();initElChartButtons();setupFocusOnTouch();}
 function initChartButtons(){const btns=document.querySelectorAll('#chartPeriodButtons .chart-btn');btns.forEach(btn=>{btn.addEventListener('click',()=>{btns.forEach(b=>b.classList.remove('active'));btn.classList.add('active');chartPeriod=btn.dataset.period;rCharts();});});}
 function initAnalizButtons(){const btns=document.querySelectorAll('#analizSortButtons .analiz-sort-btn');btns.forEach(btn=>{btn.addEventListener('click',()=>{btns.forEach(b=>b.classList.remove('active'));btn.classList.add('active');analizSort=btn.dataset.sort;rUrunler();});});}
 function initElChartButtons(){const btns=document.querySelectorAll('#elChartButtons .el-chart-btn');btns.forEach(btn=>{btn.addEventListener('click',()=>{btns.forEach(b=>b.classList.remove('active'));btn.classList.add('active');currentElFilter=btn.dataset.el;updateElChart();});});}
