@@ -445,7 +445,38 @@ function tryP(s){try{const v=JSON.parse(s||'[]');return Array.isArray(v)?v:[];}c
 function norm(d){let tarih=String(d.tarih||'');if(tarih.includes('T'))tarih=tarih.split('T')[0];return{...d,id:String(d.id||''),tarih:tarih,model:String(d.model||''),el:String(d.el||'1.El'),gb:String(d.gb||'256'),ram:+d.ram||8,renk:String(d.renk||''),not:String(d.not||''),adet:+d.adet||0,alis:+d.alis||0,satis:+d.satis||0,iskonto:+d.iskonto||0,toplamAlis:+d.toplamAlis||0,toplamSatis:+d.toplamSatis||0,kar:+d.kar||0,satılanAdet:+d.satılanAdet||0,imeiList:Array.isArray(d.imeiList)?d.imeiList:tryP(d.imeiList),satildiImei:Array.isArray(d.satildiImei)?d.satildiImei:tryP(d.satildiImei)};}
 function saveUrl(){const u=document.getElementById('urlInp')?.value.trim();if(!u||!u.startsWith('https://script.google.com')){toast('Geçerli URL girin!','error');return;}URL2=u;localStorage.setItem(SK,u);init();}
 function changeUrl(){const n=prompt('Yeni Apps Script URL:',URL2);if(n&&n.trim()){URL2=n.trim();localStorage.setItem(SK,URL2);syncData();}}
-async function init(){initTheme();startClock();if(!URL2){const setup=document.getElementById('setupScr');if(setup)setup.style.display='flex';return;}const setup=document.getElementById('setupScr');if(setup)setup.style.display='none';const hdr=document.getElementById('hdr');if(hdr)hdr.style.display='flex';const nav=document.getElementById('nav');if(nav)nav.style.display='flex';const main=document.getElementById('mainC');if(main)main.style.display='block';await syncData();initSortable();initChartButtons();initAnalizButtons();initElChartButtons();setupFocusOnTouch();}
+async function init(){
+    initTheme();
+    startClock();
+    
+    if(!URL2){
+        const setup = document.getElementById('setupScr');
+        if(setup) setup.style.display = 'flex';
+        const main = document.getElementById('mainC');
+        if(main) main.style.display = 'none';
+        const hdr = document.getElementById('hdr');
+        if(hdr) hdr.style.display = 'none';
+        const nav = document.getElementById('nav');
+        if(nav) nav.style.display = 'none';
+        return;
+    }
+    
+    const setup = document.getElementById('setupScr');
+    if(setup) setup.style.display = 'none';
+    const hdr = document.getElementById('hdr');
+    if(hdr) hdr.style.display = 'flex';
+    const nav = document.getElementById('nav');
+    if(nav) nav.style.display = 'flex';
+    const main = document.getElementById('mainC');
+    if(main) main.style.display = 'block';
+    
+    await syncData();
+    initSortable();
+    initChartButtons();
+    initAnalizButtons();
+    initElChartButtons();
+    setupFocusOnTouch();
+}
 function initChartButtons(){const btns=document.querySelectorAll('#chartPeriodButtons .chart-btn');btns.forEach(btn=>{btn.addEventListener('click',()=>{btns.forEach(b=>b.classList.remove('active'));btn.classList.add('active');chartPeriod=btn.dataset.period;rCharts();});});}
 function initAnalizButtons(){const btns=document.querySelectorAll('#analizSortButtons .analiz-sort-btn');btns.forEach(btn=>{btn.addEventListener('click',()=>{btns.forEach(b=>b.classList.remove('active'));btn.classList.add('active');analizSort=btn.dataset.sort;rUrunler();});});}
 function initElChartButtons(){const btns=document.querySelectorAll('#elChartButtons .el-chart-btn');btns.forEach(btn=>{btn.addEventListener('click',()=>{btns.forEach(b=>b.classList.remove('active'));btn.classList.add('active');currentElFilter=btn.dataset.el;updateElChart();});});}
