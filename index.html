@@ -546,7 +546,11 @@ async function zoomIn(){if(!currentVideoTrack){toast('Kamera başlatılmamış, 
 async function zoomOut(){if(!currentVideoTrack){toast('Kamera başlatılmamış, önce Tara butonuna basın','error');return;}const capabilities=currentVideoTrack.getCapabilities();if(capabilities.zoom){const currentZoom=currentVideoTrack.getSettings().zoom||1;const minZoom=capabilities.zoom.min||1;const newZoom=Math.max(minZoom,currentZoom-0.5);await currentVideoTrack.applyConstraints({advanced:[{zoom:newZoom}]});toast(`Zoom: %${Math.round(newZoom*100)}`,'success');}else{toast('Bu cihaz zoom desteklemiyor','error');}}
 async function toggleFlash(){if(!currentVideoTrack){toast('Kamera başlatılmamış, önce Tara butonuna basın','error');return;}const capabilities=currentVideoTrack.getCapabilities();if(capabilities.torch){const newState=!currentVideoTrack.getSettings().torch;await currentVideoTrack.applyConstraints({advanced:[{torch:newState}]});toast(newState?'💡 Flaş açık':'💡 Flaş kapalı','success');}else{toast('❌ Bu cihaz flaşı desteklemiyor','error');}}
 function setupFocusOnTouch(){const video=document.getElementById('bvideo');if(!video)return;video.addEventListener('click',async(e)=>{if(!currentVideoTrack){toast('Kamera başlatılmamış, önce Tara butonuna basın','error');return;}const rect=video.getBoundingClientRect();const x=(e.clientX-rect.left)/rect.width;const y=(e.clientY-rect.top)/rect.height;const point={x:Math.min(1,Math.max(0,x)),y:Math.min(1,Math.max(0,y))};try{const capabilities=currentVideoTrack.getCapabilities();if(capabilities.focusMode&&capabilities.focusMode.includes('continuous')&&capabilities.pointsOfInterest){await currentVideoTrack.applyConstraints({advanced:[{focusMode:'continuous'},{pointsOfInterest:[point]}]});toast('🔍 Odaklandı','success');}else if(capabilities.focusMode&&capabilities.focusMode.includes('auto')){await currentVideoTrack.applyConstraints({advanced:[{focusMode:'auto'}]});toast('🔍 Otomatik odaklandı','success');}else{toast('⚠️ Bu cihaz dokunmayla odaklamayı desteklemiyor','error');}}catch(err){console.error('Odaklama hatası:',err);toast('Odaklama başarısız','error');}});}
-initTheme();init();
+// Sayfa tamamen yüklendikten sonra init çalışsın
+document.addEventListener('DOMContentLoaded', function() {
+    initTheme();
+    init();
+});
 </script>
     <div id="setupScr" class="setup" style="display:flex; position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:9999; align-items:center; justify-content:center">
   <div class="scard">
