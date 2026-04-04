@@ -448,7 +448,7 @@ async function init(){
     initTheme();
     startClock();
     
-    // localStorage'dan URL'yi tekrar oku (güvenlik için)
+    // localStorage'dan URL'yi al
     let storedUrl = localStorage.getItem(SK);
     if(storedUrl && storedUrl !== ''){
         URL2 = storedUrl;
