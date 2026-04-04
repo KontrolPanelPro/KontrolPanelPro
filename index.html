@@ -603,6 +603,40 @@ async function zoomOut(){if(!currentVideoTrack){toast('Kamera başlatılmamış,
 async function toggleFlash(){if(!currentVideoTrack){toast('Kamera başlatılmamış, önce Tara butonuna basın','error');return;}const capabilities=currentVideoTrack.getCapabilities();if(capabilities.torch){const newState=!currentVideoTrack.getSettings().torch;await currentVideoTrack.applyConstraints({advanced:[{torch:newState}]});toast(newState?'💡 Flaş açık':'💡 Flaş kapalı','success');}else{toast('❌ Bu cihaz flaşı desteklemiyor','error');}}
 function setupFocusOnTouch(){const video=document.getElementById('bvideo');if(!video)return;video.addEventListener('click',async(e)=>{if(!currentVideoTrack){toast('Kamera başlatılmamış, önce Tara butonuna basın','error');return;}const rect=video.getBoundingClientRect();const x=(e.clientX-rect.left)/rect.width;const y=(e.clientY-rect.top)/rect.height;const point={x:Math.min(1,Math.max(0,x)),y:Math.min(1,Math.max(0,y))};try{const capabilities=currentVideoTrack.getCapabilities();if(capabilities.focusMode&&capabilities.focusMode.includes('continuous')&&capabilities.pointsOfInterest){await currentVideoTrack.applyConstraints({advanced:[{focusMode:'continuous'},{pointsOfInterest:[point]}]});toast('🔍 Odaklandı','success');}else if(capabilities.focusMode&&capabilities.focusMode.includes('auto')){await currentVideoTrack.applyConstraints({advanced:[{focusMode:'auto'}]});toast('🔍 Otomatik odaklandı','success');}else{toast('⚠️ Bu cihaz dokunmayla odaklamayı desteklemiyor','error');}}catch(err){console.error('Odaklama hatası:',err);toast('Odaklama başarısız','error');}});}
 initTheme();init();
+    // init fonksiyonu - EKLEYİN
+async function init(){
+    initTheme();
+    startClock();
+    
+    // URL varsa direkt ana ekranı göster
+    if(URL2 && URL2 !== ''){
+        const setup = document.getElementById('setupScr');
+        if(setup) setup.style.display = 'none';
+        const hdr = document.getElementById('hdr');
+        if(hdr) hdr.style.display = 'flex';
+        const nav = document.getElementById('nav');
+        if(nav) nav.style.display = 'flex';
+        const main = document.getElementById('mainC');
+        if(main) main.style.display = 'block';
+        await syncData();
+        initSortable();
+        initChartButtons();
+        initAnalizButtons();
+        initElChartButtons();
+        setupFocusOnTouch();
+        return;
+    }
+    
+    // URL yoksa setup ekranını göster
+    const setup = document.getElementById('setupScr');
+    if(setup) setup.style.display = 'flex';
+    const main = document.getElementById('mainC');
+    if(main) main.style.display = 'none';
+    const hdr = document.getElementById('hdr');
+    if(hdr) hdr.style.display = 'none';
+    const nav = document.getElementById('nav');
+    if(nav) nav.style.display = 'none';
+}
 </script>
     <div id="setupScr" class="setup" style="display:flex; position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:9999; align-items:center; justify-content:center">
   <div class="scard">
