@@ -436,39 +436,6 @@ function saveUrl(){
     
     syncData();
 }
-function changeUrl(){const n=prompt('Yeni Apps Script URL:',URL2);if(n&&n.trim()){URL2=n.trim();localStorage.setItem(SK,URL2);syncData();}}
-async function init(){
-    initTheme();
-    startClock();
-    
-    if(!URL2){
-        const setup = document.getElementById('setupScr');
-        if(setup) setup.style.display = 'flex';
-        const main = document.getElementById('mainC');
-        if(main) main.style.display = 'none';
-        const hdr = document.getElementById('hdr');
-        if(hdr) hdr.style.display = 'none';
-        const nav = document.getElementById('nav');
-        if(nav) nav.style.display = 'none';
-        return;
-    }
-    
-    const setup = document.getElementById('setupScr');
-    if(setup) setup.style.display = 'none';
-    const hdr = document.getElementById('hdr');
-    if(hdr) hdr.style.display = 'flex';
-    const nav = document.getElementById('nav');
-    if(nav) nav.style.display = 'flex';
-    const main = document.getElementById('mainC');
-    if(main) main.style.display = 'block';
-    
-    await syncData();
-    initSortable();
-    initChartButtons();
-    initAnalizButtons();
-    initElChartButtons();
-    setupFocusOnTouch();
-}
 function initChartButtons(){const btns=document.querySelectorAll('#chartPeriodButtons .chart-btn');btns.forEach(btn=>{btn.addEventListener('click',()=>{btns.forEach(b=>b.classList.remove('active'));btn.classList.add('active');chartPeriod=btn.dataset.period;rCharts();});});}
 function initAnalizButtons(){const btns=document.querySelectorAll('#analizSortButtons .analiz-sort-btn');btns.forEach(btn=>{btn.addEventListener('click',()=>{if(analizSort===btn.dataset.sort){analizSortDirection=analizSortDirection==='desc'?'asc':'desc';}else{analizSort=btn.dataset.sort;analizSortDirection='desc';}btns.forEach(b=>b.classList.remove('active'));btn.classList.add('active');rUrunler();});});}
 function initElChartButtons(){const btns=document.querySelectorAll('#elChartButtons .el-chart-btn');btns.forEach(btn=>{btn.addEventListener('click',()=>{btns.forEach(b=>b.classList.remove('active'));btn.classList.add('active');currentElFilter=btn.dataset.el;updateElChart();});});}
