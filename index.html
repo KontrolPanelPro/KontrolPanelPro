@@ -425,6 +425,7 @@ function saveUrl(){
     URL2 = u;
     localStorage.setItem(SK, u);
     
+    // Setup ekranını gizle, ana ekranı göster
     const setup = document.getElementById('setupScr');
     if(setup) setup.style.display = 'none';
     const hdr = document.getElementById('hdr');
