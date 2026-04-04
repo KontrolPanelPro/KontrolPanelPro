@@ -698,55 +698,34 @@ document.addEventListener('DOMContentLoaded', function() {
     initTheme();
     init();
 });
-   // ============ TARİHÇE VE BİRLEŞTİRME ÖZELLİĞİ ============
-
-// Birleştirilmiş veriyi oluşturan fonksiyon
-function getBirlesmisVeri() {
-    const map = new Map();
-    D.forEach(item => {
-        const key = `${item.model}_${item.el}_${item.gb}_${item.ram}`;
-        if(map.has(key)) {
-            const existing = map.get(key);
-            const yeniAdet = existing.adet + item.adet;
-            const yeniToplamAlis = existing.toplamAlis + item.toplamAlis;
-            const yeniToplamSatis = existing.toplamSatis + item.toplamSatis;
-            existing.adet = yeniAdet;
-            existing.toplamAlis = yeniToplamAlis;
-            existing.toplamSatis = yeniToplamSatis;
-            existing.alis = yeniToplamAlis / yeniAdet;
-            existing.satis = yeniToplamSatis / yeniAdet;
-            existing.kar = yeniToplamSatis - yeniToplamAlis;
-            existing.satılanAdet = (existing.satılanAdet||0) + (item.satılanAdet||0);
-            if(item.imeiList) existing.imeiList = [...(existing.imeiList||[]), ...item.imeiList];
-            if(item.satildiImei) existing.satildiImei = [...(existing.satildiImei||[]), ...item.satildiImei];
-            if(new Date(item.tarih) < new Date(existing.tarih)) existing.tarih = item.tarih;
-        } else {
-            map.set(key, {...item, imeiList: [...(item.imeiList||[])], satildiImei: [...(item.satildiImei||[])]});
-        }
-    });
-    return Array.from(map.values());
-}
-
-// Tarihçe gösterici
+  // ============ TARİHÇE ÖZELLİĞİ (TEK VE ÇALIŞAN) ============
 window.tarihceGoster = function(id) {
-    const birlesmisD = getBirlesmisVeri();
-    const item = birlesmisD.find(x => x.id === id);
+    const item = D.find(x => x.id === id);
     if(!item) {
         toast('Ürün bulunamadı', 'error');
         return;
     }
     
-    // Bu ürüne ait tüm kayıtları bul
-    const tumKayitlar = D.filter(x => x.model === item.model && x.el === item.el && x.gb === item.gb && x.ram === item.ram);
-    const tarihGrup = {};
+    const tumKayitlar = D.filter(x => 
+        x.model === item.model && 
+        x.el === item.el && 
+        x.gb === item.gb && 
+        x.ram === item.ram
+    );
     
+    const tarihGrup = {};
     tumKayitlar.forEach(kayit => {
-        const key = kayit.tarih;
-        if(!tarihGrup[key]) {
-            tarihGrup[key] = { tarih: kayit.tarih, adet: 0, alis: kayit.alis, satis: kayit.satis, imeiList: [] };
+        if(!tarihGrup[kayit.tarih]) {
+            tarihGrup[kayit.tarih] = {
+                tarih: kayit.tarih,
+                adet: 0,
+                alis: kayit.alis,
+                satis: kayit.satis,
+                imeiList: []
+            };
         }
-        tarihGrup[key].adet += kayit.adet;
-        if(kayit.imeiList) tarihGrup[key].imeiList.push(...kayit.imeiList);
+        tarihGrup[kayit.tarih].adet += kayit.adet;
+        if(kayit.imeiList) tarihGrup[kayit.tarih].imeiList.push(...kayit.imeiList);
     });
     
     const tarihList = Object.values(tarihGrup).sort((a,b) => new Date(b.tarih) - new Date(a.tarih));
@@ -784,13 +763,16 @@ window.tarihceGoster = function(id) {
         html += `</div>`;
     });
     
-    const toplamKar = item.toplamSatis - item.toplamAlis;
+    const toplamKar = tumKayitlar.reduce((sum, k) => sum + k.kar, 0);
+    const toplamAdet = tumKayitlar.reduce((sum, k) => sum + k.adet, 0);
+    const satilanAdet = tumKayitlar.reduce((sum, k) => sum + (k.satılanAdet||0), 0);
+    
     html += `</div>
         <div style="margin-top:16px;padding-top:12px;border-top:2px solid var(--br);text-align:center">
             <div style="display:flex;justify-content:space-around;margin-bottom:8px">
-                <div><span style="font-size:11px">📦 Toplam</span><br><b>${item.adet} adet</b></div>
-                <div><span style="font-size:11px">✅ Satılan</span><br><b>${item.satılanAdet||0} adet</b></div>
-                <div><span style="font-size:11px">📦 Stokta</span><br><b>${item.adet - (item.satılanAdet||0)} adet</b></div>
+                <div><span style="font-size:11px">📦 Toplam</span><br><b>${toplamAdet} adet</b></div>
+                <div><span style="font-size:11px">✅ Satılan</span><br><b>${satilanAdet} adet</b></div>
+                <div><span style="font-size:11px">📦 Stokta</span><br><b>${toplamAdet - satilanAdet} adet</b></div>
             </div>
             <div><span style="font-size:11px">📈 Toplam Kar</span><br><b class="tgn">${fmt(toplamKar)}</b></div>
         </div>
@@ -803,56 +785,31 @@ window.tarihceGoster = function(id) {
     document.body.appendChild(modal);
 };
 
-// Stok tablosuna 📅 butonu ekle (mevcut rStok'u korur)
-if(document.getElementById('stokTb')?.rows.length > 0) {
+// 📅 butonlarını güncelle
+function tarihceButonEkle() {
     document.querySelectorAll('#stokTb tr').forEach(row => {
         const satBtn = row.querySelector('td:last-child .btn.bs');
-        if(satBtn && !row.querySelector('td:last-child .btn.bg2:last-child')?.innerHTML.includes('📅')) {
-            const onclickAttr = satBtn.getAttribute('onclick');
-            const idMatch = onclickAttr?.match(/'([^']+)'/);
+        if(satBtn && !row.querySelector('td:last-child .btn.bg2:last-child')?.innerHTML?.includes('📅')) {
+            const idMatch = satBtn.getAttribute('onclick')?.match(/'([^']+)'/);
             if(idMatch) {
-                const id = idMatch[1];
-                const td = row.querySelector('td:last-child');
                 const btn = document.createElement('button');
                 btn.className = 'btn bg2 bsm';
                 btn.innerHTML = '📅';
-                btn.onclick = () => tarihceGoster(id);
                 btn.style.padding = '4px 6px';
                 btn.style.marginLeft = '4px';
-                td.appendChild(btn);
+                btn.onclick = () => tarihceGoster(idMatch[1]);
+                row.querySelector('td:last-child').appendChild(btn);
             }
         }
     });
-    console.log('✅ Tarihçe butonları eklendi');
 }
 
-// rStok fonksiyonunu güncelle (yeni eklenen ürünlerde de buton olsun)
-const orijinalRStok = window.rStok;
-window.rStok = function() {
-    orijinalRStok();
-    setTimeout(() => {
-        document.querySelectorAll('#stokTb tr').forEach(row => {
-            const satBtn = row.querySelector('td:last-child .btn.bs');
-            if(satBtn && !row.querySelector('td:last-child .btn.bg2:last-child')?.innerHTML.includes('📅')) {
-                const onclickAttr = satBtn.getAttribute('onclick');
-                const idMatch = onclickAttr?.match(/'([^']+)'/);
-                if(idMatch) {
-                    const id = idMatch[1];
-                    const td = row.querySelector('td:last-child');
-                    const btn = document.createElement('button');
-                    btn.className = 'btn bg2 bsm';
-                    btn.innerHTML = '📅';
-                    btn.onclick = () => tarihceGoster(id);
-                    btn.style.padding = '4px 6px';
-                    btn.style.marginLeft = '4px';
-                    td.appendChild(btn);
-                }
-            }
-        });
-    }, 50);
-};
+// Sayfa yüklendiğinde ve rStok çağrıldığında butonları ekle
+setTimeout(tarihceButonEkle, 500);
+const originalRStok = window.rStok;
+window.rStok = function() { originalRStok(); setTimeout(tarihceButonEkle, 100); };
 
-console.log('✅ Tarihçe özelliği aktif! Stok sayfasında 📅 butonlarına tıkla.');
+console.log('✅ Tarihçe özelliği eklendi');
 </script>
     <div id="setupScr" class="setup" style="display:flex; position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:9999; align-items:center; justify-content:center">
   <div class="scard">
