@@ -991,23 +991,6 @@ if(document.getElementById('stokTb')) {
 }
 
 console.log('✅ Birleştirme, tarihçe ve SIRALAMA aktif!');
-
-// MOBİL İÇİN URL KONTROL FİX'i
-(function() {
-    let kayitliUrl = localStorage.getItem('phonetrack_url');
-    if(kayitliUrl && kayitliUrl !== '') {
-        URL2 = kayitliUrl;
-        const setup = document.getElementById('setupScr');
-        if(setup) setup.style.display = 'none';
-        const hdr = document.getElementById('hdr');
-        if(hdr) hdr.style.display = 'flex';
-        const nav = document.getElementById('nav');
-        if(nav) nav.style.display = 'flex';
-        const main = document.getElementById('mainC');
-        if(main) main.style.display = 'block';
-    }
-})();
-
 </script>
     <div id="setupScr" class="setup" style="display:flex; position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:9999; align-items:center; justify-content:center">
   <div class="scard">
