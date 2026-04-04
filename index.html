@@ -542,8 +542,47 @@ async function confirmEkle(){const model=document.getElementById('bf_m')?.value.
 function cancelEkle(){const eklP=document.getElementById('bEklP');if(eklP)eklP.style.display='none';}
 function toast(msg,type=''){const el=document.getElementById('toast');if(!el)return;el.textContent=msg;el.className='show'+(type?' '+type:'');setTimeout(()=>el.className='',3000);}
 function rAll(){rDash();const act=document.querySelector('.page.active');const id=act?act.id.replace('page-',''):'';if(id==='stok')rStok();else if(id==='islemler')rIslemler();else if(id==='urunler')rUrunler();else if(id==='imei')rImei();else if(id==='raporlar')rRaporlarSayfasi();else if(id==='hareketler')stokHareketRaporu();rStok();rIslemler();}
-async function zoomIn(){if(!currentVideoTrack){toast('Kamera başlatılmamış, önce Tara butonuna basın','error');return;}const capabilities=currentVideoTrack.getCapabilities();if(capabilities.zoom){const currentZoom=currentVideoTrack.getSettings().zoom||1;const maxZoom=capabilities.zoom.max;const newZoom=Math.min(maxZoom,currentZoom+0.5);await currentVideoTrack.applyConstraints({advanced:[{zoom:newZoom}]});toast(`Zoom: %${Math.round(newZoom*100)}`,'success');}else{toast('Bu cihaz zoom desteklemiyor','error');}}
-async function zoomOut(){if(!currentVideoTrack){toast('Kamera başlatılmamış, önce Tara butonuna basın','error');return;}const capabilities=currentVideoTrack.getCapabilities();if(capabilities.zoom){const currentZoom=currentVideoTrack.getSettings().zoom||1;const minZoom=capabilities.zoom.min||1;const newZoom=Math.max(minZoom,currentZoom-0.5);await currentVideoTrack.applyConstraints({advanced:[{zoom:newZoom}]});toast(`Zoom: %${Math.round(newZoom*100)}`,'success');}else{toast('Bu cihaz zoom desteklemiyor','error');}}
+async function zoomIn() {
+    if(!currentVideoTrack){
+        toast('Önce bir barkod/QR butonuna basın','error');
+        return;
+    }
+    try {
+        const capabilities = currentVideoTrack.getCapabilities();
+        if(capabilities.zoom){
+            const currentZoom = currentVideoTrack.getSettings().zoom || 1;
+            const maxZoom = capabilities.zoom.max;
+            const newZoom = Math.min(maxZoom, currentZoom + 0.5);
+            await currentVideoTrack.applyConstraints({ advanced: [{ zoom: newZoom }] });
+            toast(`Zoom: %${Math.round(newZoom * 100)}`, 'success');
+        } else {
+            toast('Bu cihaz zoom desteklemiyor', 'error');
+        }
+    } catch(e) {
+        toast('Zoom hatası: ' + e.message, 'error');
+    }
+}
+
+async function zoomOut() {
+    if(!currentVideoTrack){
+        toast('Önce bir barkod/QR butonuna basın','error');
+        return;
+    }
+    try {
+        const capabilities = currentVideoTrack.getCapabilities();
+        if(capabilities.zoom){
+            const currentZoom = currentVideoTrack.getSettings().zoom || 1;
+            const minZoom = capabilities.zoom.min || 1;
+            const newZoom = Math.max(minZoom, currentZoom - 0.5);
+            await currentVideoTrack.applyConstraints({ advanced: [{ zoom: newZoom }] });
+            toast(`Zoom: %${Math.round(newZoom * 100)}`, 'success');
+        } else {
+            toast('Bu cihaz zoom desteklemiyor', 'error');
+        }
+    } catch(e) {
+        toast('Zoom hatası: ' + e.message, 'error');
+    }
+}
 async function toggleFlash(){if(!currentVideoTrack){toast('Kamera başlatılmamış, önce Tara butonuna basın','error');return;}const capabilities=currentVideoTrack.getCapabilities();if(capabilities.torch){const newState=!currentVideoTrack.getSettings().torch;await currentVideoTrack.applyConstraints({advanced:[{torch:newState}]});toast(newState?'💡 Flaş açık':'💡 Flaş kapalı','success');}else{toast('❌ Bu cihaz flaşı desteklemiyor','error');}}
 function setupFocusOnTouch(){const video=document.getElementById('bvideo');if(!video)return;video.addEventListener('click',async(e)=>{if(!currentVideoTrack){toast('Kamera başlatılmamış, önce Tara butonuna basın','error');return;}const rect=video.getBoundingClientRect();const x=(e.clientX-rect.left)/rect.width;const y=(e.clientY-rect.top)/rect.height;const point={x:Math.min(1,Math.max(0,x)),y:Math.min(1,Math.max(0,y))};try{const capabilities=currentVideoTrack.getCapabilities();if(capabilities.focusMode&&capabilities.focusMode.includes('continuous')&&capabilities.pointsOfInterest){await currentVideoTrack.applyConstraints({advanced:[{focusMode:'continuous'},{pointsOfInterest:[point]}]});toast('🔍 Odaklandı','success');}else if(capabilities.focusMode&&capabilities.focusMode.includes('auto')){await currentVideoTrack.applyConstraints({advanced:[{focusMode:'auto'}]});toast('🔍 Otomatik odaklandı','success');}else{toast('⚠️ Bu cihaz dokunmayla odaklamayı desteklemiyor','error');}}catch(err){console.error('Odaklama hatası:',err);toast('Odaklama başarısız','error');}});}
 // Sayfa tamamen yüklendikten sonra init çalışsın
