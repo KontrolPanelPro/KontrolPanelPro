@@ -590,25 +590,28 @@ async function startScanBarcode() {
     try {
         bScan = true;
         
-        // KAMERA BAŞLAT
         const stream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: { exact: 'environment' } }
         });
         const videoEl = document.getElementById('bvideo');
         videoEl.srcObject = stream;
         await videoEl.play();
-        currentVideoTrack = stream.getVideoTracks()[0];  // ZOOM İÇİN KRİTİK
+        currentVideoTrack = stream.getVideoTracks()[0];
         
         const hints = new Map();
         hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
             ZXing.BarcodeFormat.CODE_128,
+            ZXing.BarcodeFormat.CODE_39,
+            ZXing.BarcodeFormat.CODE_93,
+            ZXing.BarcodeFormat.CODABAR,
             ZXing.BarcodeFormat.EAN_13,
             ZXing.BarcodeFormat.EAN_8,
-            ZXing.BarcodeFormat.CODE_39,
             ZXing.BarcodeFormat.UPC_A,
             ZXing.BarcodeFormat.UPC_E,
             ZXing.BarcodeFormat.ITF,
-            ZXing.BarcodeFormat.CODABAR
+            ZXing.BarcodeFormat.PDF_417,
+            ZXing.BarcodeFormat.DATA_MATRIX,
+            ZXing.BarcodeFormat.AZTEC
         ]);
         hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
         
