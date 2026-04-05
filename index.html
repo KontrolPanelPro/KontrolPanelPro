@@ -826,17 +826,34 @@ window.tarihceGoster = function(id) {
     };
 };
 
-// 3. Stok tablosunu birleştirilmiş veri ile yenile
+// 3. Stok tablosunu birleştirilmiş veri ile yenile (SIRALAMA DESTEKLİ)
 function stokTablosunuGuncelle() {
-    const birlesmis = birlesikVeriGetir();
+    let birlesmis = birlesikVeriGetir();
+    
+    // Sıralama kontrolü
+    const sort = sortState['stokTable'];
+    if(sort) {
+        const field = sort.field;
+        const direction = sort.yon;
+        birlesmis = sortData(birlesmis, field, direction);
+    } else {
+        birlesmis = birlesmis.sort((a,b) => b.tarih.localeCompare(a.tarih));
+    }
+    
     const tb = document.getElementById('stokTb');
     if(!tb) return;
+    
+    if(!birlesmis.length) {
+        tb.innerHTML = '<tr><td colspan="15"><div class="empty">Stok verisi yok</div></td></tr>';
+        return;
+    }
     
     tb.innerHTML = birlesmis.map(d => {
         const kalan = d.adet - (d.satılanAdet||0);
         const birimKar = d.satis - d.alis;
         const birimKarYuzde = d.satis > 0 ? ((birimKar/d.satis)*100).toFixed(1) : 0;
         const toplamKar = birimKar * kalan;
+        const toplamKarYuzde = d.toplamSatis > 0 ? ((toplamKar/d.toplamSatis)*100).toFixed(1) : 0;
         const rafOmru = Math.floor((new Date() - new Date(d.tarih)) / (1000*60*60*24));
         const durum = kalan <= 0 ? '🔴 Tükendi' : (kalan <= 3 ? `⚠️ ${kalan} kaldı` : `✅ ${kalan} adet`);
         const durumRenk = kalan <= 0 ? 'sby' : (kalan <= 3 ? 'sbk' : 'sbv');
@@ -853,7 +870,7 @@ function stokTablosunuGuncelle() {
             <td class="${birimKar>=0?'tgn':'trd'}">${fmt(birimKar)}</td>
             <td>${birimKarYuzde}%</td>
             <td class="${toplamKar>=0?'tgn':'trd'}">${fmt(toplamKar)}</td>
-            <td>${(d.toplamSatis>0?((toplamKar/d.toplamSatis)*100).toFixed(1):0)}%</td>
+            <td>${toplamKarYuzde}%</td>
             <td>${rafOmru} gün</td>
             <td style="white-space:nowrap">
                 <button class="btn bs bsm" onclick="openSatMo('${d.id}')">✅</button>
@@ -865,16 +882,6 @@ function stokTablosunuGuncelle() {
     }).join('');
     console.log('✅ Stok tablosu birleştirilmiş veriyle güncellendi,', birlesmis.length, 'ürün');
 }
-
-// 4. rStok fonksiyonunu değiştir
-window.rStok = stokTablosunuGuncelle;
-
-// Sayfa yüklendiğinde çalıştır
-if(document.getElementById('stokTb')) {
-    stokTablosunuGuncelle();
-}
-
-console.log('✅ Birleştirme ve tarihçe özelliği aktif!');
 </script>
     <div id="setupScr" class="setup" style="display:flex; position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:9999; align-items:center; justify-content:center">
   <div class="scard">
