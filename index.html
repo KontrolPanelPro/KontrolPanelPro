@@ -407,7 +407,20 @@ function startClock(){if(clockInterval)clearInterval(clockInterval);clockInterva
 function initSortable(){document.querySelectorAll('.sortable').forEach(th=>{th.removeEventListener('click',sortClickHandler);th.addEventListener('click',sortClickHandler);});}
 function sortClickHandler(e){e.stopPropagation();const th=this;const table=th.closest('.tw');if(!table)return;const tableId=table.id;const field=th.dataset.sort;if(!field)return;let currentState=sortState[tableId]||{};let newDirection='asc';if(currentState.field===field)newDirection=currentState.yon==='asc'?'desc':'asc';th.closest('thead').querySelectorAll('.sortable').forEach(s=>s.classList.remove('asc','desc'));th.classList.add(newDirection);sortState[tableId]={field:field,yon:newDirection};const pageId=document.querySelector('.page.active')?.id;if(pageId==='page-stok')rStok();else if(pageId==='page-islemler')rIslemler();else if(pageId==='page-imei')rImei();}
 function sortData(data,field,direction){if(!field||!data.length)return data;return[...data].sort((a,b)=>{let valA=a[field],valB=b[field];const numericFields=['adet','satılanAdet','ram','gb','alis','satis','iskonto','toplamAlis','toplamSatis','kar','birimKar','birimKarYuzde','toplamKar','toplamKarYuzde','rafOmru'];if(numericFields.includes(field)){valA=Number(valA)||0;valB=Number(valB)||0;return direction==='asc'?valA-valB:valB-valA;}if(field==='kalan'){valA=(a.adet||0)-(a.satılanAdet||0);valB=(b.adet||0)-(b.satılanAdet||0);return direction==='asc'?valA-valB:valB-valA;}if(field==='tarih'){valA=new Date(valA);valB=new Date(valB);return direction==='asc'?valA-valB:valB-valA;}valA=String(valA||'').toLowerCase();valB=String(valB||'').toLowerCase();return direction==='asc'?valA.localeCompare(valB,'tr'):valB.localeCompare(valA,'tr');});}
-function formatTarih(iso){if(!iso)return '';let str=String(iso);if(str.includes('T'))str=str.split('T')[0];const parts=str.split('-');if(parts.length===3)return `${parts[2]}.${parts[1]}.${parts[0]}`;return str;}
+function formatTarih(iso){
+    if(!iso) return '';
+    let str = String(iso);
+    // Eğer saat dilimi düzeltmesi yapmak isterseniz
+    if(str.includes('T')){
+        str = str.split('T')[0];
+    }
+    // Tarihi doğrudan ayır
+    const parts = str.split('-');
+    if(parts.length === 3){
+        return `${parts[2]}.${parts[1]}.${parts[0]}`;
+    }
+    return str;
+}
 function getTodayDate(){return new Date().toLocaleDateString('en-CA');}
 function setDot(s,t){const d=document.getElementById('dot'),tx=document.getElementById('dbtx');if(!d)return;d.className='dot'+(s==='ok'?' ok':s==='er'?' er':s==='ld'?' ld':s==='offline'?' offline':'');if(tx)tx.textContent=t;}
 function showLo(t='İşleniyor...'){const txt=document.getElementById('loTxt');if(txt)txt.textContent=t;const lo=document.getElementById('lo');if(lo)lo.classList.add('show');}
