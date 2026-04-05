@@ -448,7 +448,7 @@ async function init(){
     initTheme();
     startClock();
     
-    // localStorage'dan URL'yi al
+    // localStorage'dan URL'yi tekrar oku (güvenlik için)
     let storedUrl = localStorage.getItem(SK);
     if(storedUrl && storedUrl !== ''){
         URL2 = storedUrl;
@@ -807,114 +807,6 @@ window.tarihceGoster = function(id) {
             </div>
             <div><span style="font-size:11px">📈 Toplam Kar</span><br><b class="tgn">${fmt(toplamKar)}</b></div>
         </div>
-// ============ BİRLEŞTİRME, TARİHÇE VE SIRALAMA ============
-
-// 1. Birleştirilmiş veri
-function birlesikVeriGetir() {
-    const map = new Map();
-    D.forEach(item => {
-        const key = `${item.model}_${item.el}_${item.gb}_${item.ram}`;
-        if(map.has(key)) {
-            const existing = map.get(key);
-            const yeniAdet = existing.adet + item.adet;
-            const yeniToplamAlis = existing.toplamAlis + item.toplamAlis;
-            const yeniToplamSatis = existing.toplamSatis + item.toplamSatis;
-            existing.adet = yeniAdet;
-            existing.toplamAlis = yeniToplamAlis;
-            existing.toplamSatis = yeniToplamSatis;
-            existing.alis = yeniToplamAlis / yeniAdet;
-            existing.satis = yeniToplamSatis / yeniAdet;
-            existing.kar = yeniToplamSatis - yeniToplamAlis;
-            existing.satılanAdet = (existing.satılanAdet||0) + (item.satılanAdet||0);
-            if(item.imeiList) existing.imeiList = [...(existing.imeiList||[]), ...item.imeiList];
-            if(item.satildiImei) existing.satildiImei = [...(existing.satildiImei||[]), ...item.satildiImei];
-            if(new Date(item.tarih) < new Date(existing.tarih)) existing.tarih = item.tarih;
-        } else {
-            map.set(key, {...item, imeiList: [...(item.imeiList||[])], satildiImei: [...(item.satildiImei||[])]});
-        }
-    });
-    return Array.from(map.values());
-}
-
-// 2. Tarihçe gösterici
-window.tarihceGoster = function(id) {
-    const birlesmis = birlesikVeriGetir();
-    const item = birlesmis.find(x => x.id === id);
-    if(!item) {
-        toast('Ürün bulunamadı', 'error');
-        return;
-    }
-    
-    const tumKayitlar = D.filter(x => 
-        x.model === item.model && 
-        x.el === item.el && 
-        x.gb === item.gb && 
-        x.ram === item.ram
-    );
-    
-    const tarihGrup = {};
-    tumKayitlar.forEach(kayit => {
-        if(!tarihGrup[kayit.tarih]) {
-            tarihGrup[kayit.tarih] = {
-                tarih: kayit.tarih,
-                adet: 0,
-                alis: kayit.alis,
-                satis: kayit.satis,
-                imeiList: []
-            };
-        }
-        tarihGrup[kayit.tarih].adet += kayit.adet;
-        if(kayit.imeiList) tarihGrup[kayit.tarih].imeiList.push(...kayit.imeiList);
-    });
-    
-    const tarihList = Object.values(tarihGrup).sort((a,b) => new Date(b.tarih) - new Date(a.tarih));
-    
-    let html = `<div style="background:var(--sf);border-radius:20px;padding:20px;max-width:450px;width:100%">
-        <div style="text-align:center;margin-bottom:16px">
-            <div style="font-size:18px;font-weight:800">${item.model}</div>
-            <div style="font-size:12px;color:var(--tx2)">${item.el} · ${item.gb}GB · ${item.ram}GB RAM</div>
-        </div>
-        <div style="max-height:400px;overflow-y:auto">`;
-    
-    tarihList.forEach(t => {
-        const kar = (t.satis - t.alis) * t.adet;
-        html += `<div style="background:var(--sf2);border-radius:12px;padding:12px;margin-bottom:10px;border-left:3px solid var(--ac)">
-            <div style="display:flex;justify-content:space-between;margin-bottom:8px">
-                <span style="font-weight:700">📅 ${t.tarih}</span>
-                <span style="background:var(--ac);padding:2px 10px;border-radius:20px;font-size:11px">➕ ${t.adet} adet</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:8px">
-                <span style="color:#ef4444">💰 Alış: ${fmt(t.alis)}</span>
-                <span style="color:#06b6d4">💵 Satış: ${fmt(t.satis)}</span>
-                <span style="color:#10b981">📈 Kar: ${fmt(kar)}</span>
-            </div>`;
-        
-        if(t.imeiList && t.imeiList.length > 0) {
-            html += `<div style="margin-top:8px;padding-top:6px;border-top:1px dashed var(--br)">
-                <div style="font-size:10px;color:var(--tx3);margin-bottom:4px">📱 IMEI'ler:</div>
-                <div style="display:flex;flex-wrap:wrap;gap:4px">`;
-            t.imeiList.forEach(imei => {
-                const isSold = item.satildiImei?.includes(imei);
-                html += `<span style="font-family:monospace;font-size:10px;background:${isSold ? 'rgba(16,185,129,.15)' : 'rgba(6,182,212,.1)'};padding:3px 6px;border-radius:6px;${isSold ? 'text-decoration:line-through;color:#10b981' : 'color:#06b6d4'}">${imei}</span>`;
-            });
-            html += `</div></div>`;
-        }
-        html += `</div>`;
-    });
-    
-    const toplamKar = tumKayitlar.reduce((sum, k) => sum + k.kar, 0);
-    const toplamAdet = tumKayitlar.reduce((sum, k) => sum + k.adet, 0);
-    const satilanAdet = tumKayitlar.reduce((sum, k) => sum + (k.satılanAdet||0), 0);
-    
-    html += `</div>
-        <div style="margin-top:16px;padding-top:12px;border-top:2px solid var(--br);text-align:center">
-            <div style="display:flex;justify-content:space-around;margin-bottom:8px">
-                <div><span style="font-size:11px">📦 Toplam</span><br><b>${toplamAdet} adet</b></div>
-                <div><span style="font-size:11px">✅ Satılan</span><br><b>${satilanAdet} adet</b></div>
-                <div><span style="font-size:11px">📦 Stokta</span><br><b>${toplamAdet - satilanAdet} adet</b></div>
-            </div>
-            <div><span style="font-size:11px">📈 Toplam Kar</span><br><b class="tgn">${fmt(toplamKar)}</b></div>
-        </div>
         <button style="margin-top:16px;width:100%;padding:10px;background:var(--ac);color:white;border:none;border-radius:12px;cursor:pointer" id="tarihceKapatBtn">Kapat</button>
     </div>`;
     
@@ -924,36 +816,27 @@ window.tarihceGoster = function(id) {
     modal.innerHTML = `<div style="display:flex;align-items:center;justify-content:center">${html}</div>`;
     document.body.appendChild(modal);
     
-    document.getElementById('tarihceKapatBtn').onclick = () => modal.remove();
-    modal.onclick = (e) => { if(e.target === modal) modal.remove(); };
+    // Kapatma butonu - siyah ekran sorununu çözer
+    document.getElementById('tarihceKapatBtn').onclick = function() {
+        modal.remove();
+    };
+    // Modal dışına tıklayınca da kapat
+    modal.onclick = function(e) {
+        if(e.target === modal) modal.remove();
+    };
 };
 
-// 3. Stok tablosunu SIRALAMALI ve BİRLEŞTİRİLMİŞ göster
+// 3. Stok tablosunu birleştirilmiş veri ile yenile
 function stokTablosunuGuncelle() {
-    let birlesmis = birlesikVeriGetir();
-    
-    // Sıralama
-    const sort = sortState['stokTable'];
-    if(sort) {
-        birlesmis = sortData(birlesmis, sort.field, sort.yon);
-    } else {
-        birlesmis = birlesmis.sort((a,b) => b.tarih.localeCompare(a.tarih));
-    }
-    
+    const birlesmis = birlesikVeriGetir();
     const tb = document.getElementById('stokTb');
     if(!tb) return;
-    
-    if(!birlesmis.length) {
-        tb.innerHTML = '<tr><td colspan="15"><div class="empty">Stok verisi yok</div></td></tr>';
-        return;
-    }
     
     tb.innerHTML = birlesmis.map(d => {
         const kalan = d.adet - (d.satılanAdet||0);
         const birimKar = d.satis - d.alis;
         const birimKarYuzde = d.satis > 0 ? ((birimKar/d.satis)*100).toFixed(1) : 0;
         const toplamKar = birimKar * kalan;
-        const toplamKarYuzde = d.toplamSatis > 0 ? ((toplamKar/d.toplamSatis)*100).toFixed(1) : 0;
         const rafOmru = Math.floor((new Date() - new Date(d.tarih)) / (1000*60*60*24));
         const durum = kalan <= 0 ? '🔴 Tükendi' : (kalan <= 3 ? `⚠️ ${kalan} kaldı` : `✅ ${kalan} adet`);
         const durumRenk = kalan <= 0 ? 'sby' : (kalan <= 3 ? 'sbk' : 'sbv');
@@ -970,7 +853,7 @@ function stokTablosunuGuncelle() {
             <td class="${birimKar>=0?'tgn':'trd'}">${fmt(birimKar)}</td>
             <td>${birimKarYuzde}%</td>
             <td class="${toplamKar>=0?'tgn':'trd'}">${fmt(toplamKar)}</td>
-            <td>${toplamKarYuzde}%</td>
+            <td>${(d.toplamSatis>0?((toplamKar/d.toplamSatis)*100).toFixed(1):0)}%</td>
             <td>${rafOmru} gün</td>
             <td style="white-space:nowrap">
                 <button class="btn bs bsm" onclick="openSatMo('${d.id}')">✅</button>
@@ -980,9 +863,10 @@ function stokTablosunuGuncelle() {
             </td>
         </tr>`;
     }).join('');
+    console.log('✅ Stok tablosu birleştirilmiş veriyle güncellendi,', birlesmis.length, 'ürün');
 }
 
-// 4. rStok'u değiştir (sıralama çalışsın)
+// 4. rStok fonksiyonunu değiştir
 window.rStok = stokTablosunuGuncelle;
 
 // Sayfa yüklendiğinde çalıştır
@@ -990,7 +874,7 @@ if(document.getElementById('stokTb')) {
     stokTablosunuGuncelle();
 }
 
-console.log('✅ Birleştirme, tarihçe ve SIRALAMA aktif!');
+console.log('✅ Birleştirme ve tarihçe özelliği aktif!');
 </script>
     <div id="setupScr" class="setup" style="display:flex; position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:9999; align-items:center; justify-content:center">
   <div class="scard">
