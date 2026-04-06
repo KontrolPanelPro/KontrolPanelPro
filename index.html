@@ -811,7 +811,61 @@ function getGridColor(){return isDarkMode()?'rgba(255,255,255,0.05)':'rgba(0,0,0
 function startClock(){if(clockInterval)clearInterval(clockInterval);clockInterval=setInterval(()=>{const now=new Date();const timeStr=now.toLocaleTimeString('tr-TR');const clockSpan=document.getElementById('clockTime');if(clockSpan)clockSpan.textContent=timeStr;},1000);}
 function initSortable(){document.querySelectorAll('.sortable').forEach(th=>{th.removeEventListener('click',sortClickHandler);th.addEventListener('click',sortClickHandler);});}
 function sortClickHandler(e){e.stopPropagation();const th=this;const table=th.closest('.tw');if(!table)return;const tableId=table.id;const field=th.dataset.sort;if(!field)return;let currentState=sortState[tableId]||{};let newDirection='asc';if(currentState.field===field)newDirection=currentState.yon==='asc'?'desc':'asc';th.closest('thead').querySelectorAll('.sortable').forEach(s=>s.classList.remove('asc','desc'));th.classList.add(newDirection);sortState[tableId]={field:field,yon:newDirection};const pageId=document.querySelector('.page.active')?.id;if(pageId==='page-stok')rStok();else if(pageId==='page-islemler')rIslemler();else if(pageId==='page-imei')rImei();}
-function sortData(data,field,direction){if(!field||!data.length)return data;return[...data].sort((a,b)=>{let valA=a[field],valB=b[field];const numericFields=['adet','satılanAdet','ram','gb','alis','satis','iskonto','toplamAlis','toplamSatis','kar','birimKar','birimKarYuzde','toplamKar','toplamKarYuzde','rafOmru'];if(numericFields.includes(field)){valA=Number(valA)||0;valB=Number(valB)||0;return direction==='asc'?valA-valB:valB-valA;}if(field==='kalan'){valA=(a.adet||0)-(a.satılanAdet||0);valB=(b.adet||0)-(b.satılanAdet||0);return direction==='asc'?valA-valB:valB-valA;}if(field==='tarih'){valA=new Date(valA);valB=new Date(valB);return direction==='asc'?valA-valB:valB-valA;}valA=String(valA||'').toLowerCase();valB=String(valB||'').toLowerCase();return direction==='asc'?valA.localeCompare(valB,'tr'):valB.localeCompare(valA,'tr');});}
+function sortData(data, field, direction) {
+  if (!field || !data.length) return data;
+  return [...data].sort((a, b) => {
+    let valA, valB;
+    
+    // Hesaplamalı alanlar (veride doğrudan olmayan)
+    if (field === 'birimKar') {
+      valA = (a.satis || 0) - (a.alis || 0);
+      valB = (b.satis || 0) - (b.alis || 0);
+    } else if (field === 'birimKarYuzde') {
+      valA = (a.satis || 0) > 0 ? ((a.satis - a.alis) / a.satis * 100) : 0;
+      valB = (b.satis || 0) > 0 ? ((b.satis - b.alis) / b.satis * 100) : 0;
+    } else if (field === 'toplamKar') {
+      const kalanA = (a.adet || 0) - (a.satılanAdet || 0);
+      const kalanB = (b.adet || 0) - (b.satılanAdet || 0);
+      valA = ((a.satis || 0) - (a.alis || 0)) * kalanA;
+      valB = ((b.satis || 0) - (b.alis || 0)) * kalanB;
+    } else if (field === 'toplamKarYuzde') {
+      const kalanA = (a.adet || 0) - (a.satılanAdet || 0);
+      const kalanB = (b.adet || 0) - (b.satılanAdet || 0);
+      const toplamSatisA = (a.satis || 0) * kalanA;
+      const toplamSatisB = (b.satis || 0) * kalanB;
+      valA = toplamSatisA > 0 ? (((a.satis - a.alis) * kalanA) / toplamSatisA * 100) : 0;
+      valB = toplamSatisB > 0 ? (((b.satis - b.alis) * kalanB) / toplamSatisB * 100) : 0;
+    } else if (field === 'rafOmru') {
+      valA = Math.floor((new Date() - new Date(a.tarih)) / (1000 * 60 * 60 * 24));
+      valB = Math.floor((new Date() - new Date(b.tarih)) / (1000 * 60 * 60 * 24));
+    } else if (field === 'kalan') {
+      valA = (a.adet || 0) - (a.satılanAdet || 0);
+      valB = (b.adet || 0) - (b.satılanAdet || 0);
+      return direction === 'asc' ? valA - valB : valB - valA;
+    } else if (field === 'tarih') {
+      valA = new Date(a[field]);
+      valB = new Date(b[field]);
+      return direction === 'asc' ? valA - valB : valB - valA;
+    } else {
+      // Normal alanlar (model, el, gb, ram, adet, satilan, alis, satis, iskonto, toplamAlis, toplamSatis, kar)
+      valA = a[field];
+      valB = b[field];
+    }
+    
+    // Sayısal alanlar için
+    const numericFields = ['adet', 'satılanAdet', 'ram', 'gb', 'alis', 'satis', 'iskonto', 'toplamAlis', 'toplamSatis', 'kar'];
+    if (numericFields.includes(field) || ['birimKar', 'birimKarYuzde', 'toplamKar', 'toplamKarYuzde', 'rafOmru'].includes(field)) {
+      valA = Number(valA) || 0;
+      valB = Number(valB) || 0;
+      return direction === 'asc' ? valA - valB : valB - valA;
+    }
+    
+    // Metin alanları için
+    valA = String(valA || '').toLowerCase();
+    valB = String(valB || '').toLowerCase();
+    return direction === 'asc' ? valA.localeCompare(valB, 'tr') : valB.localeCompare(valA, 'tr');
+  });
+}
 function formatTarih(iso){if(!iso)return '';let str=String(iso);if(str.includes('T'))str=str.split('T')[0];const parts=str.split('-');if(parts.length===3)return `${parts[2]}.${parts[1]}.${parts[0]}`;return str;}
 function getTodayDate(){return new Date().toLocaleDateString('en-CA');}
 function setDot(s,t){const d=document.getElementById('dot'),tx=document.getElementById('dbtx');if(!d)return;d.className='dot'+(s==='ok'?' ok':s==='er'?' er':s==='ld'?' ld':s==='offline'?' offline':'');if(tx)tx.textContent=t;}
