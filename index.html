@@ -1197,7 +1197,50 @@ function fiyatTrendGrafik(){const modelFiyatlari={};D.forEach(d=>{if(!modelFiyat
 function raporOlustur(tip){const raporTipi=document.getElementById('raporTipi').value;let tarih=new Date(document.getElementById('raporAy').value);if(isNaN(tarih.getTime()))tarih=new Date();let baslangic,bitis;if(raporTipi==='aylik'){baslangic=new Date(tarih.getFullYear(),tarih.getMonth(),1);bitis=new Date(tarih.getFullYear(),tarih.getMonth()+1,0);}else if(raporTipi==='3aylik'){baslangic=new Date(tarih.getFullYear(),tarih.getMonth()-2,1);bitis=new Date(tarih.getFullYear(),tarih.getMonth()+1,0);}else{baslangic=new Date(tarih.getFullYear(),0,1);bitis=new Date(tarih.getFullYear(),11,31);}const filtered=D.filter(d=>{const dT=new Date(d.tarih);return dT>=baslangic&&dT<=bitis;});let toplamAlis=0,toplamSatis=0,toplamKar=0,toplamAdet=0,toplamSatilan=0;filtered.forEach(d=>{toplamAlis+=d.toplamAlis;toplamSatis+=d.toplamSatis;toplamKar+=d.kar;toplamAdet+=d.adet;toplamSatilan+=d.satılanAdet||0;});const raporData={baslangic:baslangic.toLocaleDateString('tr-TR'),bitis:bitis.toLocaleDateString('tr-TR'),toplamAlis,toplamSatis,toplamKar,toplamAdet,toplamSatilan,urunler:filtered};if(tip==='excel'){excelRapor(raporData);}else{pdfRapor(raporData);}}
 function excelRapor(data){const wsData=[['Rapor Tarihi',`${data.baslangic} - ${data.bitis}`],['Toplam Alış',data.toplamAlis],['Toplam Satış',data.toplamSatis],['Toplam Kar',data.toplamKar],['Toplam Adet',data.toplamAdet],['Toplam Satılan',data.toplamSatilan],[''],['Ürün Bazlı Rapor'],['Model','El','GB','Adet','Satılan','Alış','Satış','Kar']];data.urunler.forEach(u=>{wsData.push([u.model,u.el,u.gb,u.adet,u.satılanAdet||0,u.alis,u.satis,u.kar]);});const ws=XLSX.utils.aoa_to_sheet(wsData);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Rapor');XLSX.writeFile(wb,`rapor_${data.baslangic}_${data.bitis}.xlsx`);toast('Excel raporu oluşturuldu','success');}
 function pdfRapor(data){const {jsPDF}=window.jspdf;const doc=new jsPDF();doc.setFontSize(18);doc.text('KontrolPanel Pro - Satış Raporu',14,20);doc.setFontSize(12);doc.text(`Dönem: ${data.baslangic} - ${data.bitis}`,14,30);doc.text(`Toplam Alış: ${fmt(data.toplamAlis)}`,14,40);doc.text(`Toplam Satış: ${fmt(data.toplamSatis)}`,14,50);doc.text(`Toplam Kar: ${fmt(data.toplamKar)}`,14,60);doc.text(`Toplam Adet: ${data.toplamAdet}`,14,70);doc.text(`Toplam Satılan: ${data.toplamSatilan}`,14,80);const tableData=data.urunler.map(u=>[u.model,u.el,u.gb,u.adet,u.satılanAdet||0,u.alis,u.satis,u.kar]);doc.autoTable({startY:90,head:[['Model','El','GB','Adet','Satılan','Alış','Satış','Kar']],body:tableData,theme:'striped',headStyles:{fillColor:[124,58,237]}});doc.save(`rapor_${data.baslangic}_${data.bitis}.pdf`);toast('PDF raporu oluşturuldu','success');}
-function rDash(){const tA=D.reduce((s,d)=>s+d.toplamAlis,0);const satilanlar=D.filter(d=>d.satılanAdet>0);const tS=satilanlar.reduce((s,d)=>s+(d.toplamSatis*(d.satılanAdet/d.adet)),0);const tK=satilanlar.reduce((s,d)=>s+(d.kar*(d.satılanAdet/d.adet)),0);const tI=satilanlar.reduce((s,d)=>s+(d.iskonto*(d.satılanAdet/d.adet)),0);const tAd=D.reduce((s,d)=>s+d.adet,0);const tSat=D.reduce((s,d)=>s+(d.satılanAdet||0),0);const tKal=tAd-tSat;const marj=tS>0?((tK/tS)*100).toFixed(1):0;const gunluk=gunlukCiro();const aylik=aylikCiro();const statsG=document.getElementById('statsG');if(statsG)statsG.innerHTML=`<div class="sc gn"><div class="si">💰</div><div class="sl">Satılan Ürün Karı</div><div class="sv gn">${fmt(tK)}</div><div class="ss">Marj: %${marj}</div></div><div class="sc cy"><div class="si">📈</div><div class="sl">Satılan Ürün Satışı</div><div class="sv cy">${fmt(tS)}</div><div class="ss">${fmtN(tSat)} adet</div></div><div class="sc rd"><div class="si">🛒</div><div class="sl">Toplam Alış (Tümü)</div><div class="sv rd">${fmt(tA)}</div><div class="ss">${D.length} işlem</div></div><div class="sc yw"><div class="si">🏷️</div><div class="sl">Satılan İskonto</div><div class="sv yw">${fmt(tI)}</div></div><div class="sc or"><div class="si">📦</div><div class="sl">Stokta Kalan</div><div class="sv or">${fmtN(tKal)}</div><div class="ss">/ ${fmtN(tAd)}</div></div><div class="sc"><div class="si">📊</div><div class="sl">Günlük Ciro</div><div class="sv">${fmt(gunluk.ciro)}</div><div class="ss">Kar: ${fmt(gunluk.kar)}</div></div><div class="sc"><div class="si">📅</div><div class="sl">Aylık Ciro</div><div class="sv">${fmt(aylik.ciro)}</div><div class="ss">Kar: ${fmt(aylik.kar)}</div></div>`;rCharts();rSon();}
+function rDash(){const tA=D.reduce((s,d)=>s+d.toplamAlis,0);const satilanlar=D.filter(d=>d.satılanAdet>0);const tS=satilanlar.reduce((s,d)=>s+(d.toplamSatis*(d.satılanAdet/d.adet)),0);const tK=satilanlar.reduce((s,d)=>s+(d.kar*(d.satılanAdet/d.adet)),0);const tI=satilanlar.reduce((s,d)=>s+(d.iskonto*(d.satılanAdet/d.adet)),0);const tAd=D.reduce((s,d)=>s+d.adet,0);const tSat=D.reduce((s,d)=>s+(d.satılanAdet||0),0);const tKal=tAd-tSat;const marj=tS>0?((tK/tS)*100).toFixed(1):0;const gunluk=gunlukCiro();const aylik=aylikCiro();const statsG = document.getElementById('statsG');
+if(statsG) statsG.innerHTML=`
+  <div class="sc gn" onclick="showCardDetail('satilanKar', ${tK}, ${tS}, ${marj})" style="cursor:pointer">
+    <div class="si">💰</div>
+    <div class="sl">Satılan Ürün Karı</div>
+    <div class="sv gn">${fmt(tK)}</div>
+    <div class="ss">Marj: %${marj}</div>
+  </div>
+  <div class="sc cy" onclick="showCardDetail('satilanSatis', ${tS}, ${tSat})" style="cursor:pointer">
+    <div class="si">📈</div>
+    <div class="sl">Satılan Ürün Satışı</div>
+    <div class="sv cy">${fmt(tS)}</div>
+    <div class="ss">${fmtN(tSat)} adet</div>
+  </div>
+  <div class="sc rd" onclick="showCardDetail('toplamAlis', ${tA}, ${D.length})" style="cursor:pointer">
+    <div class="si">🛒</div>
+    <div class="sl">Toplam Alış (Tümü)</div>
+    <div class="sv rd">${fmt(tA)}</div>
+    <div class="ss">${D.length} işlem</div>
+  </div>
+  <div class="sc yw" onclick="showCardDetail('satilanIskonto', ${tI})" style="cursor:pointer">
+    <div class="si">🏷️</div>
+    <div class="sl">Satılan İskonto</div>
+    <div class="sv yw">${fmt(tI)}</div>
+  </div>
+  <div class="sc or" onclick="showCardDetail('stoktaKalan', ${tKal}, ${tAd})" style="cursor:pointer">
+    <div class="si">📦</div>
+    <div class="sl">Stokta Kalan</div>
+    <div class="sv or">${fmtN(tKal)}</div>
+    <div class="ss">/ ${fmtN(tAd)}</div>
+  </div>
+  <div class="sc" onclick="showCardDetail('toplamIslem', ${gunluk.ciro})" style="cursor:pointer">
+    <div class="si">📊</div>
+    <div class="sl">Günlük Ciro</div>
+    <div class="sv">${fmt(gunluk.ciro)}</div>
+    <div class="ss">Kar: ${fmt(gunluk.kar)}</div>
+  </div>
+  <div class="sc" onclick="showCardDetail('toplamIslem', ${aylik.ciro})" style="cursor:pointer">
+    <div class="si">📅</div>
+    <div class="sl">Aylık Ciro</div>
+    <div class="sv">${fmt(aylik.ciro)}</div>
+    <div class="ss">Kar: ${fmt(aylik.kar)}</div>
+  </div>
+`;
 function updateElChart(){if(!charts.elChart)return;const filtered=D.filter(d=>currentElFilter==='all'||d.el===currentElFilter);const satilanlar=filtered.filter(d=>d.satılanAdet>0);let periodData={};satilanlar.forEach(d=>{let periodKey;let date=new Date(d.tarih);if(chartPeriod==='day')periodKey=d.tarih;else if(chartPeriod==='week'){const startOfWeek=new Date(date);startOfWeek.setDate(date.getDate()-date.getDay());periodKey=startOfWeek.toISOString().split('T')[0];}else{periodKey=`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`;}if(!periodData[periodKey])periodData[periodKey]={a:0,s:0,k:0};const oran=d.satılanAdet/d.adet;periodData[periodKey].a+=d.toplamAlis*oran;periodData[periodKey].s+=d.toplamSatis*oran;periodData[periodKey].k+=d.kar*oran;});const periods=Object.keys(periodData).sort();let labels=periods;if(chartPeriod==='week')labels=periods.map(p=>`Hafta ${p.slice(5)}`);else if(chartPeriod==='month'){const MN=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];labels=periods.map(p=>{const [y,m]=p.split('-');return MN[+m-1]+' '+y;});}charts.elChart.data.labels=labels.length?labels:['Veri yok'];charts.elChart.data.datasets[0].data=periods.map(p=>periodData[p].a);charts.elChart.data.datasets[1].data=periods.map(p=>periodData[p].s);charts.elChart.data.datasets[2].data=periods.map(p=>periodData[p].k);charts.elChart.update();}
 function rCharts(){Object.values(charts).forEach(c=>{try{c.destroy();}catch(e){}});charts={};const tc=getTextColor();const gc=getGridColor();const CLR=['#7c3aed','#06b6d4','#10b981','#f59e0b','#ef4444','#a855f7'];const satilanlar=D.filter(d=>d.satılanAdet>0);let periodData={};let labels=[];satilanlar.forEach(d=>{let periodKey;let date=new Date(d.tarih);if(chartPeriod==='day')periodKey=d.tarih;else if(chartPeriod==='week'){const startOfWeek=new Date(date);startOfWeek.setDate(date.getDate()-date.getDay());periodKey=startOfWeek.toISOString().split('T')[0];}else{periodKey=`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`;}if(!periodData[periodKey])periodData[periodKey]={a:0,s:0,k:0};const oran=d.satılanAdet/d.adet;periodData[periodKey].a+=d.toplamAlis*oran;periodData[periodKey].s+=d.toplamSatis*oran;periodData[periodKey].k+=d.kar*oran;});const periods=Object.keys(periodData).sort();if(chartPeriod==='week')labels=periods.map(p=>`Hafta ${p.slice(5)}`);else if(chartPeriod==='month'){const MN=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];labels=periods.map(p=>{const [y,m]=p.split('-');return MN[+m-1]+' '+y;});}else labels=periods;const cO=u=>({responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc,font:{size:11}}}},scales:{x:{grid:{color:gc},ticks:{color:tc}},y:{grid:{color:gc},ticks:{color:tc,callback:v=>`${u}${Number(v).toLocaleString('tr-TR')}`}}}});const ctxAy=document.getElementById('cAy')?.getContext('2d');if(ctxAy){charts.a=new Chart(ctxAy,{type:'bar',data:{labels:labels.length?labels:['Veri yok'],datasets:[{label:'Alış (Satılan)',data:periods.map(p=>periodData[p].a),backgroundColor:'rgba(239,68,68,.7)'},{label:'Satış',data:periods.map(p=>periodData[p].s),backgroundColor:'rgba(6,182,212,.7)'},{label:'Kar',data:periods.map(p=>periodData[p].k),backgroundColor:'rgba(16,185,129,.7)'}]},options:cO('₺')});}const mM={};D.forEach(d=>{mM[d.model]=(mM[d.model]||0)+d.adet;});const ms=Object.keys(mM);const ctxDo=document.getElementById('cDo')?.getContext('2d');if(ctxDo){charts.b=new Chart(ctxDo,{type:'doughnut',data:{labels:ms.length?ms:['Veri yok'],datasets:[{data:ms.length?ms.map(m=>mM[m]):[1],backgroundColor:CLR}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'right',labels:{color:tc,font:{size:10}}}}}});}const kM={};satilanlar.forEach(d=>{const karOran=d.kar*(d.satılanAdet/d.adet);kM[d.model]=(kM[d.model]||0)+karOran;});const km=Object.keys(kM).sort((a,b)=>kM[b]-kM[a]).slice(0,8);const ctxKar=document.getElementById('cKar')?.getContext('2d');if(ctxKar){charts.c=new Chart(ctxKar,{type:'bar',data:{labels:km.length?km:['Veri yok'],datasets:[{label:'Kar (Satılan)',data:km.map(m=>kM[m]),backgroundColor:km.map(m=>kM[m]>=0?'rgba(16,185,129,.75)':'rgba(239,68,68,.75)')}]},options:{...cO('₺'),indexAxis:'y'}});}const eM={'1.El':0,'2.El':0};D.forEach(d=>{eM[d.el]=(eM[d.el]||0)+d.adet;});const ctxEl=document.getElementById('cEl')?.getContext('2d');if(ctxEl){charts.elChart=new Chart(ctxEl,{type:'bar',data:{labels:[],datasets:[{label:'Alış (Satılan)',backgroundColor:'rgba(239,68,68,.7)'},{label:'Satış',backgroundColor:'rgba(6,182,212,.7)'},{label:'Kar',backgroundColor:'rgba(16,185,129,.7)'}]},options:cO('₺')});updateElChart();}}
 function rSon(){const son=[...D].sort((a,b)=>b.tarih.localeCompare(a.tarih)).slice(0,10);const tb=document.getElementById('sonTb');if(!tb)return;if(!son.length){tb.innerHTML='<tr><td colspan="9"><div class="empty"><i>📭</i>Henüz işlem yok</div></td></tr>';return;}tb.innerHTML=son.map(d=>`<tr class="${getDur(d)==='satildi'?'sr':''}"><td>${formatTarih(d.tarih)}</td><td class="b">${d.model}</td><td><span class="badge ${d.el==='1.El'?'bpu':'bcy'}">${d.el}</span></td><td>${d.gb}GB/${d.ram}GB</td><td>${d.adet}</td><td class="trd">${fmt(d.toplamAlis)}</td><td class="tcy">${fmt(d.toplamSatis)}</td><td class="${d.kar>=0?'tgn':'trd'} b">${fmt(d.kar)}</td><td>${getDurB(d)}</td></tr>`).join('');}
@@ -1420,6 +1463,37 @@ function calcBE(){const a=+(document.getElementById('bf_a')?.value||0);const al=
 async function confirmEkle(){const model=document.getElementById('bf_m')?.value.trim();if(!model){toast('Model adı gerekli!','error');return;}const imRaw=document.getElementById('bf_im')?.value||'';const imList=imRaw?imRaw.split(',').map(x=>x.trim()).filter(Boolean):[];const adet=+(document.getElementById('bf_a')?.value||1);const alis=+(document.getElementById('bf_al')?.value||0);const satis=+(document.getElementById('bf_sa')?.value||0);const item={id:Date.now().toString(),tarih:getTodayDate(),model,el:document.getElementById('bf_el')?.value||'1.El',gb:document.getElementById('bf_gb')?.value||'256',ram:+(document.getElementById('bf_ram')?.value||8),renk:'',adet,alis,satis,iskonto:0,imeiList:imList,not:'',toplamAlis:alis*adet,toplamSatis:satis*adet,kar:(satis*adet)-(alis*adet),satılanAdet:0,satildiImei:[],depo:'Ana Depo'};actionHistory.push({type:'add',data:item});showLo('Kaydediliyor...');try{const res=await api({action:'add',data:item});if(res.ok){D.push(norm(item));const eklP=document.getElementById('bEklP');if(eklP)eklP.style.display='none';toast('✅ Eklendi!','success');playBeep();}else throw new Error(res.error);}catch(e){toast('Hata: '+e.message,'error');}hideLo();}
 function cancelEkle(){const eklP=document.getElementById('bEklP');if(eklP)eklP.style.display='none';}
 function toast(msg,type=''){const el=document.getElementById('toast');if(!el)return;el.textContent=msg;el.className='show'+(type?' '+type:'');setTimeout(()=>el.className='',3000);}
+function showCardDetail(tip, deger1, deger2, deger3) {
+  let title = '', content = '';
+  switch(tip) {
+    case 'satilanKar':
+      title = '💰 Satılan Ürün Kar Detayı';
+      content = `Toplam Kar: ${fmt(deger1)}\nToplam Satış: ${fmt(deger2)}\nKar Marjı: %${deger3}`;
+      break;
+    case 'satilanSatis':
+      title = '📈 Satılan Ürün Satış Detayı';
+      content = `Toplam Satış: ${fmt(deger1)}\nSatılan Adet: ${deger2}`;
+      break;
+    case 'toplamAlis':
+      title = '🛒 Toplam Alış Detayı';
+      content = `Toplam Alış Tutarı: ${fmt(deger1)}\nToplam İşlem Sayısı: ${deger2}`;
+      break;
+    case 'satilanIskonto':
+      title = '🏷️ Satılan İskonto Detayı';
+      content = `Toplam İskonto: ${fmt(deger1)}`;
+      break;
+    case 'stoktaKalan':
+      title = '📦 Stokta Kalan Detayı';
+      content = `Stokta Kalan Adet: ${deger1}\nToplam Stok Adeti: ${deger2}`;
+      break;
+    case 'toplamIslem':
+      title = '📝 Toplam İşlem Detayı';
+      content = `Toplam İşlem Sayısı: ${deger1}`;
+      break;
+    default: return;
+  }
+  toast(`${title}\n${content}`, 'info');
+}
 function rAll(){rDash();const act=document.querySelector('.page.active');const id=act?act.id.replace('page-',''):'';if(id==='stok')rStok();else if(id==='islemler')rIslemler();else if(id==='urunler')rUrunler();else if(id==='imei')rImei();else if(id==='raporlar')rRaporlarSayfasi();else if(id==='hareketler')stokHareketRaporu();rStok();rIslemler();depoListesiniGuncelle();}
 async function zoomIn() {
     if(!currentVideoTrack){
