@@ -1004,6 +1004,33 @@ async function init(){
     initAnalizButtons();
     initElChartButtons();
     setupFocusOnTouch();
+    
+    // ============ IMEI TABLOSU DÜZELTMESİ ============
+    const imeiDiv = document.getElementById('imeiTable');
+    if(imeiDiv && !imeiDiv.querySelector('table')) {
+      imeiDiv.innerHTML = '';
+      const table = document.createElement('table');
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th class="sortable" data-sort="tarih">Tarih</th>
+            <th class="sortable" data-sort="imei">IMEI</th>
+            <th class="sortable" data-sort="model">Model</th>
+            <th class="sortable" data-sort="gb">GB</th>
+            <th class="sortable" data-sort="ram">RAM</th>
+            <th class="sortable" data-sort="el">El</th>
+            <th class="sortable" data-sort="alis">Alış</th>
+            <th class="sortable" data-sort="satis">Satış</th>
+            <th class="sortable" data-sort="iskonto">İsk.</th>
+            <th class="sortable" data-sort="birimKar">Birim Kar</th>
+            <th class="sortable" data-sort="birimKarYuzde">Birim Kar%</th>
+            <th>Durum</th>
+          </tr>
+        </thead>
+        <tbody id="imeiTb"></tbody>
+      `;
+      imeiDiv.appendChild(table);
+    }
 }
 function initChartButtons(){const btns=document.querySelectorAll('#chartPeriodButtons .chart-btn');btns.forEach(btn=>{btn.addEventListener('click',()=>{btns.forEach(b=>b.classList.remove('active'));btn.classList.add('active');chartPeriod=btn.dataset.period;rCharts();});});}
 function initAnalizButtons(){const btns=document.querySelectorAll('#analizSortButtons .analiz-sort-btn');btns.forEach(btn=>{btn.addEventListener('click',()=>{if(analizSort===btn.dataset.sort){analizSortDirection=analizSortDirection==='desc'?'asc':'desc';}else{analizSort=btn.dataset.sort;analizSortDirection='desc';}btns.forEach(b=>b.classList.remove('active'));btn.classList.add('active');rUrunler();});});}
