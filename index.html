@@ -1846,43 +1846,42 @@ window.rImei = function() {
     console.log(`✅ IMEI tablosu güncellendi: ${rows.length} kayıt`);
 };
   
-function bindImeiSorting() {
-    const headers = document.querySelectorAll('#imeiTable .sortable');
-    headers.forEach(header => {
-        header.onclick = function(e) {
-            e.stopPropagation();
-            const field = this.dataset.sort;
-            if(!field) return;
-            
-            let current = sortState['imeiTable'] || {};
-            let newDir = current.field === field ? 
-                        (current.yon === 'asc' ? 'desc' : 'asc') : 'asc';
-            
-            sortState['imeiTable'] = {field: field, yon: newDir};
-            
-            document.querySelectorAll('#imeiTable .sortable').forEach(s => {
-                s.classList.remove('asc', 'desc');
-            });
-            this.classList.add(newDir);
-            
-            rImei();
-        };
-    });
-}
-
-
-if(document.getElementById('page-imei')?.classList.contains('active')) {
-    bindImeiSorting();
-}
-
-
-const imeiObserver = new MutationObserver(function() {
-    if(document.getElementById('page-imei')?.classList.contains('active')) {
-        setTimeout(bindImeiSorting, 100);
+ function bindImeiSorting() {
+        const headers = document.querySelectorAll('#imeiTable .sortable');
+        headers.forEach(header => {
+            header.onclick = function(e) {
+                e.stopPropagation();
+                const field = this.dataset.sort;
+                if(!field) return;
+                
+                let current = sortState['imeiTable'] || {};
+                let newDir = current.field === field ? 
+                            (current.yon === 'asc' ? 'desc' : 'asc') : 'asc';
+                
+                sortState['imeiTable'] = {field: field, yon: newDir};
+                
+                document.querySelectorAll('#imeiTable .sortable').forEach(s => {
+                    s.classList.remove('asc', 'desc');
+                });
+                this.classList.add(newDir);
+                
+                rImei();
+            };
+        });
     }
-});
-imeiObserver.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['class'] });
-  
+    
+    // Sayfa yüklendiğinde ve IMEI sayfasına geçildiğinde çalışsın
+    if(document.getElementById('page-imei')?.classList.contains('active')) {
+        bindImeiSorting();
+    }
+    
+    // Sayfa değişimini izle
+    const imeiObserver = new MutationObserver(function() {
+        if(document.getElementById('page-imei')?.classList.contains('active')) {
+            setTimeout(bindImeiSorting, 100);
+        }
+    });
+    imeiObserver.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['class'] });
 <script>
 </body>
 </html>
