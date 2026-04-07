@@ -1845,11 +1845,18 @@ window.rImei = function() {
     
     console.log(`✅ IMEI tablosu güncellendi: ${rows.length} kayıt`);
 };
-  
- function bindImeiSorting() {
+// ============ IMEI SIRALAMA KALICI FİX ============
+(function() {
+    function imeiSortingFix() {
         const headers = document.querySelectorAll('#imeiTable .sortable');
+        if(headers.length === 0) return;
+        
         headers.forEach(header => {
-            header.onclick = function(e) {
+            if(header._imeiFixed) return;
+            header._imeiFixed = true;
+            
+            header.style.cursor = 'pointer';
+            header.addEventListener('click', function(e) {
                 e.stopPropagation();
                 const field = this.dataset.sort;
                 if(!field) return;
@@ -1865,23 +1872,27 @@ window.rImei = function() {
                 });
                 this.classList.add(newDir);
                 
-                rImei();
-            };
+                if(typeof rImei === 'function') rImei();
+            });
         });
+        console.log('✅ IMEI sıralama fix uygulandı, buton sayısı:', headers.length);
     }
     
-    // Sayfa yüklendiğinde ve IMEI sayfasına geçildiğinde çalışsın
-    if(document.getElementById('page-imei')?.classList.contains('active')) {
-        bindImeiSorting();
+    // Sayfa yüklendiğinde
+    if(document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', imeiSortingFix);
+    } else {
+        setTimeout(imeiSortingFix, 100);
     }
     
-    // Sayfa değişimini izle
-    const imeiObserver = new MutationObserver(function() {
+    // Sayfa değiştiğinde (sekme değişimi)
+    const observer = new MutationObserver(function() {
         if(document.getElementById('page-imei')?.classList.contains('active')) {
-            setTimeout(bindImeiSorting, 100);
+            setTimeout(imeiSortingFix, 50);
         }
     });
-    imeiObserver.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['class'] });
+    observer.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['class'] });
+})();
 <script>
 </body>
 </html>
