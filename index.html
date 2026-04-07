@@ -1845,7 +1845,7 @@ window.rImei = function() {
     
     console.log(`✅ IMEI tablosu güncellendi: ${rows.length} kayıt`);
 };
-  // IMEI sıralama butonlarını bağla (sayfa her açıldığında çalışsın)
+  
 function bindImeiSorting() {
     const headers = document.querySelectorAll('#imeiTable .sortable');
     headers.forEach(header => {
@@ -1870,18 +1870,19 @@ function bindImeiSorting() {
     });
 }
 
-// Sayfa yüklendiğinde ve IMEI sayfasına geçildiğinde çalışsın
+
 if(document.getElementById('page-imei')?.classList.contains('active')) {
     bindImeiSorting();
 }
 
-// Sayfa değişimini izle
+
 const imeiObserver = new MutationObserver(function() {
     if(document.getElementById('page-imei')?.classList.contains('active')) {
         setTimeout(bindImeiSorting, 100);
     }
 });
 imeiObserver.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['class'] });
+  
 <script>
 </body>
 </html>
