@@ -1779,5 +1779,100 @@ document.addEventListener('DOMContentLoaded', function() {
     <button class="btn bp" style="width:100%;padding:14px;font-size:15px" onclick="saveUrl()">✓ Bağlan ve Başla</button>
   </div>
 </div>
+  <!-- İşte buraya EKLE -->
+<script>
+// ============ IMEI SIRALAMA FİX ============
+(function() {
+    function bindImeiEvents() {
+        const headers = document.querySelectorAll('#imeiTable .sortable');
+        console.log(`📊 IMEI: ${headers.length} adet sıralama butonu bulundu`);
+        
+        headers.forEach(header => {
+            if(!header._bound_imei) {
+                header._bound_imei = true;
+                header.onclick = function(e) {
+                    e.stopPropagation();
+                    const field = this.dataset.sort;
+                    if(!field) return;
+                    
+                    let current = sortState['imeiTable'] || {};
+                    let newDir = current.field === field ? 
+                                (current.yon === 'asc' ? 'desc' : 'asc') : 'asc';
+                    
+                    sortState['imeiTable'] = {field: field, yon: newDir};
+                    
+                    document.querySelectorAll('#imeiTable .sortable').forEach(s => {
+                        s.classList.remove('asc', 'desc');
+                    });
+                    this.classList.add(newDir);
+                    
+                    rImei();
+                };
+            }
+        });
+    }
+    
+    const originalRImei = window.rImei;
+    if(originalRImei) {
+        window.rImei = function() {
+            const q = (document.getElementById('imeiSrc')?.value || '').toLowerCase();
+            const f = (document.getElementById('imeiFil')?.value || '');
+            let rows = [];
+            
+            D.forEach(d => {
+                (d.imeiList || []).forEach(im => {
+                    const isSat = (d.satildiImei || []).includes(im);
+                    const dm = !f || (f === 'satildi' && isSat) || (f === 'stokta' && !isSat);
+                    if(dm && (!q || im.toLowerCase().includes(q) || d.model.toLowerCase().includes(q))) {
+                        const birimKar = d.satis - d.alis;
+                        const birimKarYuzde = d.satis > 0 ? ((birimKar/d.satis)*100) : 0;
+                        rows.push({...d, im, isSat, imei: im, birimKar, birimKarYuzde});
+                    }
+                });
+            });
+            
+            const sort = sortState['imeiTable'];
+            if(sort && sort.field) {
+                rows = sortData(rows, sort.field, sort.yon);
+            } else {
+                rows = rows.sort((a,b) => b.tarih.localeCompare(a.tarih));
+            }
+            
+            const tb = document.getElementById('imeiTb');
+            if(!tb) return;
+            
+            if(!rows.length) {
+                tb.innerHTML = `</table><td colspan="12"><div class="empty">🔍 Sonuç bulunamadı</div></td></tr>`;
+                return;
+            }
+            
+            tb.innerHTML = rows.map(r => `
+                <tr class="${r.isSat ? 'sr' : ''}">
+                    <td>${formatTarih(r.tarih)}</td>
+                    <td><span class="itag ${r.isSat ? 'sat' : ''}">${r.im}</span></td>
+                    <td class="b">${r.model}</td>
+                    <td>${r.gb}GB</td>${r.ram}GB</td>
+                    <td><span class="badge ${r.el === '1.El' ? 'bpu' : 'bcy'}">${r.el}</span></td>
+                    <td class="trd">${fmt(r.alis)}</td>
+                    <td class="tcy">${fmt(r.satis)}</td>
+                    <td class="tyw">${fmt(r.iskonto || 0)}</td>
+                    <td class="${r.birimKar >= 0 ? 'tgn' : 'trd'}">${fmt(r.birimKar)}</td>
+                    <td>${fmtYuzde(r.birimKarYuzde)}</td>
+                    <td>${r.isSat ? '✓ Satıldı' : '📦 Stokta'}</td>
+                </tr>
+            `).join('');
+        };
+    }
+    
+    const observer = new MutationObserver(function() {
+        if(document.getElementById('page-imei')?.classList.contains('active')) {
+            setTimeout(bindImeiEvents, 50);
+        }
+    });
+    
+    observer.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['class'] });
+    bindImeiEvents();
+})();
+</script>
 </body>
 </html>
