@@ -1839,73 +1839,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <input class="sinp" type="text" id="urlInp" placeholder="https://script.google.com/macros/s/..." autocomplete="off"/>
     <button class="btn bp" style="width:100%;padding:14px;font-size:15px" onclick="saveUrl()">✓ Bağlan ve Başla</button>
   </div>
-</div>
-// ============ IMEI TABLOSU DÜZELTİLMİŞ FONKSİYON ==========
-window.rImei = function() {
-    console.log('🔄 IMEI tablosu yenileniyor...');
-    
-    const q = (document.getElementById('imeiSrc')?.value || '').toLowerCase();
-    const f = (document.getElementById('imeiFil')?.value || '');
-    let rows = [];
-    
-    D.forEach(d => {
-        (d.imeiList || []).forEach(im => {
-            const isSat = (d.satildiImei || []).includes(im);
-            const dm = !f || (f === 'satildi' && isSat) || (f === 'stokta' && !isSat);
-            if(dm && (!q || im.toLowerCase().includes(q) || d.model.toLowerCase().includes(q))) {
-                const birimKar = d.satis - d.alis;
-                const birimKarYuzde = d.satis > 0 ? ((birimKar/d.satis)*100).toFixed(1) : 0;
-                rows.push({
-                    tarih: d.tarih,
-                    imei: im,
-                    model: d.model,
-                    gb: d.gb,
-                    ram: d.ram,
-                    el: d.el,
-                    alis: d.alis,
-                    satis: d.satis,
-                    iskonto: d.iskonto || 0,
-                    birimKar: birimKar,
-                    birimKarYuzde: birimKarYuzde,
-                    isSat: isSat
-                });
-            }
-        });
-    });
-    
-    const sort = sortState['imeiTable'];
-    if(sort && sort.field) {
-        rows = sortData(rows, sort.field, sort.yon);
-    } else {
-        rows = rows.sort((a,b) => b.tarih.localeCompare(a.tarih));
-    }
-    
-    const tb = document.getElementById('imeiTb');
-    if(!tb) return;
-    
-    if(!rows.length) {
-        tb.innerHTML = `<tr><td colspan="12"><div class="empty">🔍 Sonuç bulunamadı</div></td></table>`;
-        return;
-    }
-    
-    tb.innerHTML = rows.map(r => `
-        <tr class="${r.isSat ? 'sr' : ''}">
-            <td>${formatTarih(r.tarih)}</td>
-            <td><span class="itag ${r.isSat ? 'sat' : ''}">${r.imei}</span></td>
-            <td class="b">${r.model}</td>
-            <td>${r.gb}GB</td>${r.ram}GB</td>
-            <td><span class="badge ${r.el === '1.El' ? 'bpu' : 'bcy'}">${r.el}</span></td>
-            <td class="trd">${fmt(r.alis)}</td>
-            <td class="tcy">${fmt(r.satis)}</td>
-            <td class="tyw">${fmt(r.iskonto)}</td>
-            <td class="${r.birimKar >= 0 ? 'tgn' : 'trd'}">${fmt(r.birimKar)}</td>
-            <td>${r.birimKarYuzde}%</td>
-            <td>${r.isSat ? '<span class="badge bgn">✓ Satıldı</span>' : '<span class="badge bcy">📦 Stokta</span>'}</td>
-        </tr>
-    `).join('');
-    
-    console.log(`✅ IMEI tablosu güncellendi: ${rows.length} kayıt`);
-};
+    </div>
 <script>
 // ============ IMEI SIRALAMA KESİN ÇÖZÜM ==========
 (function() {
