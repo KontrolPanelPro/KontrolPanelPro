@@ -1031,6 +1031,7 @@ async function init(){
       `;
       imeiDiv.appendChild(table);
     }
+   initImeiSorting();
 }
 function initChartButtons(){const btns=document.querySelectorAll('#chartPeriodButtons .chart-btn');btns.forEach(btn=>{btn.addEventListener('click',()=>{btns.forEach(b=>b.classList.remove('active'));btn.classList.add('active');chartPeriod=btn.dataset.period;rCharts();});});}
 function initAnalizButtons(){const btns=document.querySelectorAll('#analizSortButtons .analiz-sort-btn');btns.forEach(btn=>{btn.addEventListener('click',()=>{if(analizSort===btn.dataset.sort){analizSortDirection=analizSortDirection==='desc'?'asc':'desc';}else{analizSort=btn.dataset.sort;analizSortDirection='desc';}btns.forEach(b=>b.classList.remove('active'));btn.classList.add('active');rUrunler();});});}
@@ -1465,7 +1466,67 @@ function rStok() {
 }
 function rIslemler(){const q=(document.getElementById('islSrc')?.value||'').toLowerCase();const df=(document.getElementById('islFil')?.value||'');const baslangic=document.getElementById('tarihBaslangic')?.value;const bitis=document.getElementById('tarihBitis')?.value;let fl=D.filter(d=>{const tarihKontrol=(!baslangic||d.tarih>=baslangic)&&(!bitis||d.tarih<=bitis);const qm=!q||d.model.toLowerCase().includes(q)||d.el.toLowerCase().includes(q)||(d.imeiList||[]).some(i=>i.includes(q))||d.tarih.includes(q);return tarihKontrol&&qm&&(!df||getDur(d)===df);}).map(d=>{const kalan=d.adet-(d.satılanAdet||0);const birimKar=d.satis-d.alis;const birimKarYuzde=d.satis>0?((birimKar/d.satis)*100):0;const toplamKar=d.kar;const toplamKarYuzde=d.toplamSatis>0?((toplamKar/d.toplamSatis)*100):0;return{...d,kalan,birimKar,birimKarYuzde,toplamKar,toplamKarYuzde};});const sort=sortState['islemlerTable'];if(sort)fl=sortData(fl,sort.field,sort.yon);else fl=fl.sort((a,b)=>b.tarih.localeCompare(a.tarih));const tb=document.getElementById('islTb');if(!tb)return;if(!fl.length){tb.innerHTML=`</table><td colspan="20"><div class="empty"><i>📭</i>${q?'Sonuç bulunamadı':'Henüz işlem yok'}</div></td></tr>`;return;}tb.innerHTML=fl.map(d=>`<tr class="${getDur(d)==='satildi'?'sr':''}"><td>${formatTarih(d.tarih)}</td><td class="b">${d.model}</td><td><span class="badge ${d.el==='1.El'?'bpu':'bcy'}">${d.el}</span></td><td>${d.gb}GB</td><td>${d.ram}GB</td><td>${(d.imeiList||[]).map(i=>`<span class="itag ${(d.satildiImei||[]).includes(i)?'sat':''}">${i}</span>`).join('')||'-'}</td><td style="text-align:center">${d.adet}</td><td style="text-align:center;color:var(--gn)"><b>${d.satılanAdet||0}</b></td><td style="text-align:center" class="${d.kalan>0?'tor':'tgn'}"><b>${d.kalan}</b></td><td class="trd">${fmt(d.alis)}</td><td class="tcy">${fmt(d.satis)}</td><td class="${d.birimKar>=0?'tgn':'trd'}">${fmt(d.birimKar)}</td><td>${fmtYuzde(d.birimKarYuzde)}</td><td class="tyw">${fmt(d.iskonto||0)}</td><td class="trd">${fmt(d.toplamAlis)}</td><td class="tcy">${fmt(d.toplamSatis)}</td><td class="${d.toplamKar>=0?'tgn':'trd'} b">${fmt(d.toplamKar)}</td><td>${fmtYuzde(d.toplamKarYuzde)}</td><td>${getDurB(d)}</td><td><div style="display:flex;gap:4px"><button class="btn bs bsm" onclick="openSatMo('${d.id}')">✅</button><button class="btn bg2 bsm" onclick="openModal('${d.id}')">✏️</button><button class="btn bd bsm" onclick="delIsl('${d.id}')">🗑</button></div></td></tr>`).join('');}
 function rUrunler(){const mM={};D.forEach(d=>{if(!mM[d.model])mM[d.model]={model:d.model,adet:0,sat:0,tA:0,tS:0,kar:0,isk:0,kalan:0,karOrani:0,birimKar:0,birimKarYuzde:0,toplamKarYuzde:0};const m=mM[d.model];m.adet+=d.adet;m.sat+=(d.satılanAdet||0);m.tA+=d.toplamAlis;m.tS+=d.toplamSatis;m.kar+=d.kar;m.isk+=d.iskonto||0;m.kalan=m.adet-m.sat;m.karOrani=m.tS>0?((m.kar/m.tS)*100):0;m.birimKar=(d.satis-d.alis);m.birimKarYuzde=d.satis>0?((m.birimKar/d.satis)*100):0;m.toplamKarYuzde=m.tS>0?((m.kar/m.tS)*100):0;});let models=Object.values(mM);if(analizSort==='kar')models.sort((a,b)=>analizSortDirection==='desc'?b.kar-a.kar:a.kar-b.kar);else if(analizSort==='satis')models.sort((a,b)=>analizSortDirection==='desc'?b.tS-a.tS:a.tS-b.tS);else if(analizSort==='adet')models.sort((a,b)=>analizSortDirection==='desc'?b.adet-a.adet:a.adet-b.adet);else if(analizSort==='kalan')models.sort((a,b)=>analizSortDirection==='desc'?b.kalan-a.kalan:a.kalan-b.kalan);else if(analizSort==='marj')models.sort((a,b)=>analizSortDirection==='desc'?b.karOrani-a.karOrani:a.karOrani-b.karOrani);else if(analizSort==='cokSatan')models.sort((a,b)=>analizSortDirection==='desc'?b.sat-a.sat:a.sat-b.sat);else if(analizSort==='enKarli')models.sort((a,b)=>analizSortDirection==='desc'?b.birimKar-a.birimKar:a.birimKar-b.birimKar);else if(analizSort==='birimKar')models.sort((a,b)=>analizSortDirection==='desc'?b.birimKar-a.birimKar:a.birimKar-b.birimKar);else if(analizSort==='birimKarYuzde')models.sort((a,b)=>analizSortDirection==='desc'?b.birimKarYuzde-a.birimKarYuzde:a.birimKarYuzde-b.birimKarYuzde);else if(analizSort==='toplamKarYuzde')models.sort((a,b)=>analizSortDirection==='desc'?b.toplamKarYuzde-a.toplamKarYuzde:a.toplamKarYuzde-b.toplamKarYuzde);const c=document.getElementById('urunG');if(!c)return;if(!models.length){c.innerHTML='<div class="empty"><i>📭</i>Henüz veri yok</div>';return;}c.innerHTML=`<div class="g3">${models.map(m=>{const marj=m.tS>0?((m.kar/m.tS)*100).toFixed(1):0;const sPct=m.adet>0?((m.sat/m.adet)*100).toFixed(0):0;return `<div class="card" style="border-top:3px solid ${m.kar>=0?'var(--gn)':'var(--rd)'}"><div style="font-size:16px;font-weight:700;margin-bottom:14px">${m.model}</div><div class="sr2"><span class="sk">Toplam Alış</span><span class="sv2 trd">${fmt(m.tA)}</span></div><div class="sr2"><span class="sk">Toplam Satış</span><span class="sv2 tcy">${fmt(m.tS)}</span></div><div class="sr2"><span class="sk">İskonto</span><span class="sv2 tyw">${fmt(m.isk)}</span></div><div class="sr2"><span class="sk">Net Kar</span><span class="sv2 ${m.kar>=0?'tgn':'trd'}">${fmt(m.kar)}</span><span class="sk">(${fmtYuzde(m.toplamKarYuzde)})</span></div><div class="sr2"><span class="sk">Birim Kar</span><span class="sv2 ${m.birimKar>=0?'tgn':'trd'}">${fmt(m.birimKar)}</span><span class="sk">(${fmtYuzde(m.birimKarYuzde)})</span></div><div class="sr2"><span class="sk">Satılan/Toplam</span><span class="sv2">${m.sat}/${m.adet}</span></div><div class="sr2"><span class="sk">Stokta Kalan</span><span class="sv2 ${m.kalan>0?'tor':'tgn'}">${m.kalan} adet</span></div><div class="sr2"><span class="sk">Kar Marjı</span><span class="sv2 ${+marj>=0?'tgn':'trd'}">%${marj}</span></div><div style="margin-top:12px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:5px"><span>Satış Oranı</span><span>%${sPct}</span></div><div class="pb"><div class="pf" style="width:${sPct}%;background:linear-gradient(90deg,var(--ac),var(--ac3))"></div></div></div></div>`;}).join('')}</div>`;}
-function rImei(){const q=(document.getElementById('imeiSrc')?.value||'').toLowerCase();const f=(document.getElementById('imeiFil')?.value||'');let rows=[];D.forEach(d=>{(d.imeiList||[]).forEach(im=>{const isSat=(d.satildiImei||[]).includes(im);const dm=!f||(f==='satildi'&&isSat)||(f==='stokta'&&!isSat);if(dm&&(!q||im.toLowerCase().includes(q)||d.model.toLowerCase().includes(q))){const birimKar=d.satis-d.alis;const birimKarYuzde=d.satis>0?((birimKar/d.satis)*100):0;rows.push({...d,im,isSat,imei:im,birimKar,birimKarYuzde});}});});const sort=sortState['imeiTable'];if(sort)rows=sortData(rows,sort.field,sort.yon);else rows=rows.sort((a,b)=>b.tarih.localeCompare(a.tarih));const tb=document.getElementById('imeiTb');if(!tb)return;if(!rows.length){tb.innerHTML=`<tr><td colspan="12"><div class="empty"><i>🔍</i>${q?'Sonuç bulunamadı':'IMEI kaydı yok'}</div></td></tr>`;return;}tb.innerHTML=rows.map(r=>`<tr class="${r.isSat?'sr':''}"><td>${formatTarih(r.tarih)}</td><td><span class="itag ${r.isSat?'sat':''}">${r.im}</span></td><td class="b">${r.model}</td><td>${r.gb}GB</td><td>${r.ram}GB</td><td><span class="badge ${r.el==='1.El'?'bpu':'bcy'}">${r.el}</span></td><td class="trd">${fmt(r.alis)}</td><td class="tcy">${fmt(r.satis)}</td><td class="tyw">${fmt(r.iskonto||0)}</td><td class="${r.birimKar>=0?'tgn':'trd'}">${fmt(r.birimKar)}</td><td>${fmtYuzde(r.birimKarYuzde)}</td><td>${r.isSat?'<span class="badge bgn">✓ Satıldı</span>':'<span class="badge bcy">📦 Stokta</span>'}</td></tr>`).join('');}
+function rImei(){const q=(document.getElementById('imeiSrc')?.value||'').toLowerCase();const f=(document.getElementById('imeiFil')?.value||'');let rows=[];D.forEach(d=>{(d.imeiList||[]).forEach(im=>{const isSat=(d.satildiImei||[]).includes(im);const dm=!f||(f==='satildi'&&isSat)||(f==='stokta'&&!isSat);if(dm&&(!q||im.toLowerCase().includes(q)||d.model.toLowerCase().includes(q))){const birimKar=d.satis-d.alis;const birimKarYuzde=d.satis>0?((birimKar/d.satis)*100):0;rows.push({...d,im,isSat,imei:im,birimKar,birimKarYuzde});}});});const sort=sortState['imeiTable'];if(sort)rows=sortData(rows,sort.field,sort.yon);else rows=rows.sort((a,b)=>b.tarih.localeCompare(a.tarih));const tb=document.getElementById('imeiTb');if(!tb)return;if(!rows.length){tb.innerHTML=`<tr><td colspan="12"><div class="empty"><i>🔍</i>${q?'Sonuç bulunamadı':'IMEI kaydı yok'}</div></td></tr>`;return;}tb.innerHTML=rows.map(r=>`<tr class="${r.isSat?'sr':''}"><td>${formatTarih(r.tarih)}</td><td><span class="itag ${r.isSat?'sat':''}">${r.im}</span></td><td class="b">${r.model}</td><td>${r.gb}GB</td><td>${r.ram}GB</td><td><span class="badge ${r.el==='1.El'?'bpu':'bcy'}">${r.el}</span></td><td class="trd">${fmt(r.alis)}</td><td class="tcy">${fmt(r.satis)}</td><td class="tyw">${fmt(r.iskonto||0)}</td><td class="${r.birimKar>=0?'tgn':'trd'}">${fmt(r.birimKar)}</td><td>${fmtYuzde(r.birimKarYuzde)}</td><td>${r.isSat?'<span class="badge bgn">✓ Satıldı</span>':'<span class="badge bcy">📦 Stokta</span>'}</td></tr>`).join('');} // ============ IMEI TABLOSU İÇİN ÇİFT YÖNLÜ SIRALAMA ============
+let imeiSortField = null;
+let imeiSortDirection = 'asc';
+function sortImeiTable(field) {
+  const tbody = document.getElementById('imeiTb');
+  if(!tbody) return;
+  
+  if(imeiSortField === field) {
+    imeiSortDirection = imeiSortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    imeiSortField = field;
+    imeiSortDirection = 'asc';
+  }
+  
+  const colIndex = {
+    tarih: 0, imei: 1, model: 2, gb: 3, ram: 4, el: 5,
+    alis: 6, satis: 7, iskonto: 8, birimKar: 9, birimKarYuzde: 10
+  };
+  
+  let rows = Array.from(tbody.querySelectorAll('tr'));
+  
+  rows.sort((a, b) => {
+    let valA = a.querySelector(`td:nth-child(${colIndex[field] + 1})`)?.innerText || '';
+    let valB = b.querySelector(`td:nth-child(${colIndex[field] + 1})`)?.innerText || '';
+    
+    const numericFields = ['gb', 'ram', 'alis', 'satis', 'iskonto', 'birimKar', 'birimKarYuzde'];
+    if(numericFields.includes(field)) {
+      valA = parseFloat(String(valA).replace(/[₺%]/g, '').replace(/\./g, '').replace(/,/g, '.')) || 0;
+      valB = parseFloat(String(valB).replace(/[₺%]/g, '').replace(/\./g, '').replace(/,/g, '.')) || 0;
+      return imeiSortDirection === 'asc' ? valA - valB : valB - valA;
+    }
+    
+    if(field === 'tarih') {
+      valA = new Date(valA.split('.').reverse().join('-'));
+      valB = new Date(valB.split('.').reverse().join('-'));
+      return imeiSortDirection === 'asc' ? valA - valB : valB - valA;
+    }
+    
+    const result = String(valA).localeCompare(String(valB), 'tr');
+    return imeiSortDirection === 'asc' ? result : -result;
+  });
+  
+  rows.forEach(row => tbody.appendChild(row));
+  
+  document.querySelectorAll('#imeiTable .sortable').forEach(th => {
+    th.classList.remove('asc', 'desc');
+    if(th.dataset.sort === field) {
+      th.classList.add(imeiSortDirection);
+    }
+  });
+  
+  console.log(`✅ IMEI ${field} sütununa göre ${imeiSortDirection === 'asc' ? 'artan' : 'azalan'} sıralandı`);
+}
+
+function initImeiSorting() {
+  document.querySelectorAll('#imeiTable .sortable').forEach(th => {
+    const field = th.dataset.sort;
+    th.style.cursor = 'pointer';
+    th.onclick = () => sortImeiTable(field);
+  });
+}
 function setBMod(mod){bMod=mod;document.querySelectorAll('.mbt').forEach(b=>b.classList.remove('act'));const btn=document.getElementById('bm-'+mod);if(btn)btn.classList.add('act');hideBPanels();}
 function hideBPanels(){const satP=document.getElementById('bSatP');if(satP)satP.style.display='none';const eklP=document.getElementById('bEklP');if(eklP)eklP.style.display='none';}
 async function startScanQR() {
