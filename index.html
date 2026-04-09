@@ -1117,6 +1117,7 @@ async function saveSat() {
         if(!birlesmisMap.has(key)) birlesmisMap.set(key, []);
         birlesmisMap.get(key).push(item);
     });
+    
     let ilgiliKayitlar = [];
     for(let [key, items] of birlesmisMap.entries()) {
         if(items[0].id === satTgt) {
@@ -1124,13 +1125,18 @@ async function saveSat() {
             break;
         }
     }
+    
     if(ilgiliKayitlar.length === 0) {
         toast('Kayıt bulunamadı', 'error');
         return;
     }
     
+    // 🔥 BUGÜNÜN TARİHİNİ AL
+    const bugun = new Date().toISOString().split('T')[0];
+    
     const tumImeiList = ilgiliKayitlar.flatMap(k => k.imeiList || []);
     let satildiImeiList = [];
+    
     if(tumImeiList.length > 0) {
         satildiImeiList = [...document.querySelectorAll('#satMoC input[type=checkbox]:checked')].map(cb => cb.getAttribute('data-im')).filter(Boolean);
         for(let kayit of ilgiliKayitlar) {
@@ -1138,6 +1144,10 @@ async function saveSat() {
             const yeniSatildi = kayitImeiList.filter(im => satildiImeiList.includes(im));
             kayit.satildiImei = yeniSatildi;
             kayit.satılanAdet = yeniSatildi.length;
+            // 🔥 TARİHİ BUGÜN YAP
+            if(yeniSatildi.length > 0) {
+                kayit.tarih = bugun;
+            }
         }
     } else {
         const yeniSatilanAdet = Math.min(+(document.getElementById('smInp')?.value||0), ilgiliKayitlar.reduce((s,k)=>s+k.adet,0));
@@ -1147,6 +1157,10 @@ async function saveSat() {
             const yeniKayitSatilan = Math.min(mevcutAdet, kalanSatilacak);
             kayit.satılanAdet = yeniKayitSatilan;
             kalanSatilacak -= yeniKayitSatilan;
+            // 🔥 TARİHİ BUGÜN YAP
+            if(yeniKayitSatilan > 0) {
+                kayit.tarih = bugun;
+            }
             if(kalanSatilacak <= 0) break;
         }
     }
