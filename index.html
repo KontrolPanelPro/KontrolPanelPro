@@ -1927,38 +1927,27 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 })();
   <script>
-// ============ ALIŞ FİYATI GİZLEME (SADECE STOK, İŞLEMLER, IMEI) ============
-function alisFiyatlariniGizle() {
-    // Stok tablosu (8. sütun)
-    const stokHucreleri = document.querySelectorAll('#stokTb td:nth-child(8)');
-    // İşlemler tablosu (10. sütun)
-    const islemHucreleri = document.querySelectorAll('#islTb td:nth-child(10)');
-    // IMEI tablosu (7. sütun)
-    const imeiHucreleri = document.querySelectorAll('#imeiTb td:nth-child(7)');
+<script>
+(function() {
+    function alisFiyatlariniGizle() {
+        const hucreler = document.querySelectorAll('#stokTb td:nth-child(8), #islTb td:nth-child(10), #imeiTb td:nth-child(7)');
+        
+        hucreler.forEach(td => {
+            const fiyat = td.innerText.replace('₺', '').replace(/\./g, '').trim();
+            if(fiyat && !isNaN(fiyat) && fiyat !== '***' && fiyat !== '') {
+                td.innerHTML = `<span style="cursor:pointer;background:#6366f120;padding:4px 8px;border-radius:6px" data-fiyat="${fiyat}" onclick="this.innerText='₺'+Number(this.dataset.fiyat).toLocaleString('tr-TR');this.style.background='#22c55e30';setTimeout(()=>{this.innerText='***';this.style.background=''},3000)">***</span>`;
+            }
+        });
+    }
     
-    const tumHucreler = [...stokHucreleri, ...islemHucreleri, ...imeiHucreleri];
-    
-    tumHucreler.forEach(td => {
-        const fiyat = td.innerText.replace('₺', '').replace(/\./g, '').trim();
-        if(fiyat && !isNaN(fiyat) && fiyat !== '***') {
-            td.innerHTML = `<span style="cursor:pointer;background:#6366f120;padding:4px 8px;border-radius:6px" data-fiyat="${fiyat}" onclick="this.innerText='₺'+Number(this.dataset.fiyat).toLocaleString('tr-TR');this.style.background='#22c55e30';setTimeout(()=>{this.innerText='***';this.style.background=''},3000)">***</span>`;
-        }
-    });
-    
-    console.log("✅ Alış fiyatları gizlendi (Stok, İşlemler, IMEI)");
-}
-
-// Sayfa her yüklendiğinde çalıştır
-document.addEventListener('DOMContentLoaded', function() {
+    // Sayfa yüklendiğinde
     setTimeout(alisFiyatlariniGizle, 500);
-});
-
-// Tab değişince (sayfa geçişi) tekrar çalıştır
-const izleyici = new MutationObserver(function() {
-    setTimeout(alisFiyatlariniGizle, 300);
-});
-const hedef = document.getElementById('mainC');
-if(hedef) izleyici.observe(hedef, { childList: true, subtree: true });
+    
+    // Tab değiştiğinde
+    const observer = new MutationObserver(() => setTimeout(alisFiyatlariniGizle, 300));
+    const target = document.getElementById('mainC');
+    if(target) observer.observe(target, { childList: true, subtree: true });
+})();
 </script>
 </body>
 </html>
