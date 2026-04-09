@@ -1439,7 +1439,6 @@ function rStok() {
         }
     });
     let birlesmis = Array.from(birlesmisMap.values());
-    // 🔍 ARAMA FİLTRESİ UYGULA (BUNU EKLE)
     if(arama) {
         birlesmis = birlesmis.filter(item => 
             item.model.toLowerCase().includes(arama) ||
@@ -1448,7 +1447,6 @@ function rStok() {
             (item.ram && item.ram.toString().includes(arama))
         );
     } 
-    const sort = sortState['stokTable'];
     const sort = sortState['stokTable'];
     if(sort) {
         birlesmis = sortData(birlesmis, sort.field, sort.yon);
