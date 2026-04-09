@@ -92,6 +92,16 @@ button,.btn,.tab,.mbt,.qbtn,.sortable{touch-action:manipulation;font-family:'Sor
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:rgba(99,102,241,.3);border-radius:99px}
 ::-webkit-scrollbar-thumb:hover{background:var(--ac)}
+  .alis-gizli {
+    cursor: pointer;
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+.alis-gizli:hover {
+    background: rgba(99,102,241,0.2);
+}
 
 /* ── HEADER ── */
 .hdr{
@@ -1460,7 +1470,9 @@ function rStok() {
             <td style="text-align:center"><b>${d.adet}</b></td>
             <td style="text-align:center;color:var(--gn)"><b>${d.satılanAdet||0}</b></td>
             <td style="text-align:center"><span class="sbg ${durumRenk}">${durum}</span></td>
-            <td class="trd" style="text-align:right">${fmt(d.alis)}</td>
+            <td class="trd" style="text-align:right">
+    <span class="alis-gizli" data-fiyat="${d.alis}" onclick="toggleAlisFiyati(this)">***</span>
+</td>
             <td class="tcy" style="text-align:right">${fmt(d.satis)}</td>
             <td class="${birimKar>=0?'tgn':'trd'}">${fmt(birimKar)}</td>
             <td>${birimKarYuzde}%</td>
@@ -1665,6 +1677,22 @@ function calcBE(){const a=+(document.getElementById('bf_a')?.value||0);const al=
 async function confirmEkle(){const model=document.getElementById('bf_m')?.value.trim();if(!model){toast('Model adı gerekli!','error');return;}const imRaw=document.getElementById('bf_im')?.value||'';const imList=imRaw?imRaw.split(',').map(x=>x.trim()).filter(Boolean):[];const adet=+(document.getElementById('bf_a')?.value||1);const alis=+(document.getElementById('bf_al')?.value||0);const satis=+(document.getElementById('bf_sa')?.value||0);const item={id:Date.now().toString(),tarih:getTodayDate(),model,el:document.getElementById('bf_el')?.value||'1.El',gb:document.getElementById('bf_gb')?.value||'256',ram:+(document.getElementById('bf_ram')?.value||8),renk:'',adet,alis,satis,iskonto:0,imeiList:imList,not:'',toplamAlis:alis*adet,toplamSatis:satis*adet,kar:(satis*adet)-(alis*adet),satılanAdet:0,satildiImei:[]};actionHistory.push({type:'add',data:item});showLo('Kaydediliyor...');try{const res=await api({action:'add',data:item});if(res.ok){D.push(norm(item));const eklP=document.getElementById('bEklP');if(eklP)eklP.style.display='none';toast('✅ Eklendi!','success');playBeep();}else throw new Error(res.error);}catch(e){toast('Hata: '+e.message,'error');}hideLo();}
 function cancelEkle(){const eklP=document.getElementById('bEklP');if(eklP)eklP.style.display='none';}
 function toast(msg,type=''){const el=document.getElementById('toast');if(!el)return;el.textContent=msg;el.className='show'+(type?' '+type:'');setTimeout(()=>el.className='',3000);}
+function toggleAlisFiyati(element) {
+    const fiyat = element.getAttribute('data-fiyat');
+    if(element.innerHTML === '***') {
+        element.innerHTML = '₺' + Number(fiyat).toLocaleString('tr-TR');
+        element.style.background = 'rgba(52,211,153,0.3)';
+        setTimeout(() => {
+            if(element.innerHTML !== '***') {
+                element.innerHTML = '***';
+                element.style.background = '';
+            }
+        }, 3000);
+    } else {
+        element.innerHTML = '***';
+        element.style.background = '';
+    }
+}
 function rAll(){rDash();const act=document.querySelector('.page.active');const id=act?act.id.replace('page-',''):'';if(id==='stok')rStok();else if(id==='islemler')rIslemler();else if(id==='urunler')rUrunler();else if(id==='imei')rImei();else if(id==='raporlar')rRaporlarSayfasi();else if(id==='hareketler')stokHareketRaporu();rStok();rIslemler();}
 async function zoomIn() {
     if(!currentVideoTrack){
