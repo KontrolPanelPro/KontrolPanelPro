@@ -1927,65 +1927,38 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 })();
   <script>
-// ============ ALIŞ FİYATI GİZLEME (TÜM SAYFALAR) ============
-function toggleAlisFiyati(element) {
-    const fiyat = element.getAttribute('data-fiyat');
-    if(element.innerHTML === '***') {
-        element.innerHTML = '₺' + Number(fiyat).toLocaleString('tr-TR');
-        element.style.background = 'rgba(52,211,153,0.3)';
-        setTimeout(() => {
-            if(element.innerHTML !== '***') {
-                element.innerHTML = '***';
-                element.style.background = '';
-            }
-        }, 3000);
-    } else {
-        element.innerHTML = '***';
-        element.style.background = '';
-    }
-}
-
-// Tüm tablolardaki alış fiyatlarını gizle
-function tumAlislariGizle() {
+// ============ ALIŞ FİYATI GİZLEME (SADECE STOK, İŞLEMLER, IMEI) ============
+function alisFiyatlariniGizle() {
     // Stok tablosu (8. sütun)
-    document.querySelectorAll('#stokTb td:nth-child(8)').forEach(td => {
-        const fiyat = td.innerText.replace('₺', '').replace(/\./g, '').trim();
-        if(fiyat && !isNaN(fiyat)) {
-            td.innerHTML = `<span class="alis-gizli" data-fiyat="${fiyat}" onclick="toggleAlisFiyati(this)">***</span>`;
-        }
-    });
-    
+    const stokHucreleri = document.querySelectorAll('#stokTb td:nth-child(8)');
     // İşlemler tablosu (10. sütun)
-    document.querySelectorAll('#islTb td:nth-child(10)').forEach(td => {
-        const fiyat = td.innerText.replace('₺', '').replace(/\./g, '').trim();
-        if(fiyat && !isNaN(fiyat)) {
-            td.innerHTML = `<span class="alis-gizli" data-fiyat="${fiyat}" onclick="toggleAlisFiyati(this)">***</span>`;
-        }
-    });
-    
+    const islemHucreleri = document.querySelectorAll('#islTb td:nth-child(10)');
     // IMEI tablosu (7. sütun)
-    document.querySelectorAll('#imeiTb td:nth-child(7)').forEach(td => {
+    const imeiHucreleri = document.querySelectorAll('#imeiTb td:nth-child(7)');
+    
+    const tumHucreler = [...stokHucreleri, ...islemHucreleri, ...imeiHucreleri];
+    
+    tumHucreler.forEach(td => {
         const fiyat = td.innerText.replace('₺', '').replace(/\./g, '').trim();
-        if(fiyat && !isNaN(fiyat)) {
-            td.innerHTML = `<span class="alis-gizli" data-fiyat="${fiyat}" onclick="toggleAlisFiyati(this)">***</span>`;
+        if(fiyat && !isNaN(fiyat) && fiyat !== '***') {
+            td.innerHTML = `<span style="cursor:pointer;background:#6366f120;padding:4px 8px;border-radius:6px" data-fiyat="${fiyat}" onclick="this.innerText='₺'+Number(this.dataset.fiyat).toLocaleString('tr-TR');this.style.background='#22c55e30';setTimeout(()=>{this.innerText='***';this.style.background=''},3000)">***</span>`;
         }
     });
     
-    console.log("✅ Tüm alış fiyatları gizlendi, tıkla gör!");
+    console.log("✅ Alış fiyatları gizlendi (Stok, İşlemler, IMEI)");
 }
 
-// Sayfa her yenilendiğinde veya tab değiştiğinde çalıştır
-function initAlisGizleme() {
-    setTimeout(tumAlislariGizle, 300);
-}
+// Sayfa her yüklendiğinde çalıştır
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(alisFiyatlariniGizle, 500);
+});
 
-// Sayfa yüklendiğinde
-document.addEventListener('DOMContentLoaded', initAlisGizleme);
-
-// Tab değişince tekrar çalıştır
-const izleyici = new MutationObserver(initAlisGizleme);
+// Tab değişince (sayfa geçişi) tekrar çalıştır
+const izleyici = new MutationObserver(function() {
+    setTimeout(alisFiyatlariniGizle, 300);
+});
 const hedef = document.getElementById('mainC');
 if(hedef) izleyici.observe(hedef, { childList: true, subtree: true });
-<script>
+</script>
 </body>
 </html>
