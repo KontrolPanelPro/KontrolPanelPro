@@ -1408,6 +1408,8 @@ function updateElChart(){if(!charts.elChart)return;const filtered=D.filter(d=>cu
 function rCharts(){Object.values(charts).forEach(c=>{try{c.destroy();}catch(e){}});charts={};const tc=getTextColor();const gc=getGridColor();const CLR=['#7c3aed','#06b6d4','#10b981','#f59e0b','#ef4444','#a855f7'];const satilanlar=D.filter(d=>d.satılanAdet>0);let periodData={};let labels=[];satilanlar.forEach(d=>{let periodKey;let date=new Date(d.tarih);if(chartPeriod==='day')periodKey=d.tarih;else if(chartPeriod==='week'){const startOfWeek=new Date(date);startOfWeek.setDate(date.getDate()-date.getDay());periodKey=startOfWeek.toISOString().split('T')[0];}else{periodKey=`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`;}if(!periodData[periodKey])periodData[periodKey]={a:0,s:0,k:0};const oran=d.satılanAdet/d.adet;periodData[periodKey].a+=d.toplamAlis*oran;periodData[periodKey].s+=d.toplamSatis*oran;periodData[periodKey].k+=d.kar*oran;});const periods=Object.keys(periodData).sort();if(chartPeriod==='week')labels=periods.map(p=>`Hafta ${p.slice(5)}`);else if(chartPeriod==='month'){const MN=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];labels=periods.map(p=>{const [y,m]=p.split('-');return MN[+m-1]+' '+y;});}else labels=periods;const cO=u=>({responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc,font:{size:11}}}},scales:{x:{grid:{color:gc},ticks:{color:tc}},y:{grid:{color:gc},ticks:{color:tc,callback:v=>`${u}${Number(v).toLocaleString('tr-TR')}`}}}});const ctxAy=document.getElementById('cAy')?.getContext('2d');if(ctxAy){charts.a=new Chart(ctxAy,{type:'bar',data:{labels:labels.length?labels:['Veri yok'],datasets:[{label:'Alış (Satılan)',data:periods.map(p=>periodData[p].a),backgroundColor:'rgba(239,68,68,.7)'},{label:'Satış',data:periods.map(p=>periodData[p].s),backgroundColor:'rgba(6,182,212,.7)'},{label:'Kar',data:periods.map(p=>periodData[p].k),backgroundColor:'rgba(16,185,129,.7)'}]},options:cO('₺')});}const mM={};D.forEach(d=>{mM[d.model]=(mM[d.model]||0)+d.adet;});const ms=Object.keys(mM);const ctxDo=document.getElementById('cDo')?.getContext('2d');if(ctxDo){charts.b=new Chart(ctxDo,{type:'doughnut',data:{labels:ms.length?ms:['Veri yok'],datasets:[{data:ms.length?ms.map(m=>mM[m]):[1],backgroundColor:CLR}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'right',labels:{color:tc,font:{size:10}}}}}});}const kM={};satilanlar.forEach(d=>{const karOran=d.kar*(d.satılanAdet/d.adet);kM[d.model]=(kM[d.model]||0)+karOran;});const km=Object.keys(kM).sort((a,b)=>kM[b]-kM[a]).slice(0,8);const ctxKar=document.getElementById('cKar')?.getContext('2d');if(ctxKar){charts.c=new Chart(ctxKar,{type:'bar',data:{labels:km.length?km:['Veri yok'],datasets:[{label:'Kar (Satılan)',data:km.map(m=>kM[m]),backgroundColor:km.map(m=>kM[m]>=0?'rgba(16,185,129,.75)':'rgba(239,68,68,.75)')}]},options:{...cO('₺'),indexAxis:'y'}});}const eM={'1.El':0,'2.El':0};D.forEach(d=>{eM[d.el]=(eM[d.el]||0)+d.adet;});const ctxEl=document.getElementById('cEl')?.getContext('2d');if(ctxEl){charts.elChart=new Chart(ctxEl,{type:'bar',data:{labels:[],datasets:[{label:'Alış (Satılan)',backgroundColor:'rgba(239,68,68,.7)'},{label:'Satış',backgroundColor:'rgba(6,182,212,.7)'},{label:'Kar',backgroundColor:'rgba(16,185,129,.7)'}]},options:cO('₺')});updateElChart();}}
 function rSon(){const son=[...D].sort((a,b)=>b.tarih.localeCompare(a.tarih)).slice(0,10);const tb=document.getElementById('sonTb');if(!tb)return;if(!son.length){tb.innerHTML='<tr><td colspan="9"><div class="empty"><i>📭</i>Henüz işlem yok</div></td></tr>';return;}tb.innerHTML=son.map(d=>`<tr class="${getDur(d)==='satildi'?'sr':''}"><td>${formatTarih(d.tarih)}</td><td class="b">${d.model}</td><td><span class="badge ${d.el==='1.El'?'bpu':'bcy'}">${d.el}</span></td><td>${d.gb}GB/${d.ram}GB</td><td>${d.adet}</td><td class="trd">${fmt(d.toplamAlis)}</td><td class="tcy">${fmt(d.toplamSatis)}</td><td class="${d.kar>=0?'tgn':'trd'} b">${fmt(d.kar)}</td><td>${getDurB(d)}</td></tr>`).join('');}
 function rStok() {
+  // 🔍 ARAMA FİLTRESİ (BUNU EKLE)
+    const arama = document.getElementById('stokSrc')?.value?.toLowerCase() || '';
     if(!D || D.length === 0) {
         const tb = document.getElementById('stokTb');
         if(tb) tb.innerHTML = '<tr><td colspan="15"><div class="empty">Veri yükleniyor...</div></td></tr>';
@@ -1437,7 +1439,16 @@ function rStok() {
         }
     });
     let birlesmis = Array.from(birlesmisMap.values());
-    
+    // 🔍 ARAMA FİLTRESİ UYGULA (BUNU EKLE)
+    if(arama) {
+        birlesmis = birlesmis.filter(item => 
+            item.model.toLowerCase().includes(arama) ||
+            item.gb.toLowerCase().includes(arama) ||
+            item.el.toLowerCase().includes(arama) ||
+            (item.ram && item.ram.toString().includes(arama))
+        );
+    } 
+    const sort = sortState['stokTable'];
     const sort = sortState['stokTable'];
     if(sort) {
         birlesmis = sortData(birlesmis, sort.field, sort.yon);
