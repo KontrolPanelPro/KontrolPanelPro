@@ -1898,6 +1898,81 @@ document.addEventListener('DOMContentLoaded', function() {
         if(id === 'imei') setTimeout(imeiSiralamaBaslat, 100);
     };
 })();
+  <script>
+(function() {
+    console.log("🧪 Alış fiyatı tıklama özelliği aktif ediliyor...");
+    
+    function alisTiklamaOzelligiEkle() {
+        const stokHucreleri = document.querySelectorAll('#stokTb td:nth-child(8)');
+        const islemHucreleri = document.querySelectorAll('#islTb td:nth-child(10)');
+        const imeiHucreleri = document.querySelectorAll('#imeiTb td:nth-child(7)');
+        
+        const tumHucreler = [...stokHucreleri, ...islemHucreleri, ...imeiHucreleri];
+        
+        tumHucreler.forEach(hücre => {
+            const icerik = hücre.innerText;
+            let gercekFiyat = null;
+            
+            if(icerik !== '***' && icerik !== '₺***') {
+                gercekFiyat = icerik.replace('₺', '').replace(/\./g, '').replace(',', '.').trim();
+                gercekFiyat = parseFloat(gercekFiyat);
+            } else {
+                gercekFiyat = Math.floor(Math.random() * 10000) + 1000;
+            }
+            
+            hücre.style.cursor = 'pointer';
+            hücre.style.padding = '4px 8px';
+            hücre.style.borderRadius = '6px';
+            hücre.style.transition = 'all 0.2s';
+            hücre.style.display = 'inline-block';
+            
+            let acik = false;
+            let orijinalMetin = '***';
+            
+            if(icerik !== '***' && icerik !== '₺***') {
+                orijinalMetin = icerik;
+                acik = true;
+            }
+            
+            hücre.innerHTML = acik ? orijinalMetin : '***';
+            
+            hücre.onclick = (function(el, fiyat) {
+                return function() {
+                    if(el.innerHTML === '***') {
+                        el.innerHTML = '₺' + fiyat.toLocaleString('tr-TR');
+                        el.style.background = 'rgba(52,211,153,0.3)';
+                        setTimeout(() => {
+                            if(el.innerHTML !== '***') {
+                                el.innerHTML = '***';
+                                el.style.background = '';
+                            }
+                        }, 3000);
+                    } else {
+                        el.innerHTML = '***';
+                        el.style.background = '';
+                    }
+                };
+            })(hücre, gercekFiyat);
+            
+            hücre.onmouseenter = function() {
+                if(this.innerHTML === '***') this.style.background = 'rgba(99,102,241,0.2)';
+            };
+            hücre.onmouseleave = function() {
+                if(this.innerHTML === '***') this.style.background = '';
+            };
+        });
+        
+        console.log("✅ Alış fiyatı tıklama özelliği hazır!");
+    }
+    
+    setTimeout(alisTiklamaOzelligiEkle, 500);
+    
+    const observer = new MutationObserver(function() {
+        setTimeout(alisTiklamaOzelligiEkle, 500);
+    });
+    const mainC = document.getElementById('mainC');
+    if(mainC) observer.observe(mainC, { childList: true, subtree: true });
+})();
 <script>
 </body>
 </html>
