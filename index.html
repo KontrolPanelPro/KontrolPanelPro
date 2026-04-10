@@ -1220,6 +1220,7 @@ async function saveSat() {
             // 🔥 TARİHİ BUGÜN YAP
             if(yeniSatildi.length > 0) {
                 kayit.tarih = bugun;
+                kayit.satisTarihi = bugun;
             }
         }
     } else {
@@ -1233,12 +1234,18 @@ async function saveSat() {
             // 🔥 TARİHİ BUGÜN YAP
             if(yeniKayitSatilan > 0) {
                 kayit.tarih = bugun;
+                kayit.satisTarihi = bugun;
             }
             if(kalanSatilacak <= 0) break;
         }
     }
     
+    // 📝 TOPLAM KAR VE TOPLAM SATIŞLARI YENİDEN HESAPLA
     for(let kayit of ilgiliKayitlar) {
+        kayit.toplamSatis = kayit.satis * kayit.adet;
+        kayit.toplamAlis = kayit.alis * kayit.adet;
+        kayit.kar = kayit.toplamSatis - kayit.toplamAlis - (kayit.iskonto || 0);
+        
         const idx = D.findIndex(x => x.id === kayit.id);
         if(idx !== -1) D[idx] = kayit;
     }
