@@ -1204,8 +1204,13 @@ async function saveSat() {
         return;
     }
     
-    // 🔥 BUGÜNÜN TARİHİNİ AL
-    const bugun = new Date().toISOString().split('T')[0];
+    // 🔥 PC'NİN GERÇEK TARİHİ (Türkiye saati) - DÜZELTİLDİ
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const bugun = `${year}-${month}-${day}`;
+    console.log("📅 Bugünün tarihi (PC):", bugun);
     
     const tumImeiList = ilgiliKayitlar.flatMap(k => k.imeiList || []);
     let satildiImeiList = [];
@@ -1217,10 +1222,10 @@ async function saveSat() {
             const yeniSatildi = kayitImeiList.filter(im => satildiImeiList.includes(im));
             kayit.satildiImei = yeniSatildi;
             kayit.satılanAdet = yeniSatildi.length;
-            // 🔥 TARİHİ BUGÜN YAP
             if(yeniSatildi.length > 0) {
                 kayit.tarih = bugun;
                 kayit.satisTarihi = bugun;
+                console.log("✅ IMEI'li satış tarihi güncellendi:", kayit.model, "->", bugun);
             }
         }
     } else {
@@ -1231,10 +1236,10 @@ async function saveSat() {
             const yeniKayitSatilan = Math.min(mevcutAdet, kalanSatilacak);
             kayit.satılanAdet = yeniKayitSatilan;
             kalanSatilacak -= yeniKayitSatilan;
-            // 🔥 TARİHİ BUGÜN YAP
             if(yeniKayitSatilan > 0) {
                 kayit.tarih = bugun;
                 kayit.satisTarihi = bugun;
+                console.log("✅ IMEI'siz satış tarihi güncellendi:", kayit.model, "->", bugun);
             }
             if(kalanSatilacak <= 0) break;
         }
@@ -1247,20 +1252,36 @@ async function saveSat() {
         kayit.kar = kayit.toplamSatis - kayit.toplamAlis - (kayit.iskonto || 0);
         
         const idx = D.findIndex(x => x.id === kayit.id);
-        if(idx !== -1) D[idx] = kayit;
+        if(idx !== -1) {
+            D[idx] = kayit;
+            console.log("📝 D dizisi güncellendi:", kayit.model, "tarih:", kayit.tarih);
+        }
     }
     
     showLo('Satış kaydediliyor...');
     try {
         for(let upd of ilgiliKayitlar.map(k => ({action:'update', data: k}))) {
             await api(upd);
+            console.log("💾 Google Sheets'e kaydedildi:", upd.data.model);
         }
         closeSatMo();
         rAll();
         toast('Satış kaydedildi', 'success');
         playBeep();
+        
+        // KONTROL
+        setTimeout(() => {
+            const bugunSatis = D.find(d => d.tarih === bugun && d.satılanAdet > 0);
+            if(bugunSatis) {
+                console.log("🎉 BAŞARILI! Bugün satılan ürün:", bugunSatis.model, "Tarih:", bugunSatis.tarih);
+            } else {
+                console.log("⚠️ KONTROL: Bugün satılan ürün bulunamadı!");
+            }
+        }, 500);
+        
     } catch(e) {
         toast('Hata: '+e.message, 'error');
+        console.log("❌ HATA:", e);
     }
     hideLo();
 }
