@@ -88,42 +88,47 @@ body>*{position:relative;z-index:1}
 
 button,.btn,.tab,.mbt,.qbtn,.sortable{touch-action:manipulation;font-family:'Sora',sans-serif}
 /* ── TOP SAYFASI ── */
-.top-toggle{display:flex;justify-content:center;margin-bottom:24px;padding-top:16px;padding:16px 4px 0;overflow-x:auto}
+.top-toggle{display:flex;justify-content:center;padding:16px 4px 0;margin-bottom:20px;overflow-x:auto}
 .top-tgl{display:flex;background:var(--sf);border:1px solid var(--br);border-radius:14px;padding:4px;gap:4px;flex-shrink:0}
-.top-btn{padding:8px 16px;border:none;border-radius:10px;background:transparent;color:var(--tx2);font-family:'Sora',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s}
+.top-btn{padding:7px 14px;border:none;border-radius:10px;background:transparent;color:var(--tx2);font-family:'Sora',sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap}
 .top-btn.active{background:var(--ac);color:#fff;box-shadow:0 2px 12px var(--ac-glow)}
 .top-podium{display:flex;align-items:flex-end;justify-content:center;gap:6px;margin-bottom:28px;padding:0 4px;width:100%;box-sizing:border-box}
-.top-card{flex:1;min-width:0;max-width:190px;border-radius:18px;padding:18px 8px 20px;position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;border:1px solid transparent;transition:transform .25s;animation:topRise .5s ease both;backdrop-filter:blur(12px);overflow:hidden}
+/* Kart: overflow:visible — badge taşmasın diye padding-top ile yer açıyoruz */
+.top-card{flex:1;min-width:0;max-width:200px;border-radius:16px;padding:8px 8px 16px;padding-top:22px;position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;border:1px solid transparent;transition:transform .25s;animation:topRise .5s ease both;backdrop-filter:blur(12px)}
 .top-card:hover{transform:translateY(-3px)}
 @keyframes topRise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
-.top-1{max-width:210px;min-width:0;background:linear-gradient(160deg,rgba(245,158,11,.12),rgba(245,158,11,.07));border-color:rgba(245,158,11,.4);box-shadow:0 0 36px rgba(245,158,11,.1),inset 0 1px 0 rgba(245,158,11,.15);animation-delay:.05s;padding-top:24px}
-.top-2{background:linear-gradient(160deg,rgba(148,163,184,.1),rgba(148,163,184,.06));border-color:rgba(148,163,184,.2);box-shadow:0 0 24px rgba(148,163,184,.05);animation-delay:.15s}
-.top-3{background:linear-gradient(160deg,rgba(180,83,9,.12),rgba(180,83,9,.07));border-color:rgba(180,83,9,.22);box-shadow:0 0 24px rgba(180,83,9,.07);animation-delay:.25s}
-.top-badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;font-family:'Space Mono',monospace;border:2px solid;z-index:2;line-height:1}
-.top-1 .top-badge{background:var(--sf);border-color:#f59e0b;color:#f59e0b;width:32px;height:32px;font-size:14px;top:-16px;box-shadow:0 0 10px rgba(245,158,11,.5);line-height:1}
-.top-2 .top-badge{background:var(--sf);border-color:#94a3b8;color:#94a3b8}
-.top-3 .top-badge{background:var(--sf);border-color:#d97706;color:#d97706}
-.top-img-wrap{border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.top-1 .top-img-wrap{width:72px;height:96px;border-radius:12px;box-shadow:0 4px 18px rgba(245,158,11,.2)}
-.top-2 .top-img-wrap,.top-3 .top-img-wrap{width:60px;height:80px;border-radius:10px}
-.top-model{font-size:10px;font-weight:700;text-align:center;line-height:1.3;letter-spacing:-.2px;word-break:break-word;max-width:100%}
+.top-1{max-width:220px;min-width:0;background:linear-gradient(160deg,rgba(245,158,11,.13),rgba(245,158,11,.06));border-color:rgba(245,158,11,.4);box-shadow:0 0 32px rgba(245,158,11,.1),inset 0 1px 0 rgba(245,158,11,.15);animation-delay:.05s;padding-top:26px}
+.top-2{background:linear-gradient(160deg,rgba(148,163,184,.1),rgba(148,163,184,.05));border-color:rgba(148,163,184,.2);box-shadow:0 0 20px rgba(148,163,184,.05);animation-delay:.15s}
+.top-3{background:linear-gradient(160deg,rgba(180,83,9,.12),rgba(180,83,9,.06));border-color:rgba(180,83,9,.22);box-shadow:0 0 20px rgba(180,83,9,.07);animation-delay:.25s}
+/* Badge: overflow:visible olan parent içinde çalışıyor */
+.top-badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;font-family:'Space Mono',monospace;border:2px solid;z-index:10;background:var(--bg)}
+.top-1 .top-badge{width:30px;height:30px;font-size:14px;top:-15px;border-color:#f59e0b;color:#f59e0b;box-shadow:0 0 10px rgba(245,158,11,.5)}
+.top-2 .top-badge{border-color:#94a3b8;color:#94a3b8}
+.top-3 .top-badge{border-color:#d97706;color:#d97706}
+/* Resim: sabit yükseklik, contain ile telefon tam sığsın, kırpılmasın */
+.top-img-wrap{width:100%;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:rgba(0,0,0,.2)}
+.top-1 .top-img-wrap{height:110px;border-radius:12px;box-shadow:0 4px 16px rgba(245,158,11,.15)}
+.top-2 .top-img-wrap,.top-3 .top-img-wrap{height:90px;border-radius:10px}
+.top-img-wrap img{width:100%;height:100%;object-fit:contain;display:block}
+.top-model{font-size:10px;font-weight:700;text-align:center;line-height:1.3;word-break:break-word;max-width:100%;color:var(--tx)}
 .top-1 .top-model{font-size:11px}
-.top-variant{font-size:9px;color:var(--tx2);margin-top:-5px;text-align:center}
-.top-stat{font-family:'Space Mono',monospace;font-size:14px;font-weight:700;letter-spacing:-.4px}
-.top-1 .top-stat{font-size:16px;color:#fbbf24}
+.top-variant{font-size:9px;color:var(--tx2);margin-top:-3px;text-align:center}
+.top-stat{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;letter-spacing:-.3px}
+.top-1 .top-stat{font-size:15px;color:#fbbf24}
 .top-2 .top-stat{color:#cbd5e1}
 .top-3 .top-stat{color:#d97706}
-.top-lbl{font-size:9px;color:var(--tx2);margin-top:-6px;text-transform:uppercase;letter-spacing:.4px}
-.top-bar-w{width:100%;height:3px;background:var(--br);border-radius:99px;overflow:hidden;margin-top:2px}
+.top-lbl{font-size:8px;color:var(--tx2);margin-top:-4px;text-transform:uppercase;letter-spacing:.3px}
+.top-bar-w{width:100%;height:3px;background:var(--br);border-radius:99px;overflow:hidden}
 .top-bar{height:100%;border-radius:99px;transition:width 1s ease .4s}
 .top-1 .top-bar{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
 .top-2 .top-bar{background:linear-gradient(90deg,#94a3b8,#cbd5e1)}
 .top-3 .top-bar{background:linear-gradient(90deg,#b45309,#d97706)}
-.top-subs{display:flex;gap:6px;width:100%}
-.top-sub{flex:1;background:var(--sf2);border-radius:7px;padding:5px 3px;text-align:center;border:1px solid var(--br)}
-.top-sub-v{font-size:10px;font-weight:700;font-family:'Space Mono',monospace}
-.top-sub-l{font-size:8px;color:var(--tx2);text-transform:uppercase;letter-spacing:.2px}
-.top-stripe{position:absolute;bottom:0;left:0;right:0;height:2px;border-radius:0 0 18px 18px}
+/* Sub kutular: 2 satır yerine tek satır değer + label dikey */
+.top-subs{display:flex;gap:4px;width:100%}
+.top-sub{flex:1;min-width:0;background:var(--sf2);border-radius:6px;padding:4px 2px;text-align:center;border:1px solid var(--br)}
+.top-sub-v{font-size:9px;font-weight:700;font-family:'Space Mono',monospace;color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.top-sub-l{font-size:7px;color:var(--tx2);text-transform:uppercase;letter-spacing:.1px;margin-top:1px}
+.top-stripe{position:absolute;bottom:0;left:0;right:0;height:2px;border-radius:0 0 16px 16px}
 .top-1 .top-stripe{background:linear-gradient(90deg,transparent,#f59e0b,transparent)}
 .top-2 .top-stripe{background:linear-gradient(90deg,transparent,#94a3b8,transparent)}
 .top-3 .top-stripe{background:linear-gradient(90deg,transparent,#d97706,transparent)}
@@ -1785,22 +1790,13 @@ function topLoadImg(container,model,brand){
   const img=new Image();
   img.onload=function(){
     container.innerHTML='';
-    // Resim oranına göre karar ver: portrait ise cover, değilse contain
-    const ratio=img.naturalWidth/img.naturalHeight;
-    if(ratio<0.85){
-      // Portrait telefon fotoğrafı - cover ile doldur
-      img.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block';
-    } else {
-      // Kare/yatay resim - sığdır, kenar boşluğu bırak
-      img.style.cssText='width:85%;height:85%;object-fit:contain;display:block;margin:auto';
-      container.style.cssText+='display:flex;align-items:center;justify-content:center';
-    }
+    img.style.cssText='width:100%;height:100%;object-fit:contain;display:block';
     container.appendChild(img);
   };
   img.onerror=function(){
     const fb=new Image();
     fb.src=fallback;
-    fb.style.cssText='width:55%;height:55%;object-fit:contain;display:block';
+    fb.style.cssText='width:50%;height:50%;object-fit:contain;display:block';
     container.innerHTML='';
     container.style.cssText+='display:flex;align-items:center;justify-content:center';
     container.appendChild(fb);
