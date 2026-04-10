@@ -508,37 +508,37 @@ input:focus,select:focus,textarea:focus{
 .stt{font-size:15px;font-weight:700;letter-spacing:-.3px}
 
 /* ── ANALIZ SORT ── */
-  /* ── PODYUM ── */
-.podium-wrap{background:var(--sf);border-radius:24px;padding:20px;margin-bottom:20px;border:1px solid var(--br)}
-.podium-toggle{display:flex;justify-content:center;margin-bottom:24px}
-.podium-toggle .tgl-btn{padding:8px 20px;border:none;border-radius:30px;background:var(--sf2);color:var(--tx2);font-size:13px;font-weight:600;cursor:pointer;margin:0 5px}
-.podium-toggle .tgl-btn.active{background:var(--ac);color:#fff}
-.podium{display:flex;align-items:flex-end;justify-content:center;gap:12px;flex-wrap:wrap}
-.pod-card{flex:1;min-width:140px;border-radius:20px;padding:16px 12px;text-align:center;border:1px solid var(--br);background:var(--sf)}
-.pod-card.pod-1{background:linear-gradient(160deg,#1c1a0f,#2a2108);border-color:rgba(245,158,11,0.4);transform:scale(1.02)}
-.pod-card.pod-2{background:linear-gradient(160deg,#131820,#1a2230);border-color:rgba(148,163,184,0.3)}
-.pod-card.pod-3{background:linear-gradient(160deg,#180f08,#231608);border-color:rgba(180,83,9,0.3)}
-.pod-rank{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;margin:0 auto 8px}
-.pod-1 .pod-rank{background:var(--gold,#f59e0b);color:#000}
-.pod-2 .pod-rank{background:var(--silver,#94a3b8);color:#000}
-.pod-3 .pod-rank{background:var(--bronze,#b45309);color:#fff}
-.pod-img{width:70px;height:70px;margin:0 auto 8px;border-radius:14px;overflow:hidden;background:var(--sf2)}
+ /* ── PODYUM (TEMA UYUMLU) ── */
+.podium-wrap{background:var(--sf);border-radius:28px;padding:24px 20px;margin-bottom:24px;border:1px solid var(--br);backdrop-filter:blur(10px)}
+.podium-toggle{display:flex;justify-content:center;margin-bottom:28px;gap:10px;flex-wrap:wrap}
+.podium-toggle .tgl-btn{padding:9px 24px;border:none;border-radius:40px;background:var(--sf2);color:var(--tx2);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+.podium-toggle .tgl-btn:hover{color:var(--tx);background:var(--sf3)}
+.podium-toggle .tgl-btn.active{background:var(--ac);color:#fff;box-shadow:0 2px 16px var(--ac-glow)}
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:20px;flex-wrap:wrap;margin-bottom:10px}
+.pod-card{flex:1;min-width:140px;max-width:200px;border-radius:28px;padding:22px 14px 20px;text-align:center;transition:all .3s;animation:rise 0.5s ease both;border:1px solid var(--br);background:var(--sf)}
+.pod-card.pod-1{transform:scale(1.08);margin-bottom:0;padding-top:28px;border-color:rgba(245,158,11,0.5);background:linear-gradient(160deg,var(--sf),rgba(245,158,11,0.08))}
+.pod-card.pod-2{transform:scale(0.96);margin-bottom:-24px}
+.pod-card.pod-3{transform:scale(0.96);margin-bottom:-24px}
+@keyframes rise{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+.pod-rank{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:-38px auto 10px;font-size:26px;font-weight:900;box-shadow:0 4px 12px rgba(0,0,0,0.3)}
+.pod-1 .pod-rank{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#1a1a1a;box-shadow:0 0 20px rgba(245,158,11,0.5)}
+.pod-2 .pod-rank{background:linear-gradient(135deg,#cbd5e1,#94a3b8);color:#1a1a1a;box-shadow:0 0 12px rgba(148,163,184,0.4)}
+.pod-3 .pod-rank{background:linear-gradient(135deg,#d97706,#b45309);color:#fff;box-shadow:0 0 12px rgba(180,83,9,0.4)}
+.pod-img{width:85px;height:85px;margin:0 auto 10px;border-radius:20px;overflow:hidden;background:var(--sf2);display:flex;align-items:center;justify-content:center;border:1px solid var(--br)}
 .pod-img img{width:100%;height:100%;object-fit:cover}
-.pod-model{font-size:12px;font-weight:700}
-.pod-variant{font-size:9px;color:var(--tx2)}
-.pod-stat{font-size:16px;font-weight:800;margin-top:6px}
-.pod-label{font-size:9px;color:var(--tx2)}
-.analiz-sort-buttons{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px}
-.analiz-sort-btn{
-  padding:5px 11px;border-radius:20px;
-  border:1px solid var(--br);background:var(--sf);
-  backdrop-filter:blur(8px);
-  color:var(--tx2);font-size:11px;font-weight:600;cursor:pointer;
-  transition:all .2s;
-}
-.analiz-sort-btn:hover{border-color:var(--br2);color:var(--tx)}
-.analiz-sort-btn.active{background:var(--ac);color:#fff;border-color:var(--ac);box-shadow:0 2px 10px var(--ac-glow)}
-
+.pod-model{font-size:13px;font-weight:800;margin-top:8px;color:var(--tx)}
+.pod-variant{font-size:9px;color:var(--tx2);margin-top:3px}
+.pod-stat{font-size:18px;font-weight:800;margin-top:10px}
+.pod-1 .pod-stat{color:#fbbf24}
+.pod-2 .pod-stat{color:#cbd5e1}
+.pod-3 .pod-stat{color:#d97706}
+.pod-label{font-size:9px;color:var(--tx2);margin-top:2px;text-transform:uppercase;letter-spacing:0.5px}
+.pod-bar{height:3px;background:rgba(128,128,128,0.2);border-radius:99px;margin-top:12px;overflow:hidden}
+.pod-bar-fill{height:100%;border-radius:99px;transition:width 0.8s ease}
+.pod-1 .pod-bar-fill{background:linear-gradient(90deg,#fbbf24,#f59e0b)}
+.pod-2 .pod-bar-fill{background:linear-gradient(90deg,#cbd5e1,#94a3b8)}
+.pod-3 .pod-bar-fill{background:linear-gradient(90deg,#d97706,#b45309)}
+  
 /* ── PROGRESS ── */
 .pb{height:3px;background:var(--sf3);border-radius:99px;overflow:hidden;margin-top:6px}
 .pf{height:100%;border-radius:99px}
@@ -839,14 +839,15 @@ input,select{padding:8px 10px;font-size:12px}
   <div class="podium-toggle">
     <button class="tgl-btn active" id="podyumSatisBtn" onclick="podyumModDegistir('satis')">📈 En Çok Satan</button>
     <button class="tgl-btn" id="podyumKarBtn" onclick="podyumModDegistir('kar')">💰 En Çok Kar</button>
+    <button class="tgl-btn" id="podyumBirimKarBtn" onclick="podyumModDegistir('birimKar')">💎 Birim Kar</button>
   </div>
   <div class="podium" id="podyumContainer">
     <div style="text-align:center;width:100%">Yükleniyor...</div>
   </div>
 </div>
-<div class="sh2"><div class="stt">📈 Ürün/Model Analiz</div><div class="analiz-sort-buttons" id="analizSortButtons"><button class="analiz-sort-btn" data-sort="kar">💰 Kar</button><button class="analiz-sort-btn" data-sort="satis">📈 Satış</button><button class="analiz-sort-btn" data-sort="adet">📦 Stok</button><button class="analiz-sort-btn" data-sort="kalan">🟡 Kalan</button><button class="analiz-sort-btn" data-sort="marj">📊 Marj</button><button class="analiz-sort-btn" data-sort="cokSatan">⭐ En Çok Satan</button><button class="analiz-sort-btn" data-sort="enKarli">🏆 En Karlı</button><button class="analiz-sort-btn" data-sort="birimKar">💵 Birim Kar</button><button class="analiz-sort-btn" data-sort="birimKarYuzde">📈 Birim Kar%</button><button class="analiz-sort-btn" data-sort="toplamKarYuzde">💰 Toplam Kar%</button></div></div>
+
+<div class="sh2"><div class="stt">📈 Ürün/Model Analiz</div><div class="analiz-sort-buttons" id="analizSortButtons">...</div></div>
 <div id="urunG"></div>
-</div>
 
 <div class="page" id="page-raporlar">
 <div class="card"><div class="stt">📑 Rapor Oluştur</div><div class="filter-bar" style="margin-top:12px"><select id="raporTipi"><option value="aylik">Aylık</option><option value="3aylik">3 Aylık</option><option value="yillik">Yıllık</option></select><input type="month" id="raporAy" value="2024-03"><div class="rapor-btn-group"><button class="btn bp" onclick="raporOlustur('excel')">📊 Excel</button><button class="btn bp" onclick="raporOlustur('pdf')">📄 PDF</button></div></div></div>
@@ -1545,6 +1546,7 @@ function modelBazliVeri() {
                 satilanAdet: 0,
                 kar: 0,
                 toplamSatis: 0,
+                birimKar: 0,
                 variant: `${urun.gb}GB ${urun.ram}RAM ${urun.el}`
             });
         }
@@ -1553,10 +1555,10 @@ function modelBazliVeri() {
         m.satilanAdet += (urun.satılanAdet || 0);
         m.kar += urun.kar;
         m.toplamSatis += urun.toplamSatis;
+        m.birimKar = m.satilanAdet > 0 ? (m.kar / m.satilanAdet) : 0;
     });
     return Array.from(map.values());
 }
-
 function markaBul(model) {
     const m = model.toLowerCase();
     if(m.includes('iphone')) return 'apple';
@@ -1583,41 +1585,57 @@ function podyumGorselYukle(containerId, model, brand) {
 function podyumRender() {
     const veriler = modelBazliVeri();
     let sirali = [];
+    
     if(podyumMod === 'satis') {
         sirali = [...veriler].sort((a,b) => b.satilanAdet - a.satilanAdet);
-    } else {
+    } else if(podyumMod === 'kar') {
         sirali = [...veriler].sort((a,b) => b.kar - a.kar);
+    } else if(podyumMod === 'birimKar') {
+        sirali = [...veriler].sort((a,b) => (b.birimKar || 0) - (a.birimKar || 0));
     }
     
     const top3 = sirali.slice(0, 3);
-    const maxVal = podyumMod === 'satis' ? (top3[0]?.satilanAdet || 1) : (top3[0]?.kar || 1);
+    const maxVal = podyumMod === 'satis' ? (top3[0]?.satilanAdet || 1) : (podyumMod === 'kar' ? (top3[0]?.kar || 1) : (top3[0]?.birimKar || 1));
+    
+    // Podyum sıralaması: 2. sıra sol, 1. sıra orta (büyük), 3. sıra sağ
     const order = [top3[1], top3[0], top3[2]];
     const rankClass = ['pod-2', 'pod-1', 'pod-3'];
     const rankNum = [2, 1, 3];
+    const rankIcons = ['🥈', '🏆', '🥉'];
     
     const container = document.getElementById('podyumContainer');
     if(!container) return;
     
-    if(top3.length === 0) {
-        container.innerHTML = '<div style="text-align:center;width:100%">Henüz veri yok</div>';
+    if(top3.length === 0 || (top3[0] && top3[0].satilanAdet === 0 && top3[0].kar === 0)) {
+        container.innerHTML = '<div style="text-align:center;width:100%;padding:40px;color:var(--tx2)">📭 Henüz satış verisi yok</div>';
         return;
     }
     
     container.innerHTML = order.map((item, i) => {
         if(!item) return '';
-        const val = podyumMod === 'satis' ? item.satilanAdet : item.kar;
-        const pct = Math.round((val / maxVal) * 100);
-        const statStr = podyumMod === 'satis' ? item.satilanAdet + ' adet' : '₺' + item.kar.toLocaleString('tr-TR');
+        let val, statStr;
+        if(podyumMod === 'satis') {
+            val = item.satilanAdet;
+            statStr = item.satilanAdet + ' adet';
+        } else if(podyumMod === 'kar') {
+            val = item.kar;
+            statStr = '₺' + item.kar.toLocaleString('tr-TR');
+        } else {
+            val = item.birimKar || 0;
+            statStr = '₺' + (item.birimKar || 0).toLocaleString('tr-TR');
+        }
+        const pct = maxVal > 0 ? Math.round((val / maxVal) * 100) : 0;
         const brand = markaBul(item.model);
+        
         return `
             <div class="pod-card ${rankClass[i]}">
-                <div class="pod-rank">${rankNum[i]}</div>
+                <div class="pod-rank">${rankIcons[i]}</div>
                 <div class="pod-img" id="podImg${i}"></div>
                 <div class="pod-model">${item.model}</div>
                 <div class="pod-variant">${item.variant}</div>
                 <div class="pod-stat">${statStr}</div>
-                <div class="pod-label">${podyumMod === 'satis' ? 'Satılan Adet' : 'Toplam Kar'}</div>
-                <div style="height:3px;background:rgba(255,255,255,0.1);border-radius:99px;margin-top:8px"><div style="width:${pct}%;height:100%;border-radius:99px;background:var(--ac)"></div></div>
+                <div class="pod-label">${podyumMod === 'satis' ? 'Satılan Adet' : (podyumMod === 'kar' ? 'Toplam Kar' : 'Birim Kar')}</div>
+                <div class="pod-bar"><div class="pod-bar-fill" style="width:${pct}%"></div></div>
             </div>
         `;
     }).join('');
