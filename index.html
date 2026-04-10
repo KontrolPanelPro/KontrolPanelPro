@@ -508,37 +508,17 @@ input:focus,select:focus,textarea:focus{
 .stt{font-size:15px;font-weight:700;letter-spacing:-.3px}
 
 /* ── ANALIZ SORT ── */
- /* ── PODYUM (TEMA UYUMLU) ── */
-.podium-wrap{background:var(--sf);border-radius:28px;padding:24px 20px;margin-bottom:24px;border:1px solid var(--br);backdrop-filter:blur(10px)}
-.podium-toggle{display:flex;justify-content:center;margin-bottom:28px;gap:10px;flex-wrap:wrap}
-.podium-toggle .tgl-btn{padding:9px 24px;border:none;border-radius:40px;background:var(--sf2);color:var(--tx2);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
-.podium-toggle .tgl-btn:hover{color:var(--tx);background:var(--sf3)}
-.podium-toggle .tgl-btn.active{background:var(--ac);color:#fff;box-shadow:0 2px 16px var(--ac-glow)}
-.podium{display:flex;align-items:flex-end;justify-content:center;gap:20px;flex-wrap:wrap;margin-bottom:10px}
-.pod-card{flex:1;min-width:140px;max-width:200px;border-radius:28px;padding:22px 14px 20px;text-align:center;transition:all .3s;animation:rise 0.5s ease both;border:1px solid var(--br);background:var(--sf)}
-.pod-card.pod-1{transform:scale(1.08);margin-bottom:0;padding-top:28px;border-color:rgba(245,158,11,0.5);background:linear-gradient(160deg,var(--sf),rgba(245,158,11,0.08))}
-.pod-card.pod-2{transform:scale(0.96);margin-bottom:-24px}
-.pod-card.pod-3{transform:scale(0.96);margin-bottom:-24px}
-@keyframes rise{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
-.pod-rank{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:-38px auto 10px;font-size:26px;font-weight:900;box-shadow:0 4px 12px rgba(0,0,0,0.3)}
-.pod-1 .pod-rank{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#1a1a1a;box-shadow:0 0 20px rgba(245,158,11,0.5)}
-.pod-2 .pod-rank{background:linear-gradient(135deg,#cbd5e1,#94a3b8);color:#1a1a1a;box-shadow:0 0 12px rgba(148,163,184,0.4)}
-.pod-3 .pod-rank{background:linear-gradient(135deg,#d97706,#b45309);color:#fff;box-shadow:0 0 12px rgba(180,83,9,0.4)}
-.pod-img{width:85px;height:85px;margin:0 auto 10px;border-radius:20px;overflow:hidden;background:var(--sf2);display:flex;align-items:center;justify-content:center;border:1px solid var(--br)}
-.pod-img img{width:100%;height:100%;object-fit:cover}
-.pod-model{font-size:13px;font-weight:800;margin-top:8px;color:var(--tx)}
-.pod-variant{font-size:9px;color:var(--tx2);margin-top:3px}
-.pod-stat{font-size:18px;font-weight:800;margin-top:10px}
-.pod-1 .pod-stat{color:#fbbf24}
-.pod-2 .pod-stat{color:#cbd5e1}
-.pod-3 .pod-stat{color:#d97706}
-.pod-label{font-size:9px;color:var(--tx2);margin-top:2px;text-transform:uppercase;letter-spacing:0.5px}
-.pod-bar{height:3px;background:rgba(128,128,128,0.2);border-radius:99px;margin-top:12px;overflow:hidden}
-.pod-bar-fill{height:100%;border-radius:99px;transition:width 0.8s ease}
-.pod-1 .pod-bar-fill{background:linear-gradient(90deg,#fbbf24,#f59e0b)}
-.pod-2 .pod-bar-fill{background:linear-gradient(90deg,#cbd5e1,#94a3b8)}
-.pod-3 .pod-bar-fill{background:linear-gradient(90deg,#d97706,#b45309)}
-  
+.analiz-sort-buttons{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px}
+.analiz-sort-btn{
+  padding:5px 11px;border-radius:20px;
+  border:1px solid var(--br);background:var(--sf);
+  backdrop-filter:blur(8px);
+  color:var(--tx2);font-size:11px;font-weight:600;cursor:pointer;
+  transition:all .2s;
+}
+.analiz-sort-btn:hover{border-color:var(--br2);color:var(--tx)}
+.analiz-sort-btn.active{background:var(--ac);color:#fff;border-color:var(--ac);box-shadow:0 2px 10px var(--ac-glow)}
+
 /* ── PROGRESS ── */
 .pb{height:3px;background:var(--sf3);border-radius:99px;overflow:hidden;margin-top:6px}
 .pf{height:100%;border-radius:99px}
@@ -835,19 +815,9 @@ input,select{padding:8px 10px;font-size:12px}
 </div>
 
 <div class="page" id="page-urunler">
-  <div class="podium-wrap">
-  <div class="podium-toggle">
-    <button class="tgl-btn active" id="podyumSatisBtn" onclick="podyumModDegistir('satis')">📈 En Çok Satan</button>
-    <button class="tgl-btn" id="podyumKarBtn" onclick="podyumModDegistir('kar')">💰 En Çok Kar</button>
-    <button class="tgl-btn" id="podyumBirimKarBtn" onclick="podyumModDegistir('birimKar')">💎 Birim Kar</button>
-  </div>
-  <div class="podium" id="podyumContainer">
-    <div style="text-align:center;width:100%">Yükleniyor...</div>
-  </div>
-</div>
-
-<div class="sh2"><div class="stt">📈 Ürün/Model Analiz</div><div class="analiz-sort-buttons" id="analizSortButtons">...</div></div>
+<div class="sh2"><div class="stt">📈 Ürün/Model Analiz</div><div class="analiz-sort-buttons" id="analizSortButtons"><button class="analiz-sort-btn" data-sort="kar">💰 Kar</button><button class="analiz-sort-btn" data-sort="satis">📈 Satış</button><button class="analiz-sort-btn" data-sort="adet">📦 Stok</button><button class="analiz-sort-btn" data-sort="kalan">🟡 Kalan</button><button class="analiz-sort-btn" data-sort="marj">📊 Marj</button><button class="analiz-sort-btn" data-sort="cokSatan">⭐ En Çok Satan</button><button class="analiz-sort-btn" data-sort="enKarli">🏆 En Karlı</button><button class="analiz-sort-btn" data-sort="birimKar">💵 Birim Kar</button><button class="analiz-sort-btn" data-sort="birimKarYuzde">📈 Birim Kar%</button><button class="analiz-sort-btn" data-sort="toplamKarYuzde">💰 Toplam Kar%</button></div></div>
 <div id="urunG"></div>
+</div>
 
 <div class="page" id="page-raporlar">
 <div class="card"><div class="stt">📑 Rapor Oluştur</div><div class="filter-bar" style="margin-top:12px"><select id="raporTipi"><option value="aylik">Aylık</option><option value="3aylik">3 Aylık</option><option value="yillik">Yıllık</option></select><input type="month" id="raporAy" value="2024-03"><div class="rapor-btn-group"><button class="btn bp" onclick="raporOlustur('excel')">📊 Excel</button><button class="btn bp" onclick="raporOlustur('pdf')">📄 PDF</button></div></div></div>
@@ -1089,40 +1059,36 @@ function calcK(){const a=+(document.getElementById('f_adt')?.value||0);const al=
 async function saveIsl(e){e.preventDefault();const btn=document.getElementById('moBtnSub');if(btn)btn.disabled=true;const imRaw=document.getElementById('f_im')?.value||'';const imList=imRaw?imRaw.split(',').map(x=>x.trim()).filter(Boolean):[];const adet=+(document.getElementById('f_adt')?.value||0);const alis=+(document.getElementById('f_ali')?.value||0);const satis=+(document.getElementById('f_sat')?.value||0);const iskonto=+(document.getElementById('f_isk')?.value||0);const ex=editId?D.find(x=>x.id===editId):null;const item={id:editId||Date.now().toString(),tarih:document.getElementById('f_tar')?.value||'',model:document.getElementById('f_mod')?.value.trim()||'',el:document.getElementById('f_el')?.value||'1.El',gb:document.getElementById('f_gb')?.value||'256',ram:+(document.getElementById('f_ram')?.value||8),renk:document.getElementById('f_rnk')?.value.trim()||'',adet,alis,satis,iskonto,imeiList:imList,not:document.getElementById('f_not')?.value.trim()||'',toplamAlis:alis*adet,toplamSatis:satis*adet,kar:(satis*adet)-(alis*adet)-iskonto,satılanAdet:ex?ex.satılanAdet:0,satildiImei:ex?ex.satildiImei:[]};actionHistory.push({type:editId?'update':'add',data:item,oldData:ex});showLo(editId?'Güncelleniyor...':'Kaydediliyor...');try{const res=await api({action:editId?'update':'add',data:item});if(res.ok){if(editId){const i=D.findIndex(x=>x.id===editId);if(i!==-1)D[i]=norm(item);}else D.push(norm(item));closeMo();rAll();toast(editId?'Güncellendi ✓':'Kaydedildi ✓','success');playBeep();}else throw new Error(res.error);}catch(e){toast('Hata: '+e.message,'error');}hideLo();if(btn)btn.disabled=false;}
 function openSatMo(id) {
     satTgt = String(id);
-    console.log("🔍 Açılan ID:", satTgt);
-    
-    // Önce direkt ID ile bul
-    let hedefUrun = D.find(x => x.id === satTgt);
-    if(!hedefUrun) {
-        toast('Ürün bulunamadı!', 'error');
-        return;
+    const birlesmisMap = new Map();
+    D.forEach(item => {
+        const key = `${item.model}_${item.el}_${item.gb}_${item.ram}`;
+        if(!birlesmisMap.has(key)) birlesmisMap.set(key, []);
+        birlesmisMap.get(key).push(item);
+    });
+    let birlesmisItem = null;
+    let tumKayitlar = [];
+    for(let [key, items] of birlesmisMap.entries()) {
+        const ilk = items[0];
+        if(ilk.id === id) {
+            birlesmisItem = {
+                id: id,
+                model: ilk.model,
+                el: ilk.el,
+                gb: ilk.gb,
+                ram: ilk.ram,
+                adet: items.reduce((s,i)=>s+i.adet,0),
+                satılanAdet: items.reduce((s,i)=>s+(i.satılanAdet||0),0),
+                imeiList: items.flatMap(i=>i.imeiList||[]),
+                satildiImei: items.flatMap(i=>i.satildiImei||[])
+            };
+            tumKayitlar = items;
+            break;
+        }
     }
-    
-    // Aynı model+el+gb+ram'e sahip TÜM kayıtları bul
-    const tumKayitlar = D.filter(x => 
-        x.model === hedefUrun.model && 
-        x.el === hedefUrun.el && 
-        x.gb === hedefUrun.gb && 
-        x.ram === hedefUrun.ram
-    );
-    
-    if(tumKayitlar.length === 0) {
+    if(!birlesmisItem) {
         toast('Ürün bulunamadı', 'error');
         return;
     }
-    
-    // Birleştirilmiş veriyi oluştur
-    const birlesmisItem = {
-        id: satTgt,
-        model: hedefUrun.model,
-        el: hedefUrun.el,
-        gb: hedefUrun.gb,
-        ram: hedefUrun.ram,
-        adet: tumKayitlar.reduce((s,i)=>s+i.adet,0),
-        satılanAdet: tumKayitlar.reduce((s,i)=>s+(i.satılanAdet||0),0),
-        imeiList: tumKayitlar.flatMap(i=>i.imeiList||[]),
-        satildiImei: tumKayitlar.flatMap(i=>i.satildiImei||[])
-    };
     
     const kalan = birlesmisItem.adet - birlesmisItem.satılanAdet;
     const iList = birlesmisItem.imeiList;
@@ -1532,132 +1498,7 @@ function rStok() {
     console.log('✅ Stok tablosu güncellendi (birleştirilmiş, sıralanmış, tarih butonlu),', birlesmis.length, 'ürün');
 }
 function rIslemler(){const q=(document.getElementById('islSrc')?.value||'').toLowerCase();const df=(document.getElementById('islFil')?.value||'');const baslangic=document.getElementById('tarihBaslangic')?.value;const bitis=document.getElementById('tarihBitis')?.value;let fl=D.filter(d=>{const tarihKontrol=(!baslangic||d.tarih>=baslangic)&&(!bitis||d.tarih<=bitis);const qm=!q||d.model.toLowerCase().includes(q)||d.el.toLowerCase().includes(q)||(d.imeiList||[]).some(i=>i.includes(q))||d.tarih.includes(q);return tarihKontrol&&qm&&(!df||getDur(d)===df);}).map(d=>{const kalan=d.adet-(d.satılanAdet||0);const birimKar=d.satis-d.alis;const birimKarYuzde=d.satis>0?((birimKar/d.satis)*100):0;const toplamKar=d.kar;const toplamKarYuzde=d.toplamSatis>0?((toplamKar/d.toplamSatis)*100):0;return{...d,kalan,birimKar,birimKarYuzde,toplamKar,toplamKarYuzde};});const sort=sortState['islemlerTable'];if(sort)fl=sortData(fl,sort.field,sort.yon);else fl=fl.sort((a,b)=>b.tarih.localeCompare(a.tarih));const tb=document.getElementById('islTb');if(!tb)return;if(!fl.length){tb.innerHTML=`</table><td colspan="20"><div class="empty"><i>📭</i>${q?'Sonuç bulunamadı':'Henüz işlem yok'}</div></td></tr>`;return;}tb.innerHTML=fl.map(d=>`<tr class="${getDur(d)==='satildi'?'sr':''}"><td>${formatTarih(d.tarih)}</td><td class="b">${d.model}</td><td><span class="badge ${d.el==='1.El'?'bpu':'bcy'}">${d.el}</span></td><td>${d.gb}GB</td><td>${d.ram}GB</td><td>${(d.imeiList||[]).map(i=>`<span class="itag ${(d.satildiImei||[]).includes(i)?'sat':''}">${i}</span>`).join('')||'-'}</td><td style="text-align:center">${d.adet}</td><td style="text-align:center;color:var(--gn)"><b>${d.satılanAdet||0}</b></td><td style="text-align:center" class="${d.kalan>0?'tor':'tgn'}"><b>${d.kalan}</b></td><td class="trd"><span style="cursor:pointer;background:#6366f120;padding:4px 8px;border-radius:6px" data-fiyat="${d.alis}" onclick="this.innerText='₺'+Number(this.dataset.fiyat).toLocaleString('tr-TR');this.style.background='#22c55e30';setTimeout(()=>{this.innerText='***';this.style.background=''},3000)">***</span></td><td class="tcy">${fmt(d.satis)}</td><td class="${d.birimKar>=0?'tgn':'trd'}">${fmt(d.birimKar)}</td><td>${fmtYuzde(d.birimKarYuzde)}</td><td class="tyw">${fmt(d.iskonto||0)}</td><td class="trd">${fmt(d.toplamAlis)}</td><td class="tcy">${fmt(d.toplamSatis)}</td><td class="${d.toplamKar>=0?'tgn':'trd'} b">${fmt(d.toplamKar)}</td><td>${fmtYuzde(d.toplamKarYuzde)}</td><td>${getDurB(d)}</td><td><div style="display:flex;gap:4px"><button class="btn bs bsm" onclick="openSatMo('${d.id}')">✅</button><button class="btn bg2 bsm" onclick="openModal('${d.id}')">✏️</button><button class="btn bd bsm" onclick="delIsl('${d.id}')">🗑</button></div></td></tr>`).join('');}
-// ============ PODYUM (TOP 3) ============
-let podyumMod = 'satis'; // 'satis' veya 'kar'
-
-function modelBazliVeri() {
-    const map = new Map();
-    D.forEach(urun => {
-        const model = urun.model;
-        if(!map.has(model)) {
-            map.set(model, {
-                model: model,
-                adet: 0,
-                satilanAdet: 0,
-                kar: 0,
-                toplamSatis: 0,
-                birimKar: 0,
-                variant: `${urun.gb}GB ${urun.ram}RAM ${urun.el}`
-            });
-        }
-        const m = map.get(model);
-        m.adet += urun.adet;
-        m.satilanAdet += (urun.satılanAdet || 0);
-        m.kar += urun.kar;
-        m.toplamSatis += urun.toplamSatis;
-        m.birimKar = m.satilanAdet > 0 ? (m.kar / m.satilanAdet) : 0;
-    });
-    return Array.from(map.values());
-}
-function markaBul(model) {
-    const m = model.toLowerCase();
-    if(m.includes('iphone')) return 'apple';
-    if(m.includes('samsung')) return 'samsung';
-    if(m.includes('xiaomi') || m.includes('redmi') || m.includes('redm')) return 'xiaomi';
-    if(m.includes('oppo')) return 'oppo';
-    if(m.includes('huawei') || m.includes('huwai')) return 'huawei';
-    if(m.includes('honor')) return 'honor';
-    return 'generic';
-}
-
-function podyumGorselYukle(containerId, model, brand) {
-    const container = document.getElementById(containerId);
-    if(!container) return;
-    const q = encodeURIComponent(model + ' smartphone');
-    const url = 'https://tse1.mm.bing.net/th?q=' + q + '&w=80&h=80&c=7';
-    const img = new Image();
-    img.onload = () => { container.innerHTML = ''; container.appendChild(img); };
-    img.onerror = () => { container.innerHTML = '<div style="font-size:24px">📱</div>'; };
-    img.src = url;
-    img.style.cssText = 'width:100%;height:100%;object-fit:cover';
-}
-
-function podyumRender() {
-    const veriler = modelBazliVeri();
-    let sirali = [];
-    
-    if(podyumMod === 'satis') {
-        sirali = [...veriler].sort((a,b) => b.satilanAdet - a.satilanAdet);
-    } else if(podyumMod === 'kar') {
-        sirali = [...veriler].sort((a,b) => b.kar - a.kar);
-    } else if(podyumMod === 'birimKar') {
-        sirali = [...veriler].sort((a,b) => (b.birimKar || 0) - (a.birimKar || 0));
-    }
-    
-    const top3 = sirali.slice(0, 3);
-    const maxVal = podyumMod === 'satis' ? (top3[0]?.satilanAdet || 1) : (podyumMod === 'kar' ? (top3[0]?.kar || 1) : (top3[0]?.birimKar || 1));
-    
-    // Podyum sıralaması: 2. sıra sol, 1. sıra orta (büyük), 3. sıra sağ
-    const order = [top3[1], top3[0], top3[2]];
-    const rankClass = ['pod-2', 'pod-1', 'pod-3'];
-    const rankNum = [2, 1, 3];
-    const rankIcons = ['🥈', '🏆', '🥉'];
-    
-    const container = document.getElementById('podyumContainer');
-    if(!container) return;
-    
-    if(top3.length === 0 || (top3[0] && top3[0].satilanAdet === 0 && top3[0].kar === 0)) {
-        container.innerHTML = '<div style="text-align:center;width:100%;padding:40px;color:var(--tx2)">📭 Henüz satış verisi yok</div>';
-        return;
-    }
-    
-    container.innerHTML = order.map((item, i) => {
-        if(!item) return '';
-        let val, statStr;
-        if(podyumMod === 'satis') {
-            val = item.satilanAdet;
-            statStr = item.satilanAdet + ' adet';
-        } else if(podyumMod === 'kar') {
-            val = item.kar;
-            statStr = '₺' + item.kar.toLocaleString('tr-TR');
-        } else {
-            val = item.birimKar || 0;
-            statStr = '₺' + (item.birimKar || 0).toLocaleString('tr-TR');
-        }
-        const pct = maxVal > 0 ? Math.round((val / maxVal) * 100) : 0;
-        const brand = markaBul(item.model);
-        
-        return `
-            <div class="pod-card ${rankClass[i]}">
-                <div class="pod-rank">${rankIcons[i]}</div>
-                <div class="pod-img" id="podImg${i}"></div>
-                <div class="pod-model">${item.model}</div>
-                <div class="pod-variant">${item.variant}</div>
-                <div class="pod-stat">${statStr}</div>
-                <div class="pod-label">${podyumMod === 'satis' ? 'Satılan Adet' : (podyumMod === 'kar' ? 'Toplam Kar' : 'Birim Kar')}</div>
-                <div class="pod-bar"><div class="pod-bar-fill" style="width:${pct}%"></div></div>
-            </div>
-        `;
-    }).join('');
-    
-    setTimeout(() => {
-        top3.forEach((item, idx) => {
-            const orderIdx = idx === 0 ? 1 : (idx === 1 ? 0 : 2);
-            podyumGorselYukle('podImg' + orderIdx, item.model, markaBul(item.model));
-        });
-    }, 50);
-}
-
-function podyumModDegistir(mod) {
-    podyumMod = mod;
-    document.querySelectorAll('.podium-toggle .tgl-btn').forEach(btn => btn.classList.remove('active'));
-    if(mod === 'satis') document.getElementById('podyumSatisBtn')?.classList.add('active');
-    else document.getElementById('podyumKarBtn')?.classList.add('active');
-    podyumRender();
-}
-function rUrunler(){const mM={};D.forEach(d=>{if(!mM[d.model])mM[d.model]={model:d.model,adet:0,sat:0,tA:0,tS:0,kar:0,isk:0,kalan:0,karOrani:0,birimKar:0,birimKarYuzde:0,toplamKarYuzde:0};const m=mM[d.model];m.adet+=d.adet;m.sat+=(d.satılanAdet||0);m.tA+=d.toplamAlis;m.tS+=d.toplamSatis;m.kar+=d.kar;m.isk+=d.iskonto||0;m.kalan=m.adet-m.sat;m.karOrani=m.tS>0?((m.kar/m.tS)*100):0;m.birimKar=(d.satis-d.alis);m.birimKarYuzde=d.satis>0?((m.birimKar/d.satis)*100):0;m.toplamKarYuzde=m.tS>0?((m.kar/m.tS)*100):0;});let models=Object.values(mM);if(analizSort==='kar')models.sort((a,b)=>analizSortDirection==='desc'?b.kar-a.kar:a.kar-b.kar);else if(analizSort==='satis')models.sort((a,b)=>analizSortDirection==='desc'?b.tS-a.tS:a.tS-b.tS);else if(analizSort==='adet')models.sort((a,b)=>analizSortDirection==='desc'?b.adet-a.adet:a.adet-b.adet);else if(analizSort==='kalan')models.sort((a,b)=>analizSortDirection==='desc'?b.kalan-a.kalan:a.kalan-b.kalan);else if(analizSort==='marj')models.sort((a,b)=>analizSortDirection==='desc'?b.karOrani-a.karOrani:a.karOrani-b.karOrani);else if(analizSort==='cokSatan')models.sort((a,b)=>analizSortDirection==='desc'?b.sat-a.sat:a.sat-b.sat);else if(analizSort==='enKarli')models.sort((a,b)=>analizSortDirection==='desc'?b.birimKar-a.birimKar:a.birimKar-b.birimKar);else if(analizSort==='birimKar')models.sort((a,b)=>analizSortDirection==='desc'?b.birimKar-a.birimKar:a.birimKar-b.birimKar);else if(analizSort==='birimKarYuzde')models.sort((a,b)=>analizSortDirection==='desc'?b.birimKarYuzde-a.birimKarYuzde:a.birimKarYuzde-b.birimKarYuzde);else if(analizSort==='toplamKarYuzde')models.sort((a,b)=>analizSortDirection==='desc'?b.toplamKarYuzde-a.toplamKarYuzde:a.toplamKarYuzde-b.toplamKarYuzde);const c=document.getElementById('urunG');if(!c)return;if(!models.length){c.innerHTML='<div class="empty"><i>📭</i>Henüz veri yok</div>';return;}c.innerHTML=`<div class="g3">${models.map(m=>{const marj=m.tS>0?((m.kar/m.tS)*100).toFixed(1):0;const sPct=m.adet>0?((m.sat/m.adet)*100).toFixed(0):0;return `<div class="card" style="border-top:3px solid ${m.kar>=0?'var(--gn)':'var(--rd)'}"><div style="font-size:16px;font-weight:700;margin-bottom:14px">${m.model}</div><div class="sr2"><span class="sk">Toplam Alış</span><span class="sv2 trd">${fmt(m.tA)}</span></div><div class="sr2"><span class="sk">Toplam Satış</span><span class="sv2 tcy">${fmt(m.tS)}</span></div><div class="sr2"><span class="sk">İskonto</span><span class="sv2 tyw">${fmt(m.isk)}</span></div><div class="sr2"><span class="sk">Net Kar</span><span class="sv2 ${m.kar>=0?'tgn':'trd'}">${fmt(m.kar)}</span><span class="sk">(${fmtYuzde(m.toplamKarYuzde)})</span></div><div class="sr2"><span class="sk">Birim Kar</span><span class="sv2 ${m.birimKar>=0?'tgn':'trd'}">${fmt(m.birimKar)}</span><span class="sk">(${fmtYuzde(m.birimKarYuzde)})</span></div><div class="sr2"><span class="sk">Satılan/Toplam</span><span class="sv2">${m.sat}/${m.adet}</span></div><div class="sr2"><span class="sk">Stokta Kalan</span><span class="sv2 ${m.kalan>0?'tor':'tgn'}">${m.kalan} adet</span></div><div class="sr2"><span class="sk">Kar Marjı</span><span class="sv2 ${+marj>=0?'tgn':'trd'}">%${marj}</span></div><div style="margin-top:12px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:5px"><span>Satış Oranı</span><span>%${sPct}</span></div><div class="pb"><div class="pf" style="width:${sPct}%;background:linear-gradient(90deg,var(--ac),var(--ac3))"></div></div></div></div>`;}).join('')}</div>`;
-    podyumRender();
-}
+function rUrunler(){const mM={};D.forEach(d=>{if(!mM[d.model])mM[d.model]={model:d.model,adet:0,sat:0,tA:0,tS:0,kar:0,isk:0,kalan:0,karOrani:0,birimKar:0,birimKarYuzde:0,toplamKarYuzde:0};const m=mM[d.model];m.adet+=d.adet;m.sat+=(d.satılanAdet||0);m.tA+=d.toplamAlis;m.tS+=d.toplamSatis;m.kar+=d.kar;m.isk+=d.iskonto||0;m.kalan=m.adet-m.sat;m.karOrani=m.tS>0?((m.kar/m.tS)*100):0;m.birimKar=(d.satis-d.alis);m.birimKarYuzde=d.satis>0?((m.birimKar/d.satis)*100):0;m.toplamKarYuzde=m.tS>0?((m.kar/m.tS)*100):0;});let models=Object.values(mM);if(analizSort==='kar')models.sort((a,b)=>analizSortDirection==='desc'?b.kar-a.kar:a.kar-b.kar);else if(analizSort==='satis')models.sort((a,b)=>analizSortDirection==='desc'?b.tS-a.tS:a.tS-b.tS);else if(analizSort==='adet')models.sort((a,b)=>analizSortDirection==='desc'?b.adet-a.adet:a.adet-b.adet);else if(analizSort==='kalan')models.sort((a,b)=>analizSortDirection==='desc'?b.kalan-a.kalan:a.kalan-b.kalan);else if(analizSort==='marj')models.sort((a,b)=>analizSortDirection==='desc'?b.karOrani-a.karOrani:a.karOrani-b.karOrani);else if(analizSort==='cokSatan')models.sort((a,b)=>analizSortDirection==='desc'?b.sat-a.sat:a.sat-b.sat);else if(analizSort==='enKarli')models.sort((a,b)=>analizSortDirection==='desc'?b.birimKar-a.birimKar:a.birimKar-b.birimKar);else if(analizSort==='birimKar')models.sort((a,b)=>analizSortDirection==='desc'?b.birimKar-a.birimKar:a.birimKar-b.birimKar);else if(analizSort==='birimKarYuzde')models.sort((a,b)=>analizSortDirection==='desc'?b.birimKarYuzde-a.birimKarYuzde:a.birimKarYuzde-b.birimKarYuzde);else if(analizSort==='toplamKarYuzde')models.sort((a,b)=>analizSortDirection==='desc'?b.toplamKarYuzde-a.toplamKarYuzde:a.toplamKarYuzde-b.toplamKarYuzde);const c=document.getElementById('urunG');if(!c)return;if(!models.length){c.innerHTML='<div class="empty"><i>📭</i>Henüz veri yok</div>';return;}c.innerHTML=`<div class="g3">${models.map(m=>{const marj=m.tS>0?((m.kar/m.tS)*100).toFixed(1):0;const sPct=m.adet>0?((m.sat/m.adet)*100).toFixed(0):0;return `<div class="card" style="border-top:3px solid ${m.kar>=0?'var(--gn)':'var(--rd)'}"><div style="font-size:16px;font-weight:700;margin-bottom:14px">${m.model}</div><div class="sr2"><span class="sk">Toplam Alış</span><span class="sv2 trd">${fmt(m.tA)}</span></div><div class="sr2"><span class="sk">Toplam Satış</span><span class="sv2 tcy">${fmt(m.tS)}</span></div><div class="sr2"><span class="sk">İskonto</span><span class="sv2 tyw">${fmt(m.isk)}</span></div><div class="sr2"><span class="sk">Net Kar</span><span class="sv2 ${m.kar>=0?'tgn':'trd'}">${fmt(m.kar)}</span><span class="sk">(${fmtYuzde(m.toplamKarYuzde)})</span></div><div class="sr2"><span class="sk">Birim Kar</span><span class="sv2 ${m.birimKar>=0?'tgn':'trd'}">${fmt(m.birimKar)}</span><span class="sk">(${fmtYuzde(m.birimKarYuzde)})</span></div><div class="sr2"><span class="sk">Satılan/Toplam</span><span class="sv2">${m.sat}/${m.adet}</span></div><div class="sr2"><span class="sk">Stokta Kalan</span><span class="sv2 ${m.kalan>0?'tor':'tgn'}">${m.kalan} adet</span></div><div class="sr2"><span class="sk">Kar Marjı</span><span class="sv2 ${+marj>=0?'tgn':'trd'}">%${marj}</span></div><div style="margin-top:12px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:5px"><span>Satış Oranı</span><span>%${sPct}</span></div><div class="pb"><div class="pf" style="width:${sPct}%;background:linear-gradient(90deg,var(--ac),var(--ac3))"></div></div></div></div>`;}).join('')}</div>`;}
 function rImei(){const q=(document.getElementById('imeiSrc')?.value||'').toLowerCase();const f=(document.getElementById('imeiFil')?.value||'');let rows=[];D.forEach(d=>{(d.imeiList||[]).forEach(im=>{const isSat=(d.satildiImei||[]).includes(im);const dm=!f||(f==='satildi'&&isSat)||(f==='stokta'&&!isSat);if(dm&&(!q||im.toLowerCase().includes(q)||d.model.toLowerCase().includes(q))){const birimKar=d.satis-d.alis;const birimKarYuzde=d.satis>0?((birimKar/d.satis)*100):0;rows.push({...d,im,isSat,imei:im,birimKar,birimKarYuzde});}});});const sort=sortState['imeiTable'];if(sort)rows=sortData(rows,sort.field,sort.yon);else rows=rows.sort((a,b)=>b.tarih.localeCompare(a.tarih));const tb=document.getElementById('imeiTb');if(!tb)return;if(!rows.length){tb.innerHTML=`<tr><td colspan="12"><div class="empty"><i>🔍</i>${q?'Sonuç bulunamadı':'IMEI kaydı yok'}</div></td></tr>`;return;}tb.innerHTML=rows.map(r=>`<tr class="${r.isSat?'sr':''}"><td>${formatTarih(r.tarih)}</td><td><span class="itag ${r.isSat?'sat':''}">${r.im}</span></td><td class="b">${r.model}</td><td>${r.gb}GB</td><td>${r.ram}GB</td><td><span class="badge ${r.el==='1.El'?'bpu':'bcy'}">${r.el}</span></td><td class="trd"><span style="cursor:pointer;background:#6366f120;padding:4px 8px;border-radius:6px" data-fiyat="${r.alis}" onclick="this.innerText='₺'+Number(this.dataset.fiyat).toLocaleString('tr-TR');this.style.background='#22c55e30';setTimeout(()=>{this.innerText='***';this.style.background=''},3000)">***</span></td><td class="tcy">${fmt(r.satis)}</td><td class="tyw">${fmt(r.iskonto||0)}</td><td class="${r.birimKar>=0?'tgn':'trd'}">${fmt(r.birimKar)}</td><td>${fmtYuzde(r.birimKarYuzde)}</td><td>${r.isSat?'<span class="badge bgn">✓ Satıldı</span>':'<span class="badge bcy">📦 Stokta</span>'}</td></tr>`).join('');} // ============ IMEI TABLOSU İÇİN ÇİFT YÖNLÜ SIRALAMA ============
 let imeiSortField = null;
 let imeiSortDirection = 'asc';
