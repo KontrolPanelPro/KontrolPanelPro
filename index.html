@@ -1059,36 +1059,40 @@ function calcK(){const a=+(document.getElementById('f_adt')?.value||0);const al=
 async function saveIsl(e){e.preventDefault();const btn=document.getElementById('moBtnSub');if(btn)btn.disabled=true;const imRaw=document.getElementById('f_im')?.value||'';const imList=imRaw?imRaw.split(',').map(x=>x.trim()).filter(Boolean):[];const adet=+(document.getElementById('f_adt')?.value||0);const alis=+(document.getElementById('f_ali')?.value||0);const satis=+(document.getElementById('f_sat')?.value||0);const iskonto=+(document.getElementById('f_isk')?.value||0);const ex=editId?D.find(x=>x.id===editId):null;const item={id:editId||Date.now().toString(),tarih:document.getElementById('f_tar')?.value||'',model:document.getElementById('f_mod')?.value.trim()||'',el:document.getElementById('f_el')?.value||'1.El',gb:document.getElementById('f_gb')?.value||'256',ram:+(document.getElementById('f_ram')?.value||8),renk:document.getElementById('f_rnk')?.value.trim()||'',adet,alis,satis,iskonto,imeiList:imList,not:document.getElementById('f_not')?.value.trim()||'',toplamAlis:alis*adet,toplamSatis:satis*adet,kar:(satis*adet)-(alis*adet)-iskonto,satılanAdet:ex?ex.satılanAdet:0,satildiImei:ex?ex.satildiImei:[]};actionHistory.push({type:editId?'update':'add',data:item,oldData:ex});showLo(editId?'Güncelleniyor...':'Kaydediliyor...');try{const res=await api({action:editId?'update':'add',data:item});if(res.ok){if(editId){const i=D.findIndex(x=>x.id===editId);if(i!==-1)D[i]=norm(item);}else D.push(norm(item));closeMo();rAll();toast(editId?'Güncellendi ✓':'Kaydedildi ✓','success');playBeep();}else throw new Error(res.error);}catch(e){toast('Hata: '+e.message,'error');}hideLo();if(btn)btn.disabled=false;}
 function openSatMo(id) {
     satTgt = String(id);
-    const birlesmisMap = new Map();
-    D.forEach(item => {
-        const key = `${item.model}_${item.el}_${item.gb}_${item.ram}`;
-        if(!birlesmisMap.has(key)) birlesmisMap.set(key, []);
-        birlesmisMap.get(key).push(item);
-    });
-    let birlesmisItem = null;
-    let tumKayitlar = [];
-    for(let [key, items] of birlesmisMap.entries()) {
-        const ilk = items[0];
-        if(ilk.id === id) {
-            birlesmisItem = {
-                id: id,
-                model: ilk.model,
-                el: ilk.el,
-                gb: ilk.gb,
-                ram: ilk.ram,
-                adet: items.reduce((s,i)=>s+i.adet,0),
-                satılanAdet: items.reduce((s,i)=>s+(i.satılanAdet||0),0),
-                imeiList: items.flatMap(i=>i.imeiList||[]),
-                satildiImei: items.flatMap(i=>i.satildiImei||[])
-            };
-            tumKayitlar = items;
-            break;
-        }
+    console.log("🔍 Açılan ID:", satTgt);
+    
+    // Önce direkt ID ile bul
+    let hedefUrun = D.find(x => x.id === satTgt);
+    if(!hedefUrun) {
+        toast('Ürün bulunamadı!', 'error');
+        return;
     }
-    if(!birlesmisItem) {
+    
+    // Aynı model+el+gb+ram'e sahip TÜM kayıtları bul
+    const tumKayitlar = D.filter(x => 
+        x.model === hedefUrun.model && 
+        x.el === hedefUrun.el && 
+        x.gb === hedefUrun.gb && 
+        x.ram === hedefUrun.ram
+    );
+    
+    if(tumKayitlar.length === 0) {
         toast('Ürün bulunamadı', 'error');
         return;
     }
+    
+    // Birleştirilmiş veriyi oluştur
+    const birlesmisItem = {
+        id: satTgt,
+        model: hedefUrun.model,
+        el: hedefUrun.el,
+        gb: hedefUrun.gb,
+        ram: hedefUrun.ram,
+        adet: tumKayitlar.reduce((s,i)=>s+i.adet,0),
+        satılanAdet: tumKayitlar.reduce((s,i)=>s+(i.satılanAdet||0),0),
+        imeiList: tumKayitlar.flatMap(i=>i.imeiList||[]),
+        satildiImei: tumKayitlar.flatMap(i=>i.satildiImei||[])
+    };
     
     const kalan = birlesmisItem.adet - birlesmisItem.satılanAdet;
     const iList = birlesmisItem.imeiList;
