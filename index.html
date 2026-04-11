@@ -1237,30 +1237,24 @@ async function saveSat() {
         return;
     }
     
-    // 🔥 BUGÜNÜN TARİHİNİ AL
-    const now = new Date();
-const year = now.getFullYear();
-const month = String(now.getMonth() + 1).padStart(2, '0');
-const day = String(now.getDate()).padStart(2, '0');
-const bugun = `${year}-${month}-${day}`;
-    
+    const bugun = new Date().toISOString().split('T')[0];
     const tumImeiList = ilgiliKayitlar.flatMap(k => k.imeiList || []);
-    let satildiImeiList = [];
     
     if(tumImeiList.length > 0) {
-        satildiImeiList = [...document.querySelectorAll('#satMoC input[type=checkbox]:checked')].map(cb => cb.getAttribute('data-im')).filter(Boolean);
+        // IMEI bazlı satış – her kayıt kendi IMEI'lerine göre filtrelenir
+        const secilenImeiler = [...document.querySelectorAll('#satMoC input[type=checkbox]:checked')].map(cb => cb.getAttribute('data-im')).filter(Boolean);
+        
         for(let kayit of ilgiliKayitlar) {
             const kayitImeiList = kayit.imeiList || [];
-            const yeniSatildi = kayitImeiList.filter(im => satildiImeiList.includes(im));
+            const yeniSatildi = kayitImeiList.filter(im => secilenImeiler.includes(im));
             kayit.satildiImei = yeniSatildi;
             kayit.satılanAdet = yeniSatildi.length;
-          kayit.satisTarihi = bugun;
-            // 🔥 TARİHİ BUGÜN YAP
             if(yeniSatildi.length > 0) {
                 kayit.tarih = bugun;
             }
         }
     } else {
+        // Adet bazlı satış – dağıtım mevcut mantıkla devam eder
         const yeniSatilanAdet = Math.min(+(document.getElementById('smInp')?.value||0), ilgiliKayitlar.reduce((s,k)=>s+k.adet,0));
         let kalanSatilacak = yeniSatilanAdet;
         for(let kayit of ilgiliKayitlar) {
@@ -1268,7 +1262,6 @@ const bugun = `${year}-${month}-${day}`;
             const yeniKayitSatilan = Math.min(mevcutAdet, kalanSatilacak);
             kayit.satılanAdet = yeniKayitSatilan;
             kalanSatilacak -= yeniKayitSatilan;
-            // 🔥 TARİHİ BUGÜN YAP
             if(yeniKayitSatilan > 0) {
                 kayit.tarih = bugun;
             }
