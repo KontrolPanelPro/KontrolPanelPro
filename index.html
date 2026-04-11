@@ -1018,7 +1018,32 @@ function hideLo(){const lo=document.getElementById('lo');if(lo)lo.classList.remo
 async function api(body){if(offlineMode){toast('Offline modda, değişiklikler kaydedildi','warning');return {ok:true,data:[]};}try{const r=await fetch(URL2,{method:'POST',body:JSON.stringify(body)});return JSON.parse(await r.text());}catch(e){toast('Bağlantı hatası, offline moda geçiliyor','error');enableOfflineMode();return {ok:false,error:e.message};}}
 function enableOfflineMode(){offlineMode=true;document.getElementById('offlineBadge').style.display='inline-block';setDot('offline','Offline Mod');}
 function tryP(s){try{const v=JSON.parse(s||'[]');return Array.isArray(v)?v:[];}catch{return[];}}
-function norm(d){let tarih=String(d.tarih||'');if(tarih.includes('T'))tarih=tarih.split('T')[0];return{...d,id:String(d.id||''),tarih:tarih,model:String(d.model||''),el:String(d.el||'1.El'),gb:String(d.gb||'256'),ram:+d.ram||8,renk:String(d.renk||''),not:String(d.not||''),adet:+d.adet||0,alis:+d.alis||0,satis:+d.satis||0,iskonto:+d.iskonto||0,toplamAlis:+d.toplamAlis||0,toplamSatis:+d.toplamSatis||0,kar:+d.kar||0,satılanAdet:+d.satılanAdet||0,imeiList:Array.isArray(d.imeiList)?d.imeiList:tryP(d.imeiList),satildiImei:Array.isArray(d.satildiImei)?d.satildiImei:tryP(d.satildiImei)};}
+function norm(d){
+    let tarih=String(d.tarih||'');
+    if(tarih.includes('T'))tarih=tarih.split('T')[0];
+    return{
+        ...d,
+        id:String(d.id||''),
+        tarih:tarih,
+        model:String(d.model||''),
+        el:String(d.el||'1.El'),
+        gb:String(d.gb||'256'),
+        ram:+d.ram||8,
+        renk:String(d.renk||''),
+        not:String(d.not||''),
+        adet:+d.adet||0,
+        alis:+d.alis||0,
+        satis:+d.satis||0,
+        iskonto:+d.iskonto||0,
+        toplamAlis:+d.toplamAlis||0,
+        toplamSatis:+d.toplamSatis||0,
+        kar:+d.kar||0,
+        satılanAdet:+d.satılanAdet||0,
+        imeiList:Array.isArray(d.imeiList)?d.imeiList:tryP(d.imeiList),
+        satildiImei:Array.isArray(d.satildiImei)?d.satildiImei:tryP(d.satildiImei),
+        satisTarihi: d.satisTarihi || ''   // ← BUNU EKLE
+    };
+}
 function saveUrl(){
     const u = document.getElementById('urlInp')?.value.trim();
     if(!u || !u.startsWith('https://script.google.com')){
