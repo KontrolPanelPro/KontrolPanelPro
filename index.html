@@ -107,9 +107,11 @@ button,.btn,.tab,.mbt,.qbtn,.sortable{touch-action:manipulation;font-family:'Sor
 .top-3 .top-badge{border-color:#d97706;color:#d97706}
 /* Resim: sabit yükseklik, contain ile telefon tam sığsın, kırpılmasın */
 .top-img-wrap{width:100%;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:rgba(0,0,0,.2)}
-.top-1 .top-img-wrap{height:110px;border-radius:12px;box-shadow:0 4px 16px rgba(245,158,11,.15)}
-.top-2 .top-img-wrap,.top-3 .top-img-wrap{height:90px;border-radius:10px}
+.top-1 .top-img-wrap{height:140px;border-radius:12px;box-shadow:0 4px 16px rgba(245,158,11,.15)}
+.top-2 .top-img-wrap,.top-3 .top-img-wrap{height:115px;border-radius:10px}
 .top-img-wrap img{width:100%;height:100%;object-fit:contain;display:block}
+[data-theme="dark"] .top-img-wrap img{mix-blend-mode:screen;filter:brightness(1.1) contrast(1.1)}
+[data-theme="light"] .top-img-wrap img{mix-blend-mode:multiply;filter:brightness(0.95) contrast(1.1)}
 .top-model{font-size:10px;font-weight:700;text-align:center;line-height:1.3;word-break:break-word;max-width:100%;color:var(--tx)}
 .top-1 .top-model{font-size:11px}
 .top-variant{font-size:9px;color:var(--tx2);margin-top:-3px;text-align:center}
@@ -124,10 +126,10 @@ button,.btn,.tab,.mbt,.qbtn,.sortable{touch-action:manipulation;font-family:'Sor
 .top-2 .top-bar{background:linear-gradient(90deg,#94a3b8,#cbd5e1)}
 .top-3 .top-bar{background:linear-gradient(90deg,#b45309,#d97706)}
 /* Sub kutular: 2 satır yerine tek satır değer + label dikey */
-.top-subs{display:flex;gap:4px;width:100%}
-.top-sub{flex:1;min-width:0;background:var(--sf2);border-radius:6px;padding:4px 2px;text-align:center;border:1px solid var(--br)}
-.top-sub-v{font-size:9px;font-weight:700;font-family:'Space Mono',monospace;color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.top-sub-l{font-size:7px;color:var(--tx2);text-transform:uppercase;letter-spacing:.1px;margin-top:1px}
+.top-subs{display:none}
+.top-sub{display:none}
+.top-sub-v{display:none}
+.top-sub-l{display:none}
 .top-stripe{position:absolute;bottom:0;left:0;right:0;height:2px;border-radius:0 0 16px 16px}
 .top-1 .top-stripe{background:linear-gradient(90deg,transparent,#f59e0b,transparent)}
 .top-2 .top-stripe{background:linear-gradient(90deg,transparent,#94a3b8,transparent)}
@@ -1859,11 +1861,7 @@ function topRender(c){
       <div class="top-stat">${statStr}</div>
       <div class="top-lbl">${topMode==='satis'?'Satış':(topMode==='kar'?'Kar':'Birim Kar%')}</div>
       <div class="top-bar-w"><div class="top-bar" style="width:${pct}%"></div></div>
-      <div class="top-subs">
-        <div class="top-sub"><div class="top-sub-v">${item.sat}</div><div class="top-sub-l">Satılan</div></div>
-        <div class="top-sub"><div class="top-sub-v">${topFmt(item.kar)}</div><div class="top-sub-l">Kar</div></div>
-        <div class="top-sub"><div class="top-sub-v">${item.birimKarYuzde.toFixed(1)}%</div><div class="top-sub-l">Marj</div></div>
-      </div>
+
       <div class="top-stripe"></div>`;
     pod.appendChild(div);
   });
