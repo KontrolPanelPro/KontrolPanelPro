@@ -1018,7 +1018,7 @@ function hideLo(){const lo=document.getElementById('lo');if(lo)lo.classList.remo
 async function api(body){if(offlineMode){toast('Offline modda, değişiklikler kaydedildi','warning');return {ok:true,data:[]};}try{const r=await fetch(URL2,{method:'POST',body:JSON.stringify(body)});return JSON.parse(await r.text());}catch(e){toast('Bağlantı hatası, offline moda geçiliyor','error');enableOfflineMode();return {ok:false,error:e.message};}}
 function enableOfflineMode(){offlineMode=true;document.getElementById('offlineBadge').style.display='inline-block';setDot('offline','Offline Mod');}
 function tryP(s){try{const v=JSON.parse(s||'[]');return Array.isArray(v)?v:[];}catch{return[];}}
-function norm(d){let tarih=String(d.tarih||'');if(tarih.includes('T'))tarih=tarih.split('T')[0];let satisTarihi=String(d.satisTarihi||'');if(satisTarihi.includes('T'))satisTarihi=satisTarihi.split('T')[0];return{...d,id:String(d.id||''),tarih:tarih,satisTarihi:satisTarihi||'',model:String(d.model||''),el:String(d.el||'1.El'),gb:String(d.gb||'256'),ram:+d.ram||8,renk:String(d.renk||''),not:String(d.not||''),adet:+d.adet||0,alis:+d.alis||0,satis:+d.satis||0,iskonto:+d.iskonto||0,toplamAlis:+d.toplamAlis||0,toplamSatis:+d.toplamSatis||0,kar:+d.kar||0,satılanAdet:+d.satılanAdet||0,imeiList:Array.isArray(d.imeiList)?d.imeiList:tryP(d.imeiList),satildiImei:Array.isArray(d.satildiImei)?d.satildiImei:tryP(d.satildiImei),satisLog:Array.isArray(d.satisLog)?d.satisLog:tryP(d.satisLog||'[]')};}
+function norm(d){let tarih=String(d.tarih||'');if(tarih.includes('T'))tarih=tarih.split('T')[0];let satisTarihi=String(d.satisTarihi||'');if(satisTarihi.includes('T'))satisTarihi=satisTarihi.split('T')[0];return{...d,id:String(d.id||''),tarih:tarih,satisTarihi:satisTarihi||'',model:String(d.model||''),el:String(d.el||'1.El'),gb:String(d.gb||'256'),ram:+d.ram||8,renk:String(d.renk||''),not:String(d.not||''),adet:+d.adet||0,alis:+d.alis||0,satis:+d.satis||0,iskonto:+d.iskonto||0,toplamAlis:+d.toplamAlis||0,toplamSatis:+d.toplamSatis||0,kar:+d.kar||0,satılanAdet:+d.satılanAdet||0,alisTarihi:String(d.alisTarihi||''),imeiList:Array.isArray(d.imeiList)?d.imeiList:tryP(d.imeiList),satildiImei:Array.isArray(d.satildiImei)?d.satildiImei:tryP(d.satildiImei)};}
 function saveUrl(){
     const u = document.getElementById('urlInp')?.value.trim();
     if(!u || !u.startsWith('https://script.google.com')){
@@ -1192,6 +1192,7 @@ function openSatMo(id) {
     document.getElementById('moSat').classList.add('open');
 }
 async function saveSat() {
+    // İlgili kayıtları bul (birleşik model)
     const birlesmisMap = new Map();
     D.forEach(item => {
         const key = `${item.model}_${item.el}_${item.gb}_${item.ram}`;
@@ -1217,69 +1218,49 @@ async function saveSat() {
     
     if(tumImeiList.length > 0) {
         // IMEI bazlı satış
-        const satildiImeiList = [...document.querySelectorAll('#satMoC input[type=checkbox]:checked')]
+        const seciliImeiList = [...document.querySelectorAll('#satMoC input[type=checkbox]:checked')]
             .map(cb => cb.getAttribute('data-im')).filter(Boolean);
         
         for(let kayit of ilgiliKayitlar) {
             const kayitImeiList = kayit.imeiList || [];
-            const eskiSatildi = kayit.satildiImei || [];
-            const yeniSatildi = kayitImeiList.filter(im => satildiImeiList.includes(im));
-            
-            // Bugün yeni eklenen IMEI'ler
-            const bugunEklenen = yeniSatildi.filter(im => !eskiSatildi.includes(im));
-            
+            const yeniSatildi = kayitImeiList.filter(im => seciliImeiList.includes(im));
             kayit.satildiImei = yeniSatildi;
             kayit.satılanAdet = yeniSatildi.length;
-            
-            // satisLog: her satışın tarihi ve adedi ayrı tutuluyor
-            if(!Array.isArray(kayit.satisLog)) kayit.satisLog = [];
-            if(bugunEklenen.length > 0) {
-                // Bugün zaten log var mı?
-                const mevcutLog = kayit.satisLog.find(l => l.tarih === bugun);
-                if(mevcutLog) {
-                    mevcutLog.adet = (mevcutLog.adet||0) + bugunEklenen.length;
-                } else {
-                    kayit.satisLog.push({tarih: bugun, adet: bugunEklenen.length, satis: kayit.satis});
-                }
+            // Satış tarihi: bu kayıtta satış varsa bugünü kaydet
+            if(yeniSatildi.length > 0) {
+                // alisTarihi'ni yedekle (ilk seferinde)
+                if(!kayit.alisTarihi) kayit.alisTarihi = kayit.tarih;
+                kayit.tarih = bugun;
+            } else if(kayit.alisTarihi) {
+                // Satış kaldırıldıysa orijinal tarihe dön
+                kayit.tarih = kayit.alisTarihi;
             }
         }
     } else {
         // Adet bazlı satış
-        const yeniSatilanAdet = Math.min(
-            +(document.getElementById('smInp')?.value||0),
-            ilgiliKayitlar.reduce((s,k)=>s+k.adet,0)
+        const yeniToplamSatilan = Math.min(
+            +(document.getElementById('smInp')?.value || 0),
+            ilgiliKayitlar.reduce((s,k) => s + k.adet, 0)
         );
-        let kalanSatilacak = yeniSatilanAdet;
-        
-        // Toplam eski satılan
-        const eskiToplamSatilan = ilgiliKayitlar.reduce((s,k)=>s+(k.satılanAdet||0),0);
-        const fark = yeniSatilanAdet - eskiToplamSatilan; // bugün kaç adet ek satış
-        
-        let kalanFark = fark > 0 ? fark : 0;
+        let kalanSatilacak = yeniToplamSatilan;
         
         for(let kayit of ilgiliKayitlar) {
-            const mevcutAdet = kayit.adet;
-            const yeniKayitSatilan = Math.min(mevcutAdet, kalanSatilacak);
-            const eskiKayitSatilan = kayit.satılanAdet || 0;
-            const kayitFark = yeniKayitSatilan - eskiKayitSatilan;
-            
+            const yeniKayitSatilan = Math.min(kayit.adet, kalanSatilacak);
             kayit.satılanAdet = yeniKayitSatilan;
             kalanSatilacak -= yeniKayitSatilan;
             
-            // Bugün bu kayıtta artış varsa log'a ekle
-            if(kayitFark > 0) {
-                if(!Array.isArray(kayit.satisLog)) kayit.satisLog = [];
-                const mevcutLog = kayit.satisLog.find(l => l.tarih === bugun);
-                if(mevcutLog) {
-                    mevcutLog.adet = (mevcutLog.adet||0) + kayitFark;
-                } else {
-                    kayit.satisLog.push({tarih: bugun, adet: kayitFark, satis: kayit.satis});
-                }
+            if(yeniKayitSatilan > 0) {
+                // alisTarihi'ni yedekle (ilk seferinde)
+                if(!kayit.alisTarihi) kayit.alisTarihi = kayit.tarih;
+                kayit.tarih = bugun;
+            } else if(kayit.alisTarihi) {
+                kayit.tarih = kayit.alisTarihi;
             }
             if(kalanSatilacak <= 0) break;
         }
     }
     
+    // D dizisini güncelle
     for(let kayit of ilgiliKayitlar) {
         const idx = D.findIndex(x => x.id === kayit.id);
         if(idx !== -1) D[idx] = kayit;
@@ -1292,7 +1273,7 @@ async function saveSat() {
         }
         closeSatMo();
         rAll();
-        toast('Satış kaydedildi', 'success');
+        toast('Satış kaydedildi ✓', 'success');
         playBeep();
     } catch(e) {
         toast('Hata: '+e.message, 'error');
@@ -1307,23 +1288,10 @@ function gunlukCiro(){
     const today=getTodayDate();
     let ciro=0,kar=0;
     D.forEach(d=>{
-        // Yeni sistem: satisLog varsa ondan hesapla
-        if(Array.isArray(d.satisLog)&&d.satisLog.length>0){
-            d.satisLog.forEach(log=>{
-                if(log.tarih===today){
-                    const birimKar=(log.satis||d.satis)-d.alis;
-                    ciro+=(log.satis||d.satis)*log.adet;
-                    kar+=birimKar*log.adet;
-                }
-            });
-        } else if(d.satılanAdet>0){
-            // Eski sistem fallback: satisTarihi veya tarih
-            const satTar=d.satisTarihi||d.tarih;
-            if(satTar===today){
-                const oran=d.satılanAdet/d.adet;
-                ciro+=d.toplamSatis*oran;
-                kar+=d.kar*oran;
-            }
+        if(d.satılanAdet>0 && d.tarih===today){
+            const oran=d.satılanAdet/d.adet;
+            ciro+=d.toplamSatis*oran;
+            kar+=d.kar*oran;
         }
     });
     return{ciro,kar};
