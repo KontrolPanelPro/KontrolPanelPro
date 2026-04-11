@@ -1011,7 +1011,13 @@ function sortData(data, field, direction) {
   });
 }
 function formatTarih(iso){if(!iso)return '';let str=String(iso);if(str.includes('T'))str=str.split('T')[0];const parts=str.split('-');if(parts.length===3)return `${parts[2]}.${parts[1]}.${parts[0]}`;return str;}
-function getTodayDate(){const now=new Date();const y=now.getFullYear();const m=String(now.getMonth()+1).padStart(2,'0');const d=String(now.getDate()).padStart(2,'0');return y+'-'+m+'-'+d;}
+function getTodayDate() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
 function setDot(s,t){const d=document.getElementById('dot'),tx=document.getElementById('dbtx');if(!d)return;d.className='dot'+(s==='ok'?' ok':s==='er'?' er':s==='ld'?' ld':s==='offline'?' offline':'');if(tx)tx.textContent=t;}
 function showLo(t='İşleniyor...'){const txt=document.getElementById('loTxt');if(txt)txt.textContent=t;const lo=document.getElementById('lo');if(lo)lo.classList.add('show');}
 function hideLo(){const lo=document.getElementById('lo');if(lo)lo.classList.remove('show');}
@@ -1211,8 +1217,6 @@ async function saveSat() {
         toast('Kayıt bulunamadı', 'error');
         return;
     }
-    
-    // 🔥 BUGÜNÜN TARİHİNİ AL
     const bugun = getTodayDate();
     
     const tumImeiList = ilgiliKayitlar.flatMap(k => k.imeiList || []);
