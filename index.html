@@ -106,10 +106,10 @@ button,.btn,.tab,.mbt,.qbtn,.sortable{touch-action:manipulation;font-family:'Sor
 .top-2 .top-badge{border-color:#94a3b8;color:#94a3b8}
 .top-3 .top-badge{border-color:#d97706;color:#d97706}
 /* Resim: sabit yükseklik, contain ile telefon tam sığsın, kırpılmasın */
-.top-img-wrap{width:100%;border-radius:22px;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:rgba(255,255,255,.06)}
-.top-1 .top-img-wrap{height:170px;border-radius:26px;box-shadow:0 6px 24px rgba(245,158,11,.18)}
-.top-2 .top-img-wrap,.top-3 .top-img-wrap{height:145px;border-radius:22px}
-.top-img-wrap img{width:100%;height:100%;object-fit:contain;display:block}
+.top-img-wrap{width:100%;aspect-ratio:3/4;border-radius:20px;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:rgba(128,128,128,.08);position:relative}
+.top-1 .top-img-wrap{border-radius:24px;box-shadow:0 6px 24px rgba(245,158,11,.18)}
+.top-2 .top-img-wrap,.top-3 .top-img-wrap{border-radius:20px}
+.top-img-wrap img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;padding:6px;box-sizing:border-box;display:block}
 .top-model{font-size:10px;font-weight:700;text-align:center;line-height:1.3;word-break:break-word;max-width:100%;color:var(--tx)}
 .top-1 .top-model{font-size:11px}
 .top-variant{font-size:9px;color:var(--tx2);margin-top:-3px;text-align:center}
@@ -124,11 +124,10 @@ button,.btn,.tab,.mbt,.qbtn,.sortable{touch-action:manipulation;font-family:'Sor
 .top-2 .top-bar{background:linear-gradient(90deg,#94a3b8,#cbd5e1)}
 .top-3 .top-bar{background:linear-gradient(90deg,#b45309,#d97706)}
 /* Sub kutular: 2 satır yerine tek satır değer + label dikey */
-.top-subs{display:flex;gap:3px;width:100%;margin-top:2px}
-.top-sub{flex:1;min-width:0;background:var(--sf2);border-radius:6px;padding:3px 2px;text-align:center;border:1px solid var(--br)}
-.top-sub-v{font-size:8px;font-weight:700;font-family:'Space Mono',monospace;color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
-.top-sub-l{font-size:6px;color:var(--tx2);text-transform:uppercase;letter-spacing:.1px;margin-top:1px;display:block;white-space:nowrap;overflow:hidden}
-@media(min-width:400px){.top-sub-v{font-size:9px}.top-sub-l{font-size:7px}}
+.top-subs{display:flex;gap:3px;width:100%;margin-top:3px}
+.top-sub{flex:1;min-width:0;background:var(--sf2);border-radius:6px;padding:4px 2px;text-align:center;border:1px solid var(--br)}
+.top-sub-v{font-size:9px;font-weight:800;font-family:'Space Mono',monospace;color:var(--tx);display:block;overflow:hidden;text-overflow:clip;white-space:nowrap}
+.top-sub-l{font-size:6px;color:var(--tx2);text-transform:uppercase;letter-spacing:.1px;margin-top:1px;display:block}
 .top-stripe{position:absolute;bottom:0;left:0;right:0;height:2px;border-radius:0 0 16px 16px}
 .top-1 .top-stripe{background:linear-gradient(90deg,transparent,#f59e0b,transparent)}
 .top-2 .top-stripe{background:linear-gradient(90deg,transparent,#94a3b8,transparent)}
@@ -1788,15 +1787,15 @@ function topLoadImg(container,model,brand){
   const fallback=TOP_LOGOS[brand]||TOP_LOGOS.generic;
   // Önce "official render" sorgusu, tutmazsa "press photo", o da tutmazsa logo
   const queries=[
-    encodeURIComponent(model+' official render transparent'),
-    encodeURIComponent(model+' press photo white background'),
-    encodeURIComponent(model+' smartphone front back'),
+    encodeURIComponent(model+' press render front'),
+    encodeURIComponent(model+' official image'),
+    encodeURIComponent(model+' phone'),
   ];
   const servers=['tse1','tse2','tse3','tse4'];
   const urls=[];
   queries.forEach(q=>{
     servers.slice(0,2).forEach(s=>{
-      urls.push('https://'+s+'.mm.bing.net/th?q='+q+'&w=240&h=400&c=7&rs=1');
+      urls.push('https://'+s+'.mm.bing.net/th?q='+q+'&w=200&h=300&c=7&rs=1');
     });
   });
   function tryNext(list){
@@ -1826,7 +1825,11 @@ function topLoadImg(container,model,brand){
   }
   tryNext(urls);
 }
-function topFmt(v){return v>=1000?'₺'+(v/1000).toFixed(1)+'k':fmt(v);}
+function topFmt(v){
+  if(v>=1000000)return'₺'+(v/1000000).toFixed(1)+'M';
+  if(v>=1000)return'₺'+(v/1000).toFixed(0)+'k';
+  return'₺'+Math.round(v);
+}
 function topBuildData(){
   // Model + El bazında grupla (2.El ayrı, 1.El ayrı)
   const mM={};
