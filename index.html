@@ -1130,136 +1130,101 @@ function openSatMo(id) {
     satTgt = String(id);
     console.log("🔍 Açılan ID:", satTgt);
     
-    // Önce direkt ID ile bul
-    let hedefUrun = D.find(x => x.id === satTgt);
-    if(!hedefUrun) {
+    // SADECE bu ID'ye ait ürünü bul
+    const kayit = D.find(x => x.id === satTgt);
+    if(!kayit) {
         toast('Ürün bulunamadı!', 'error');
         return;
     }
     
-    // Aynı model+el+gb+ram'e sahip TÜM kayıtları bul
-    const tumKayitlar = D.filter(x => 
-        x.model === hedefUrun.model && 
-        x.el === hedefUrun.el && 
-        x.gb === hedefUrun.gb && 
-        x.ram === hedefUrun.ram
-    );
+    const kalan = kayit.adet - (kayit.satılanAdet || 0);
+    const iList = kayit.imeiList || [];
+    const sList = kayit.satildiImei || [];
     
-    if(tumKayitlar.length === 0) {
-        toast('Ürün bulunamadı', 'error');
-        return;
-    }
-    
-    // Birleştirilmiş veriyi oluştur
-    const birlesmisItem = {
-        id: satTgt,
-        model: hedefUrun.model,
-        el: hedefUrun.el,
-        gb: hedefUrun.gb,
-        ram: hedefUrun.ram,
-        adet: tumKayitlar.reduce((s,i)=>s+i.adet,0),
-        satılanAdet: tumKayitlar.reduce((s,i)=>s+(i.satılanAdet||0),0),
-        imeiList: tumKayitlar.flatMap(i=>i.imeiList||[]),
-        satildiImei: tumKayitlar.flatMap(i=>i.satildiImei||[])
-    };
-    
-    const kalan = birlesmisItem.adet - birlesmisItem.satılanAdet;
-    const iList = birlesmisItem.imeiList;
-    const sList = birlesmisItem.satildiImei;
-    
-    let html = `<div style="margin-bottom:14px"><div style="font-size:15px;font-weight:700">${birlesmisItem.model} · ${birlesmisItem.gb}GB · ${birlesmisItem.el}</div>
-                <div style="display:flex;gap:14px;font-size:13px"><span>Toplam: ${birlesmisItem.adet}</span><span>Satılan: ${birlesmisItem.satılanAdet}</span><span>Kalan: ${kalan}</span></div></div>`;
+    let html = `<div style="margin-bottom:14px">
+        <div style="font-size:15px;font-weight:700">${kayit.model} · ${kayit.gb}GB · ${kayit.el}</div>
+        <div style="display:flex;gap:14px;font-size:13px">
+            <span>Toplam: ${kayit.adet}</span>
+            <span>Satılan: ${kayit.satılanAdet || 0}</span>
+            <span>Kalan: ${kalan}</span>
+        </div>
+        <div style="font-size:11px;color:var(--tx2);margin-top:4px">📅 Giriş Tarihi: ${kayit.tarih}</div>
+    </div>`;
     
     if(iList.length > 0) {
         html += `<div style="font-size:12px;font-weight:700;margin-bottom:10px">IMEI Seçin (${iList.length} adet):</div>`;
         iList.forEach(im => {
             const sat = sList.includes(im);
-            html += `<label class="ici ${sat?'chk':''}"><input type="checkbox" ${sat?'checked':''} data-im="${im}"><span style="font-family:monospace">${im}</span><span class="badge ${sat?'bgn':'bcy'}">${sat?'Satıldı':'Stokta'}</span></label>`;
+            html += `<label class="ici ${sat?'chk':''}">
+                <input type="checkbox" ${sat?'checked':''} data-im="${im}">
+                <span style="font-family:monospace">${im}</span>
+                <span class="badge ${sat?'bgn':'bcy'}">${sat?'Satıldı':'Stokta'}</span>
+            </label>`;
         });
     } else {
         html += `<div style="margin-bottom:12px">Kaç adet satıldığını girin:</div>
-                 <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
-                     <button class="btn bd bsm" onclick="adjSM(-1)">−</button>
-                     <input type="number" id="smInp" value="${birlesmisItem.satılanAdet}" min="0" max="${birlesmisItem.adet}" style="width:90px;text-align:center;font-size:20px">
-                     <button class="btn bs bsm" onclick="adjSM(1)">＋</button>
-                     <span>/ ${birlesmisItem.adet}</span>
-                 </div>`;
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+            <button class="btn bd bsm" onclick="adjSM(-1)">−</button>
+            <input type="number" id="smInp" value="${kayit.satılanAdet || 0}" min="0" max="${kayit.adet}" style="width:90px;text-align:center;font-size:20px">
+            <button class="btn bs bsm" onclick="adjSM(1)">＋</button>
+            <span>/ ${kayit.adet}</span>
+        </div>`;
     }
+    
     html += `<div class="dv"></div>
-             <div style="display:flex;gap:12px;justify-content:flex-end">
-                 <button class="btn bg2" onclick="closeSatMo()">İptal</button>
-                 <button class="btn bs" onclick="saveSat()">✓ Kaydet</button>
-             </div>`;
+    <div style="display:flex;gap:12px;justify-content:flex-end">
+        <button class="btn bg2" onclick="closeSatMo()">İptal</button>
+        <button class="btn bs" onclick="saveSat()">✓ Kaydet</button>
+    </div>`;
+    
     document.getElementById('satMoC').innerHTML = html;
     document.getElementById('moSat').classList.add('open');
 }
 async function saveSat() {
-    const birlesmisMap = new Map();
-    D.forEach(item => {
-        const key = `${item.model}_${item.el}_${item.gb}_${item.ram}`;
-        if(!birlesmisMap.has(key)) birlesmisMap.set(key, []);
-        birlesmisMap.get(key).push(item);
-    });
-    
-    let ilgiliKayitlar = [];
-    for(let [key, items] of birlesmisMap.entries()) {
-        if(items.some(x => x.id === satTgt)) {
-            ilgiliKayitlar = items;
-            break;
-        }
-    }
-    
-    if(ilgiliKayitlar.length === 0) {
+    // SADECE seçilen ID'li kaydı bul
+    const kayit = D.find(x => x.id === satTgt);
+    if(!kayit) {
         toast('Kayıt bulunamadı', 'error');
         return;
     }
-    const bugun = getTodayDate();
     
-    const tumImeiList = ilgiliKayitlar.flatMap(k => k.imeiList || []);
-    let satildiImeiList = [];
+    const bugun = getTodayDate();
+    const tumImeiList = kayit.imeiList || [];
     
     if(tumImeiList.length > 0) {
-        satildiImeiList = [...document.querySelectorAll('#satMoC input[type=checkbox]:checked')].map(cb => cb.getAttribute('data-im')).filter(Boolean);
-        for(let kayit of ilgiliKayitlar) {
-            const kayitImeiList = kayit.imeiList || [];
-            const yeniSatildi = kayitImeiList.filter(im => satildiImeiList.includes(im));
-            kayit.satildiImei = yeniSatildi;
-            kayit.satılanAdet = yeniSatildi.length;
-            // 🔥 TARİHİ BUGÜN YAP
-            if(yeniSatildi.length > 0) {
-                kayit.tarih = bugun;
-            }
-        }
+        // IMEI bazlı satış - sadece seçilen IMEI'leri işaretle
+        const seciliImeiList = [...document.querySelectorAll('#satMoC input[type=checkbox]:checked')]
+            .map(cb => cb.getAttribute('data-im')).filter(Boolean);
+        
+        // Sadece bu kaydın IMEI'lerini güncelle
+        const yeniSatildi = kayit.imeiList.filter(im => seciliImeiList.includes(im));
+        kayit.satildiImei = yeniSatildi;
+        kayit.satılanAdet = yeniSatildi.length;
+        // ⚠️ TARİH ASLA DEĞİŞMESİN - DOKUNMA!
+        
     } else {
-        const yeniSatilanAdet = Math.min(+(document.getElementById('smInp')?.value||0), ilgiliKayitlar.reduce((s,k)=>s+k.adet,0));
-        let kalanSatilacak = yeniSatilanAdet;
-        for(let kayit of ilgiliKayitlar) {
-            const mevcutAdet = kayit.adet;
-            const yeniKayitSatilan = Math.min(mevcutAdet, kalanSatilacak);
-            kayit.satılanAdet = yeniKayitSatilan;
-            kalanSatilacak -= yeniKayitSatilan;
-            // 🔥 TARİHİ BUGÜN YAP
-            if(yeniKayitSatilan > 0) {
-                kayit.tarih = bugun;
-            }
-            if(kalanSatilacak <= 0) break;
-        }
+        // Adet bazlı satış
+        const yeniSatilanAdet = Math.min(
+            +(document.getElementById('smInp')?.value || 0),
+            kayit.adet
+        );
+        kayit.satılanAdet = yeniSatilanAdet;
+        // ⚠️ TARİH ASLA DEĞİŞMESİN - DOKUNMA!
     }
     
-    for(let kayit of ilgiliKayitlar) {
-        const idx = D.findIndex(x => x.id === kayit.id);
-        if(idx !== -1) D[idx] = kayit;
-    }
+    // D dizisini güncelle
+    const idx = D.findIndex(x => x.id === satTgt);
+    if(idx !== -1) D[idx] = kayit;
     
     showLo('Satış kaydediliyor...');
     try {
-        for(let upd of ilgiliKayitlar.map(k => ({action:'update', data: k}))) {
-            await api(upd);
-        }
-        closeSatMo();
-        rAll();
-        toast('Satış kaydedildi', 'success');
-        playBeep();
+        const res = await api({action:'update', data: kayit});
+        if(res.ok) {
+            closeSatMo();
+            rAll();
+            toast('Satış kaydedildi ✓', 'success');
+            playBeep();
+        } else throw new Error(res.error);
     } catch(e) {
         toast('Hata: '+e.message, 'error');
     }
