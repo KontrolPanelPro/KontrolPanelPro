@@ -109,7 +109,7 @@ button,.btn,.tab,.mbt,.qbtn,.sortable{touch-action:manipulation;font-family:'Sor
 .top-img-wrap{width:100%;aspect-ratio:3/4;border-radius:20px;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:rgba(128,128,128,.08);position:relative}
 .top-1 .top-img-wrap{border-radius:24px;box-shadow:0 6px 24px rgba(245,158,11,.18)}
 .top-2 .top-img-wrap,.top-3 .top-img-wrap{border-radius:20px}
-.top-img-wrap img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;padding:6px;box-sizing:border-box;display:block}
+.top-img-wrap img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;display:block;padding:4px;box-sizing:border-box}
 .top-model{font-size:10px;font-weight:700;text-align:center;line-height:1.3;word-break:break-word;max-width:100%;color:var(--tx)}
 .top-1 .top-model{font-size:11px}
 .top-variant{font-size:9px;color:var(--tx2);margin-top:-3px;text-align:center}
@@ -1786,9 +1786,12 @@ function topGetBrand(model){const m=model.toLowerCase();if(m.includes('iphone')|
 function topLoadImg(container,model,brand){
   const fallback=TOP_LOGOS[brand]||TOP_LOGOS.generic;
   // Önce "official render" sorgusu, tutmazsa "press photo", o da tutmazsa logo
+  // Modelden marka çıkar ve tam isim yap
+  const brandName={'apple':'Apple','samsung':'Samsung','xiaomi':'Xiaomi','oppo':'Oppo','huawei':'Huawei','oneplus':'OnePlus','realme':'Realme','generic':''}[brand]||'';
+  const fullModel=brandName&&!model.toLowerCase().includes(brandName.toLowerCase())?brandName+' '+model:model;
   const queries=[
-    encodeURIComponent(model+' press render front'),
-    encodeURIComponent(model+' official image'),
+    encodeURIComponent(fullModel+' official'),
+    encodeURIComponent(fullModel),
     encodeURIComponent(model+' phone'),
   ];
   const servers=['tse1','tse2','tse3','tse4'];
@@ -1815,7 +1818,7 @@ function topLoadImg(container,model,brand){
     const img=new Image();
     img.onload=function(){
       // Çok küçük resim gelirse (placeholder) sonrakini dene
-      if(img.naturalWidth<40||img.naturalHeight<40){tryNext(rest);return;}
+      if(img.naturalWidth<20||img.naturalHeight<20){tryNext(rest);return;}
       container.innerHTML='';
       img.style.cssText='width:100%;height:100%;object-fit:contain;display:block';
       container.appendChild(img);
