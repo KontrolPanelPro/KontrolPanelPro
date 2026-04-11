@@ -1018,32 +1018,7 @@ function hideLo(){const lo=document.getElementById('lo');if(lo)lo.classList.remo
 async function api(body){if(offlineMode){toast('Offline modda, değişiklikler kaydedildi','warning');return {ok:true,data:[]};}try{const r=await fetch(URL2,{method:'POST',body:JSON.stringify(body)});return JSON.parse(await r.text());}catch(e){toast('Bağlantı hatası, offline moda geçiliyor','error');enableOfflineMode();return {ok:false,error:e.message};}}
 function enableOfflineMode(){offlineMode=true;document.getElementById('offlineBadge').style.display='inline-block';setDot('offline','Offline Mod');}
 function tryP(s){try{const v=JSON.parse(s||'[]');return Array.isArray(v)?v:[];}catch{return[];}}
-function norm(d){
-    let tarih=String(d.tarih||'');
-    if(tarih.includes('T'))tarih=tarih.split('T')[0];
-    return{
-        ...d,
-        id:String(d.id||''),
-        tarih:tarih,
-        model:String(d.model||''),
-        el:String(d.el||'1.El'),
-        gb:String(d.gb||'256'),
-        ram:+d.ram||8,
-        renk:String(d.renk||''),
-        not:String(d.not||''),
-        adet:+d.adet||0,
-        alis:+d.alis||0,
-        satis:+d.satis||0,
-        iskonto:+d.iskonto||0,
-        toplamAlis:+d.toplamAlis||0,
-        toplamSatis:+d.toplamSatis||0,
-        kar:+d.kar||0,
-        satılanAdet:+d.satılanAdet||0,
-        imeiList:Array.isArray(d.imeiList)?d.imeiList:tryP(d.imeiList),
-        satildiImei:Array.isArray(d.satildiImei)?d.satildiImei:tryP(d.satildiImei),
-        satisTarihi: d.satisTarihi || ''   // ← BUNU EKLE
-    };
-}
+function norm(d){let tarih=String(d.tarih||'');if(tarih.includes('T'))tarih=tarih.split('T')[0];let satisTarihi=String(d.satisTarihi||'');if(satisTarihi.includes('T'))satisTarihi=satisTarihi.split('T')[0];return{...d,id:String(d.id||''),tarih:tarih,satisTarihi:satisTarihi||'',model:String(d.model||''),el:String(d.el||'1.El'),gb:String(d.gb||'256'),ram:+d.ram||8,renk:String(d.renk||''),not:String(d.not||''),adet:+d.adet||0,alis:+d.alis||0,satis:+d.satis||0,iskonto:+d.iskonto||0,toplamAlis:+d.toplamAlis||0,toplamSatis:+d.toplamSatis||0,kar:+d.kar||0,satılanAdet:+d.satılanAdet||0,imeiList:Array.isArray(d.imeiList)?d.imeiList:tryP(d.imeiList),satildiImei:Array.isArray(d.satildiImei)?d.satildiImei:tryP(d.satildiImei)};}
 function saveUrl(){
     const u = document.getElementById('urlInp')?.value.trim();
     if(!u || !u.startsWith('https://script.google.com')){
@@ -1226,7 +1201,7 @@ async function saveSat() {
     
     let ilgiliKayitlar = [];
     for(let [key, items] of birlesmisMap.entries()) {
-        if(items[0].id === satTgt) {
+        if(items.some(x => x.id === satTgt)) {
             ilgiliKayitlar = items;
             break;
         }
@@ -1237,24 +1212,25 @@ async function saveSat() {
         return;
     }
     
-    const bugun = new Date().toISOString().split('T')[0];
+    // Bugünün tarihini satısTarihi alanına kaydet, orijinal tarih korunur
+    const bugun = getTodayDate();
+    
     const tumImeiList = ilgiliKayitlar.flatMap(k => k.imeiList || []);
+    let satildiImeiList = [];
     
     if(tumImeiList.length > 0) {
-        // IMEI bazlı satış – her kayıt kendi IMEI'lerine göre filtrelenir
-        const secilenImeiler = [...document.querySelectorAll('#satMoC input[type=checkbox]:checked')].map(cb => cb.getAttribute('data-im')).filter(Boolean);
-        
+        satildiImeiList = [...document.querySelectorAll('#satMoC input[type=checkbox]:checked')].map(cb => cb.getAttribute('data-im')).filter(Boolean);
         for(let kayit of ilgiliKayitlar) {
             const kayitImeiList = kayit.imeiList || [];
-            const yeniSatildi = kayitImeiList.filter(im => secilenImeiler.includes(im));
+            const yeniSatildi = kayitImeiList.filter(im => satildiImeiList.includes(im));
             kayit.satildiImei = yeniSatildi;
             kayit.satılanAdet = yeniSatildi.length;
+            // Orijinal tarih KORUNUYOR, sadece satış tarihi ayrı kaydediliyor
             if(yeniSatildi.length > 0) {
-                kayit.tarih = bugun;
+                kayit.satisTarihi = bugun;
             }
         }
     } else {
-        // Adet bazlı satış – dağıtım mevcut mantıkla devam eder
         const yeniSatilanAdet = Math.min(+(document.getElementById('smInp')?.value||0), ilgiliKayitlar.reduce((s,k)=>s+k.adet,0));
         let kalanSatilacak = yeniSatilanAdet;
         for(let kayit of ilgiliKayitlar) {
@@ -1262,8 +1238,9 @@ async function saveSat() {
             const yeniKayitSatilan = Math.min(mevcutAdet, kalanSatilacak);
             kayit.satılanAdet = yeniKayitSatilan;
             kalanSatilacak -= yeniKayitSatilan;
+            // Orijinal tarih KORUNUYOR
             if(yeniKayitSatilan > 0) {
-                kayit.tarih = bugun;
+                kayit.satisTarihi = bugun;
             }
             if(kalanSatilacak <= 0) break;
         }
@@ -1292,23 +1269,7 @@ async function delIsl(id){if(!confirm('Bu işlemi silmek istediğinize emin misi
 async function clearAll(){if(!confirm('TÜM VERİLER SİLİNECEK!'))return;actionHistory.push({type:'clearAll',data:[...D]});showLo('Siliniyor...');try{const res=await api({action:'deleteAll'});if(res.ok){D=[];rAll();toast('Tüm veriler silindi','error');}else throw new Error(res.error);}catch(e){toast('Hata: '+e.message,'error');}hideLo();}
 function undoLastAction(){if(actionHistory.length===0){toast('Geri alınacak işlem yok','error');return;}const last=actionHistory.pop();showLo('Geri alınıyor...');if(last.type==='add'){D=D.filter(x=>x.id!==last.data.id);toast('Ekleme işlemi geri alındı','success');}else if(last.type==='update'){const idx=D.findIndex(x=>x.id===last.data.id);if(idx!==-1)D[idx]=norm(last.oldData);toast('Güncelleme geri alındı','success');}else if(last.type==='delete'){D.push(norm(last.data));toast('Silme işlemi geri alındı','success');}else if(last.type==='sell'){const idx=D.findIndex(x=>x.id===last.data.id);if(idx!==-1)D[idx]=norm(last.oldData);toast('Satış işlemi geri alındı','success');}else if(last.type==='clearAll'){D=last.data;toast('Temizleme işlemi geri alındı','success');}rAll();hideLo();}
 function playBeep(){try{const audioCtx=new (window.AudioContext||window.webkitAudioContext)();const oscillator=audioCtx.createOscillator();const gainNode=audioCtx.createGain();oscillator.connect(gainNode);gainNode.connect(audioCtx.destination);oscillator.frequency.value=880;gainNode.gain.value=0.3;oscillator.start();gainNode.gain.exponentialRampToValueAtTime(0.00001,audioCtx.currentTime+0.3);oscillator.stop(audioCtx.currentTime+0.3);}catch(e){}}
-function gunlukCiro() {
-    const today = getTodayDate();
-    let ciro = 0, kar = 0;
-    
-    D.forEach(d => {
-        if(d.satılanAdet > 0) {
-            const satisTarihi = d.satisTarihi || d.tarih;
-            if(satisTarihi === today) {
-                const satilanOran = d.satılanAdet / d.adet;
-                ciro += d.toplamSatis * satilanOran;
-                kar += d.kar * satilanOran;
-            }
-        }
-    });
-    
-    return { ciro, kar };
-}
+function gunlukCiro(){const today=getTodayDate();const gunlukSatislar=D.filter(d=>{const satTar=d.satisTarihi||d.tarih;return satTar===today&&d.satılanAdet>0;});let ciro=0,kar=0;gunlukSatislar.forEach(d=>{const oran=d.satılanAdet/d.adet;ciro+=d.toplamSatis*oran;kar+=d.kar*oran;});return{ciro,kar};}
 function aylikCiro(){const now=new Date();const ay=now.getMonth();const yil=now.getFullYear();const aylikSatislar=D.filter(d=>{const t=new Date(d.tarih);return t.getMonth()===ay&&t.getFullYear()===yil&&d.satılanAdet>0;});let ciro=0,kar=0;aylikSatislar.forEach(d=>{const oran=d.satılanAdet/d.adet;ciro+=d.toplamSatis*oran;kar+=d.kar*oran;});return{ciro,kar};}
 function stokHareketRaporu() {
   const baslangic = document.getElementById('hareketBaslangic')?.value;
@@ -1333,7 +1294,7 @@ function stokHareketRaporu() {
     // Çıkış hareketleri (satış)
     if((tip === 'cikis' || !tip) && d.satılanAdet > 0) {
       hareketler.push({
-        tarih: d.tarih,
+        tarih: d.satisTarihi||d.tarih,
         tip: '📤 Çıkış (Satış)',
         model: d.model,
         el: d.el,
