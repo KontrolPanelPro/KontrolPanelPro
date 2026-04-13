@@ -1221,15 +1221,17 @@ async function saveSat() {
     if(tumImeiList.length > 0) {
         satildiImeiList = [...document.querySelectorAll('#satMoC input[type=checkbox]:checked')].map(cb => cb.getAttribute('data-im')).filter(Boolean);
         for(let kayit of ilgiliKayitlar) {
-            const kayitImeiList = kayit.imeiList || [];
-            const yeniSatildi = kayitImeiList.filter(im => satildiImeiList.includes(im));
-            kayit.satildiImei = yeniSatildi;
-            kayit.satılanAdet = yeniSatildi.length;
-            // 🔥 TARİHİ BUGÜN YAP
-            if(yeniSatildi.length > 0) {
-                kayit.tarih = bugun;
-            }
-        }
+    const kayitImeiList = kayit.imeiList || [];
+    const yeniSatildi = kayitImeiList.filter(im => satildiImeiList.includes(im));
+    const eskiSatildi = kayit.satildiImei || [];
+    const yeniEklenen = yeniSatildi.filter(im => !eskiSatildi.includes(im));
+    kayit.satildiImei = yeniSatildi;
+    kayit.satılanAdet = yeniSatildi.length;
+    // 🔥 TARİHİ SADECE YENİ SATIŞ VARSA GÜNCELLE
+    if(yeniEklenen.length > 0) {
+        kayit.tarih = bugun;
+    }
+}
     } else {
         const yeniSatilanAdet = Math.min(+(document.getElementById('smInp')?.value||0), ilgiliKayitlar.reduce((s,k)=>s+k.adet,0));
         let kalanSatilacak = yeniSatilanAdet;
