@@ -1231,8 +1231,8 @@ async function saveSat() {
         const mevcut = rawEski.find(s => s.split('||')[0] === im);
         return mevcut || im;
     });
-    kayit.satılanAdet = yeniSatildi.length;
-    // tarih'e artık dokunmuyoruz
+   kayit.satılanAdet = yeniSatildi.length;
+    if(yeniEklenen.length > 0) kayit.tarih = bugun;
 }
     } else {
         const yeniSatilanAdet = Math.min(+(document.getElementById('smInp')?.value||0), ilgiliKayitlar.reduce((s,k)=>s+k.adet,0));
