@@ -852,8 +852,55 @@ input,select{padding:8px 10px;font-size:12px}
 <div class="tab" onclick="goPage('hareketler',this)">🔄 Stok Hareket</div>
 <div class="tab" onclick="goPage('imei',this)">🔍 IMEI</div>
 <div class="tab" onclick="goPage('barkod',this)">📷 Barkod</div>
+<div class="tab" onclick="goPage('musteriler',this)">👥 Müşteriler</div>
+<div class="tab" onclick="goPage('tedarikciler',this)">🏪 Tedarikçiler</div>
+<div class="tab" onclick="goPage('kasa',this)">💵 Kasa</div>
+</div>
+<div class="page" id="page-musteriler">
+  <div class="sh2">
+    <div class="stt">👥 Müşteriler</div>
+    <div style="display:flex;gap:8px">
+      <input type="text" id="musteriSrc" placeholder="🔍 İsim/Telefon..." style="width:160px" oninput="rMusteriler()">
+      <button class="btn bp bsm" onclick="openMusteriMo()">➕ Yeni</button>
+    </div>
+  </div>
+  <div class="tw">
+    <table><thead><tr>
+      <th>Ad Soyad</th><th>Telefon</th><th>TC</th><th>Alışveriş</th><th>Toplam</th><th>Borç</th><th>Son Alış</th><th>İşlem</th>
+    </tr></thead><tbody id="musteriTb"></tbody></table>
+  </div>
 </div>
 
+<div class="page" id="page-tedarikciler">
+  <div class="sh2">
+    <div class="stt">🏪 Tedarikçiler</div>
+    <div style="display:flex;gap:8px">
+      <input type="text" id="tedarikciSrc" placeholder="🔍 İsim/Firma..." style="width:160px" oninput="rTedarikciler()">
+      <button class="btn bp bsm" onclick="openTedarikciMo()">➕ Yeni</button>
+    </div>
+  </div>
+  <div class="tw">
+    <table><thead><tr>
+      <th>Ad Soyad</th><th>Telefon</th><th>Firma</th><th>Not</th><th>İşlem</th>
+    </tr></thead><tbody id="tedarikciTb"></tbody></table>
+  </div>
+</div>
+
+<div class="page" id="page-kasa">
+  <div class="sh2">
+    <div class="stt">💵 Kasa</div>
+    <div style="display:flex;gap:8px">
+      <select id="kasaFil" onchange="rKasa()" style="width:100px"><option value="">Tümü</option><option value="giris">📥 Giriş</option><option value="cikis">📤 Çıkış</option></select>
+      <button class="btn bp bsm" onclick="openKasaMo()">➕ Hareket</button>
+    </div>
+  </div>
+  <div id="kasaOzet" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px"></div>
+  <div class="tw">
+    <table><thead><tr>
+      <th>Tarih</th><th>Tip</th><th>Kategori</th><th>Ödeme</th><th>Tutar</th><th>Açıklama</th><th>İşlem</th>
+    </tr></thead><tbody id="kasaTb"></tbody></table>
+  </div>
+</div>
 <div class="main" id="mainC" style="display:none">
 
 <div class="page active" id="page-Anasayfa">
@@ -924,7 +971,56 @@ input,select{padding:8px 10px;font-size:12px}
 <div class="mo" id="moIsl" onclick="if(event.target===this)closeMo()"><div class="md"><div class="mh"><div class="mtt" id="moTit">➕ Yeni İşlem</div><button class="xb" onclick="closeMo()">✕</button></div><form id="islForm" onsubmit="saveIsl(event)"><div class="fg"><div class="fgr"><label>Tarih</label><input type="date" id="f_tar" required></div><div class="fgr"><label>Model</label><input type="text" id="f_mod" placeholder="iPhone 15 Pro" required></div><div class="fgr"><label>El</label><select id="f_el"><option value="1.El">1. El</option><option value="2.El">2. El</option></select></div><div class="fgr"><label>GB</label><select id="f_gb"><option>64</option><option>128</option><option selected>256</option><option>512</option><option>1 TB</option></select></div><div class="fgr"><label>RAM</label><input type="number" id="f_ram" value="8" min="1"></div><div class="fgr"><label>Renk</label><input type="text" id="f_rnk" placeholder="Renk"></div><div class="fgr"><label>Adet</label><input type="number" id="f_adt" value="1" min="1" required oninput="calcK()"></div><div class="fgr"><label>Alış (Birim)</label><input type="number" id="f_ali" placeholder="0" required oninput="calcK()"></div><div class="fgr"><label>Satış (Birim)</label><input type="number" id="f_sat" placeholder="0" required oninput="calcK()"></div><div class="fgr"><label>İskonto</label><input type="number" id="f_isk" value="0" min="0" oninput="calcK()"></div><div class="fgr full"><label>IMEI (virgülle)</label><input type="text" id="f_im" placeholder="355643210000001, 355643210000002"></div><div class="fgr full"><label>Not</label><input type="text" id="f_not" placeholder="Not"></div></div><div class="pvb"><div style="font-size:11px;font-weight:700;margin-bottom:10px">💡 Önizleme</div><div class="sr2"><span class="sk">Toplam Alış</span><span class="sv2 trd" id="pAli">₺0</span></div><div class="sr2"><span class="sk">Toplam Satış</span><span class="sv2 tcy" id="pSat">₺0</span></div><div class="sr2"><span class="sk">İskonto</span><span class="sv2 tyw" id="pIsk">₺0</span></div><div class="sr2"><span class="sk">Net Kar</span><span class="sv2 tgn" id="pKar">₺0</span></div></div><div style="display:flex;gap:10px;margin-top:16px;justify-content:flex-end"><button type="button" class="btn bg2" onclick="closeMo()">İptal</button><button type="submit" class="btn bp" id="moBtnSub">✓ Kaydet</button></div></form></div></div>
 
 <div class="mo" id="moSat" onclick="if(event.target===this)closeSatMo()"><div class="md mdsm"><div class="mh"><div class="mtt">✅ Satış İşaretle</div><button class="xb" onclick="closeSatMo()">✕</button></div><div id="satMoC"></div></div></div>
+<div class="mo" id="moMusteri" onclick="if(event.target===this)closeMusteriMo()">
+  <div class="md">
+    <div class="mh"><div class="mtt" id="moMusteriTit">👥 Yeni Müşteri</div><button class="xb" onclick="closeMusteriMo()">✕</button></div>
+    <div class="fg">
+      <div class="fgr full"><label>Ad Soyad *</label><input type="text" id="fm_ad" placeholder="Ali Yılmaz"></div>
+      <div class="fgr"><label>Telefon *</label><input type="text" id="fm_tel" placeholder="05301234567"></div>
+      <div class="fgr"><label>TC Kimlik</label><input type="text" id="fm_tc" placeholder="12345678901"></div>
+      <div class="fgr full"><label>Adres</label><input type="text" id="fm_adres" placeholder="Adres..."></div>
+      <div class="fgr full"><label>Not</label><input type="text" id="fm_not" placeholder="Not..."></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px;justify-content:flex-end">
+      <button class="btn bg2" onclick="closeMusteriMo()">İptal</button>
+      <button class="btn bp" onclick="saveMusteri()">✓ Kaydet</button>
+    </div>
+  </div>
+</div>
 
+<div class="mo" id="moTedarikci" onclick="if(event.target===this)closeTedarikciMo()">
+  <div class="md">
+    <div class="mh"><div class="mtt" id="moTedarikciTit">🏪 Yeni Tedarikçi</div><button class="xb" onclick="closeTedarikciMo()">✕</button></div>
+    <div class="fg">
+      <div class="fgr full"><label>Ad Soyad *</label><input type="text" id="ft_ad" placeholder="Ahmet Bey"></div>
+      <div class="fgr"><label>Telefon</label><input type="text" id="ft_tel" placeholder="05301234567"></div>
+      <div class="fgr"><label>Firma</label><input type="text" id="ft_firma" placeholder="Firma adı..."></div>
+      <div class="fgr full"><label>Not</label><input type="text" id="ft_not" placeholder="Not..."></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px;justify-content:flex-end">
+      <button class="btn bg2" onclick="closeTedarikciMo()">İptal</button>
+      <button class="btn bp" onclick="saveTedarikci()">✓ Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<div class="mo" id="moKasa" onclick="if(event.target===this)closeKasaMo()">
+  <div class="md">
+    <div class="mh"><div class="mtt">💵 Kasa Hareketi</div><button class="xb" onclick="closeKasaMo()">✕</button></div>
+    <div class="fg">
+      <div class="fgr"><label>Tarih</label><input type="date" id="fk_tar"></div>
+      <div class="fgr"><label>Tip</label><select id="fk_tip"><option value="giris">📥 Giriş</option><option value="cikis">📤 Çıkış</option></select></div>
+      <div class="fgr"><label>Kategori</label><select id="fk_kat"><option value="satis">Satış</option><option value="tedarik">Tedarik</option><option value="masraf">Masraf</option><option value="diger">Diğer</option></select></div>
+      <div class="fgr"><label>Ödeme</label><select id="fk_odeme"><option value="nakit">💵 Nakit</option><option value="havale">🏦 Havale</option><option value="taksit">📋 Taksit</option></select></div>
+      <div class="fgr full"><label>Tutar ₺</label><input type="number" id="fk_tutar" placeholder="0"></div>
+      <div class="fgr full"><label>Açıklama</label><input type="text" id="fk_aciklama" placeholder="Açıklama..."></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px;justify-content:flex-end">
+      <button class="btn bg2" onclick="closeKasaMo()">İptal</button>
+      <button class="btn bp" onclick="saveKasaHareket()">✓ Kaydet</button>
+    </div>
+  </div>
+</div>
 <div id="toast"></div>
 
 <script>
@@ -947,6 +1043,8 @@ let currentVideoTrack = null;
 let scanner = null;
 let actionHistory = [];
 let offlineMode = false;
+let MD = [], TD = [], KD = [];
+let editMusteriId = null, editTedarikciId = null;
 
 // ============================================================
 // TEMA, SAAT, SIRALAMA
@@ -1113,13 +1211,13 @@ async function init(){
 function initChartButtons(){const btns=document.querySelectorAll('#chartPeriodButtons .chart-btn');btns.forEach(btn=>{btn.addEventListener('click',()=>{btns.forEach(b=>b.classList.remove('active'));btn.classList.add('active');chartPeriod=btn.dataset.period;rCharts();});});}
 function initAnalizButtons(){const btns=document.querySelectorAll('#analizSortButtons .analiz-sort-btn');btns.forEach(btn=>{btn.addEventListener('click',()=>{if(analizSort===btn.dataset.sort){analizSortDirection=analizSortDirection==='desc'?'asc':'desc';}else{analizSort=btn.dataset.sort;analizSortDirection='desc';}btns.forEach(b=>b.classList.remove('active'));btn.classList.add('active');rUrunler();});});}
 function initElChartButtons(){const btns=document.querySelectorAll('#elChartButtons .el-chart-btn');btns.forEach(btn=>{btn.addEventListener('click',()=>{btns.forEach(b=>b.classList.remove('active'));btn.classList.add('active');currentElFilter=btn.dataset.el;updateElChart();});});}
-async function syncData(){setDot('ld','Bağlanıyor...');showLo('Google Sheets\'ten yükleniyor...');try{const res=await api({action:'getAll'});if(res.ok){D=res.data.map(norm);setDot('ok','✓ Bağlı');offlineMode=false;document.getElementById('offlineBadge').style.display='none';rAll();toast('Senkronize edildi','success');}else throw new Error(res.error);}catch(e){setDot('er','✗ Hata');toast('Hata: '+e.message,'error');}hideLo();}
+async function syncData(){setDot('ld','Bağlanıyor...');showLo('Google Sheets\'ten yükleniyor...');try{const res=await api({action:'getAll'});if(res.ok){D=res.data.map(norm);setDot('ok','✓ Bağlı');offlineMode=false;document.getElementById('offlineBadge').style.display='none';await Promise.all([syncMusteriler(),syncTedarikciler(),syncKasa()]);rAll();toast('Senkronize edildi','success');}else throw new Error(res.error);}catch(e){setDot('er','✗ Hata');toast('Hata: '+e.message,'error');}hideLo();}
 const fmt=n=>isNaN(n)||n==null?'₺0':'₺'+Number(n).toLocaleString('tr-TR',{minimumFractionDigits:0,maximumFractionDigits:0});
 const fmtN=n=>Number(n||0).toLocaleString('tr-TR');
 const fmtYuzde=n=>{const val=Number(n||0);return val.toFixed(1)+'%';};
 function getDur(d){const s=+(d.satılanAdet||0);if(s<=0)return'stokta';if(s>=d.adet)return'satildi';return'kismi';}
 function getDurB(d){const s=getDur(d);if(s==='satildi')return'<span class="badge bgn">✓ Satıldı</span>';if(s==='kismi')return`<span class="badge byw">⚡ ${d.satılanAdet}/${d.adet}</span>`;return'<span class="badge bcy">📦 Stokta</span>';}
-function goPage(id,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));const page=document.getElementById('page-'+id);if(page)page.classList.add('active');if(el)el.classList.add('active');const m={Anasayfa:rDash,stok:rStok,islemler:rIslemler,urunler:function(){rTop();rUrunler();},imei:rImei,raporlar:rRaporlarSayfasi,hareketler:()=>stokHareketRaporu()};if(m[id])m[id]();if(id!=='barkod')stopScan();}
+function goPage(id,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));const page=document.getElementById('page-'+id);if(page)page.classList.add('active');if(el)el.classList.add('active');const m={Anasayfa:rDash,stok:rStok,islemler:rIslemler,urunler:function(){rTop();rUrunler();},imei:rImei,raporlar:rRaporlarSayfasi,hareketler:()=>stokHareketRaporu(),musteriler:rMusteriler,tedarikciler:rTedarikciler,kasa:rKasa};if(m[id])m[id]();if(id!=='barkod')stopScan();}
 function openModal(id=null){editId=id?String(id):null;const moTit=document.getElementById('moTit');if(moTit)moTit.textContent=editId?'✏️ İşlemi Düzenle':'➕ Yeni İşlem';const moBtn=document.getElementById('moBtnSub');if(moBtn)moBtn.textContent=editId?'✓ Güncelle':'✓ Kaydet';if(editId){const d=D.find(x=>x.id===editId);if(!d){toast('Kayıt bulunamadı!','error');return;}document.getElementById('f_tar').value=d.tarih;document.getElementById('f_mod').value=d.model;document.getElementById('f_el').value=d.el;document.getElementById('f_gb').value=d.gb;document.getElementById('f_ram').value=d.ram;document.getElementById('f_rnk').value=d.renk;document.getElementById('f_adt').value=d.adet;document.getElementById('f_ali').value=d.alis;document.getElementById('f_sat').value=d.satis;document.getElementById('f_isk').value=d.iskonto;document.getElementById('f_im').value=(d.imeiList||[]).join(', ');document.getElementById('f_not').value=d.not;}else{const form=document.getElementById('islForm');if(form)form.reset();document.getElementById('f_tar').value=getTodayDate();document.getElementById('f_adt').value=1;document.getElementById('f_isk').value=0;document.getElementById('f_ram').value=8;document.getElementById('f_gb').value='256';document.getElementById('f_el').value='1.El';}calcK();document.getElementById('moIsl').classList.add('open');}
 function closeMo(){document.getElementById('moIsl').classList.remove('open');editId=null;}
 function calcK(){const a=+(document.getElementById('f_adt')?.value||0);const al=+(document.getElementById('f_ali')?.value||0);const sa=+(document.getElementById('f_sat')?.value||0);const is=+(document.getElementById('f_isk')?.value||0);const tA=al*a,tS=sa*a,kar=tS-tA-is;const pAli=document.getElementById('pAli');if(pAli)pAli.textContent=fmt(tA);const pSat=document.getElementById('pSat');if(pSat)pSat.textContent=fmt(tS);const pIsk=document.getElementById('pIsk');if(pIsk)pIsk.textContent=fmt(is);const pKar=document.getElementById('pKar');if(pKar){pKar.textContent=fmt(kar);pKar.className='sv2 '+(kar>=0?'tgn':'trd');}}
@@ -1207,11 +1305,36 @@ function openSatMo(id) {
                      <span>/ ${birlesmisItem.adet}</span>
                  </div>`;
     }
-    html += `<div class="dv"></div>
-             <div style="display:flex;gap:12px;justify-content:flex-end">
-                 <button class="btn bg2" onclick="closeSatMo()">İptal</button>
-                 <button class="btn bs" onclick="saveSat()">✓ Kaydet</button>
-             </div>`;
+    const musteriOptions = MD.map(m=>`<option value="${m.id}">${m.ad} - ${m.telefon}</option>`).join('');
+html += `<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--br)">
+    <div style="font-size:11px;font-weight:700;margin-bottom:8px">👤 Müşteri & Ödeme</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <div class="fgr">
+            <label style="font-size:9px;color:var(--tx3);text-transform:uppercase">Müşteri</label>
+            <select id="satMusteriSel" style="font-size:12px">
+                <option value="">— Seçiniz —</option>
+                ${musteriOptions}
+            </select>
+        </div>
+        <div class="fgr">
+            <label style="font-size:9px;color:var(--tx3);text-transform:uppercase">Ödeme Yöntemi</label>
+            <select id="satOdemeSel" onchange="toggleVeresiye()" style="font-size:12px">
+                <option value="nakit">💵 Nakit</option>
+                <option value="havale">🏦 Havale</option>
+                <option value="taksit">📋 Taksit/Veresiye</option>
+            </select>
+        </div>
+    </div>
+    <div id="veresiyeAlan" style="display:none">
+        <label style="font-size:9px;color:var(--tx3);text-transform:uppercase">Peşinat ₺ (kalan borç olarak işlenir)</label>
+        <input type="number" id="satPesinat" placeholder="0" style="width:100%">
+    </div>
+</div>
+<div class="dv"></div>
+<div style="display:flex;gap:12px;justify-content:flex-end">
+    <button class="btn bg2" onclick="closeSatMo()">İptal</button>
+    <button class="btn bs" onclick="saveSat()">✓ Kaydet</button>
+</div>`;
     document.getElementById('satMoC').innerHTML = html;
     document.getElementById('moSat').classList.add('open');
 }
@@ -1222,87 +1345,84 @@ async function saveSat() {
         if(!birlesmisMap.has(key)) birlesmisMap.set(key, []);
         birlesmisMap.get(key).push(item);
     });
-    
     let ilgiliKayitlar = [];
     for(let [key, items] of birlesmisMap.entries()) {
-        if(items.some(x => x.id === satTgt)) {
-            ilgiliKayitlar = items;
-            break;
-        }
+        if(items.some(x => x.id === satTgt)) { ilgiliKayitlar = items; break; }
     }
-    
-    if(ilgiliKayitlar.length === 0) {
-        toast('Kayıt bulunamadı', 'error');
-        return;
-    }
-    
-    // 🔥 BUGÜNÜN TARİHİNİ AL
+    if(ilgiliKayitlar.length === 0) { toast('Kayıt bulunamadı', 'error'); return; }
+
     const bugun = getTodayDate();
-    
+    const musteriId = document.getElementById('satMusteriSel')?.value || '';
+    const odemeYontemi = document.getElementById('satOdemeSel')?.value || 'nakit';
+    const pesinat = Number(document.getElementById('satPesinat')?.value) || 0;
     const tumImeiList = ilgiliKayitlar.flatMap(k => k.imeiList || []);
-    let satildiImeiList = [];
-    
+    const kasaGirisler = [];
+
     if(tumImeiList.length > 0) {
-        satildiImeiList = [...document.querySelectorAll('#satMoC input[type=checkbox]:checked')].map(cb => cb.getAttribute('data-im')).filter(Boolean);
+        const satildiImeiList = [...document.querySelectorAll('#satMoC input[type=checkbox]:checked')].map(cb => cb.getAttribute('data-im')).filter(Boolean);
         for(let kayit of ilgiliKayitlar) {
             const kayitImeiList = kayit.imeiList || [];
             const rawEski = kayit.satildiImei || [];
             const eskiImeiSet = new Set(rawEski.map(s => s.split('||')[0]));
             const yeniSatildi = kayitImeiList.filter(im => satildiImeiList.includes(im));
             const yeniEklenen = yeniSatildi.filter(im => !eskiImeiSet.has(im));
-            
-            // 🔥 DEĞİŞİKLİK 3 — IMEI ataması (fiyat bilgisi ile birlikte)
             kayit.satildiImei = yeniSatildi.map(im => {
                 if(yeniEklenen.includes(im)) {
                     const fiyatEl = document.querySelector(`#satMoC input.imei-fiyat[data-im="${im}"]`);
-                    const gercekFiyat = fiyatEl ? (Number(fiyatEl.value) || kayit.satis) : kayit.satis;
-                    return im + '||' + bugun + '||' + gercekFiyat;
+                    const gercekFiyat = fiyatEl ? (Number(fiyatEl.value)||kayit.satis) : kayit.satis;
+                    kasaGirisler.push({im, fiyat: gercekFiyat, model: kayit.model, alis: kayit.alis});
+                    return im+'||'+bugun+'||'+gercekFiyat+'||'+musteriId+'||'+odemeYontemi;
                 }
                 const mevcut = rawEski.find(s => s.split('||')[0] === im);
                 return mevcut || im;
             });
-            
             kayit.satılanAdet = yeniSatildi.length;
-            // TARİHİ DEĞİŞTİRME - sadece yeni eklenen varsa satisTarihi'ni güncelle
-            if(yeniEklenen.length > 0 && !kayit.satisTarihi) {
-                kayit.satisTarihi = bugun;
-            }
+            if(yeniEklenen.length > 0) kayit.tarih = bugun;
         }
     } else {
         const yeniSatilanAdet = Math.min(+(document.getElementById('smInp')?.value||0), ilgiliKayitlar.reduce((s,k)=>s+k.adet,0));
         let kalanSatilacak = yeniSatilanAdet;
         for(let kayit of ilgiliKayitlar) {
-            const mevcutAdet = kayit.adet;
-            const yeniKayitSatilan = Math.min(mevcutAdet, kalanSatilacak);
-            const oncekiSatilan = kayit.satılanAdet || 0;
+            const yeniKayitSatilan = Math.min(kayit.adet, kalanSatilacak);
+            if(yeniKayitSatilan > kayit.satılanAdet) {
+                const artis = yeniKayitSatilan - kayit.satılanAdet;
+                kasaGirisler.push({im: '-', fiyat: kayit.satis * artis, model: kayit.model, alis: kayit.alis * artis});
+            }
             kayit.satılanAdet = yeniKayitSatilan;
             kalanSatilacak -= yeniKayitSatilan;
-            
-            // Sadece ilk kez satış yapılıyorsa satisTarihi'ni ayarla
-            if(yeniKayitSatilan > 0 && oncekiSatilan === 0 && !kayit.satisTarihi) {
-                kayit.satisTarihi = bugun;
-            }
+            if(yeniKayitSatilan > 0) kayit.tarih = bugun;
             if(kalanSatilacak <= 0) break;
         }
     }
-    
+
     for(let kayit of ilgiliKayitlar) {
         const idx = D.findIndex(x => x.id === kayit.id);
         if(idx !== -1) D[idx] = kayit;
     }
-    
+
     showLo('Satış kaydediliyor...');
     try {
-        for(let upd of ilgiliKayitlar.map(k => ({action:'update', data: k}))) {
-            await api(upd);
+        for(let upd of ilgiliKayitlar.map(k => ({action:'update', data:k}))) { await api(upd); }
+
+        // Kasa + müşteri borç
+        let toplamBorc = 0;
+        for(let g of kasaGirisler) {
+            const kasaTutar = odemeYontemi === 'taksit' ? (pesinat > 0 ? Math.min(pesinat, g.fiyat) : 0) : g.fiyat;
+            if(kasaTutar > 0) {
+                const ke = {id:Date.now().toString()+Math.random().toString(36).substr(2,4), tarih:bugun, tip:'giris', kategori:'satis', odemeYontemi:odemeYontemi==='taksit'?'nakit':odemeYontemi, tutar:kasaTutar, aciklama:g.model+(g.im!=='-'?' ('+g.im+')':''), referansId:g.im, not:musteriId?'Müşteri: '+getMusteriAdiById(musteriId):''};
+                KD.push(ke);
+                await api({action:'addKasa', data:ke});
+            }
+            if(odemeYontemi === 'taksit') toplamBorc += g.fiyat - kasaTutar;
         }
-        closeSatMo();
-        rAll();
-        toast('Satış kaydedildi', 'success');
-        playBeep();
-    } catch(e) {
-        toast('Hata: '+e.message, 'error');
-    }
+        if(toplamBorc > 0 && musteriId) {
+            const m = MD.find(x=>x.id===musteriId);
+            if(m) { m.toplamBorc = (Number(m.toplamBorc)||0) + toplamBorc; await api({action:'updateMusteri', data:m}); }
+        }
+
+        closeSatMo(); rAll(); rKasa();
+        toast('Satış kaydedildi ✓', 'success'); playBeep();
+    } catch(e) { toast('Hata: '+e.message, 'error'); }
     hideLo();
 }
 async function delIsl(id){if(!confirm('Bu işlemi silmek istediğinize emin misiniz?'))return;const deleted=D.find(x=>x.id===id);actionHistory.push({type:'delete',data:deleted});showLo('Siliniyor...');try{const res=await api({action:'delete',id:String(id)});if(res.ok){D=D.filter(x=>x.id!==String(id));rAll();toast('Silindi','error');}else throw new Error(res.error);}catch(e){toast('Hata: '+e.message,'error');}hideLo();}
@@ -2097,6 +2217,195 @@ window.tarihceGoster = function(id) {
         if(e.target === modal) modal.remove();
     };
 };
+  // ============ SYNC ============
+async function syncMusteriler(){try{const r=await api({action:'getMusteriler'});if(r.ok)MD=r.data.map(d=>({...d,toplamBorc:Number(d.toplamBorc)||0}));}catch(e){}}
+async function syncTedarikciler(){try{const r=await api({action:'getTedarikciler'});if(r.ok)TD=r.data;}catch(e){}}
+async function syncKasa(){try{const r=await api({action:'getKasa'});if(r.ok)KD=r.data.map(d=>({...d,tutar:Number(d.tutar)||0}));}catch(e){}}
+
+// ============ HELPERS ============
+function getMusteriAdiById(id){if(!id)return'';const m=MD.find(x=>x.id===String(id));return m?m.ad:'';}
+
+// ============ RENDER: MÜŞTERİLER ============
+function rMusteriler(){
+    const q=(document.getElementById('musteriSrc')?.value||'').toLowerCase();
+    let list=q?MD.filter(m=>m.ad.toLowerCase().includes(q)||m.telefon.includes(q)):[...MD];
+    const tb=document.getElementById('musteriTb');if(!tb)return;
+    if(!list.length){tb.innerHTML=`<tr><td colspan="8"><div class="empty"><i>👥</i>Müşteri yok</div></td></tr>`;return;}
+    tb.innerHTML=list.map(m=>{
+        const satirlar=[];
+        D.forEach(d=>{(d.satildiImei||[]).forEach(s=>{const p=s.split('||');if(p[3]===m.id)satirlar.push({tarih:p[1]||d.tarih,fiyat:Number(p[2])||d.satis});});});
+        const toplamHarcama=satirlar.reduce((s,r)=>s+r.fiyat,0);
+        const sonAlis=satirlar.length?satirlar.sort((a,b)=>b.tarih.localeCompare(a.tarih))[0].tarih:'-';
+        const borc=Number(m.toplamBorc)||0;
+        return `<tr>
+            <td class="b">${m.ad}</td>
+            <td><a href="tel:${m.telefon}" style="color:var(--ac3)">${m.telefon||'-'}</a>
+                ${m.telefon?`<button class="btn bg2 bsm" style="margin-left:4px" onclick="window.open('https://wa.me/90${m.telefon.replace(/^0/,'')}','_blank')">📱</button>`:''}
+            </td>
+            <td>${m.tc||'-'}</td>
+            <td style="text-align:center">${satirlar.length}</td>
+            <td class="tcy">${fmt(toplamHarcama)}</td>
+            <td class="${borc>0?'trd':'tgn'}">${borc>0?fmt(borc):'✓'}</td>
+            <td>${sonAlis!=='-'?formatTarih(sonAlis):'-'}</td>
+            <td style="white-space:nowrap">
+                <button class="btn bg2 bsm" onclick="musteriDetay('${m.id}')">📋</button>
+                <button class="btn bg2 bsm" onclick="openMusteriMo('${m.id}')">✏️</button>
+                <button class="btn bd bsm" onclick="deleteMusteri('${m.id}')">🗑</button>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+// ============ RENDER: TEDARİKÇİLER ============
+function rTedarikciler(){
+    const q=(document.getElementById('tedarikciSrc')?.value||'').toLowerCase();
+    let list=q?TD.filter(t=>t.ad.toLowerCase().includes(q)||(t.firma||'').toLowerCase().includes(q)):[...TD];
+    const tb=document.getElementById('tedarikciTb');if(!tb)return;
+    if(!list.length){tb.innerHTML=`<tr><td colspan="5"><div class="empty"><i>🏪</i>Tedarikçi yok</div></td></tr>`;return;}
+    tb.innerHTML=list.map(t=>`<tr>
+        <td class="b">${t.ad}</td>
+        <td><a href="tel:${t.telefon}" style="color:var(--ac3)">${t.telefon||'-'}</a>
+            ${t.telefon?`<button class="btn bg2 bsm" style="margin-left:4px" onclick="window.open('https://wa.me/90${(t.telefon||'').replace(/^0/,'')}','_blank')">📱</button>`:''}
+        </td>
+        <td>${t.firma||'-'}</td>
+        <td>${t.not||'-'}</td>
+        <td style="white-space:nowrap">
+            <button class="btn bg2 bsm" onclick="openTedarikciMo('${t.id}')">✏️</button>
+            <button class="btn bd bsm" onclick="deleteTedarikci('${t.id}')">🗑</button>
+        </td>
+    </tr>`).join('');
+}
+
+// ============ RENDER: KASA ============
+function rKasa(){
+    const fil=document.getElementById('kasaFil')?.value||'';
+    let list=fil?KD.filter(k=>k.tip===fil):[...KD];
+    list.sort((a,b)=>b.tarih.localeCompare(a.tarih));
+    const topGiris=KD.filter(k=>k.tip==='giris').reduce((s,k)=>s+Number(k.tutar),0);
+    const topCikis=KD.filter(k=>k.tip==='cikis').reduce((s,k)=>s+Number(k.tutar),0);
+    const net=topGiris-topCikis;
+    const ozet=document.getElementById('kasaOzet');
+    if(ozet)ozet.innerHTML=`
+        <div class="card" style="text-align:center"><div class="sl">Toplam Giriş</div><div class="sv tgn">${fmt(topGiris)}</div></div>
+        <div class="card" style="text-align:center"><div class="sl">Toplam Çıkış</div><div class="sv trd">${fmt(topCikis)}</div></div>
+        <div class="card" style="text-align:center"><div class="sl">Net Kasa</div><div class="sv ${net>=0?'tgn':'trd'}">${fmt(net)}</div></div>`;
+    const tb=document.getElementById('kasaTb');if(!tb)return;
+    if(!list.length){tb.innerHTML=`<tr><td colspan="7"><div class="empty"><i>💵</i>Hareket yok</div></td></tr>`;return;}
+    const oi={'nakit':'💵','havale':'🏦','taksit':'📋'};
+    tb.innerHTML=list.map(k=>`<tr>
+        <td>${formatTarih(k.tarih)}</td>
+        <td><span class="badge ${k.tip==='giris'?'bgn':'byw'}">${k.tip==='giris'?'📥 Giriş':'📤 Çıkış'}</span></td>
+        <td>${k.kategori||'-'}</td>
+        <td>${oi[k.odemeYontemi]||''} ${k.odemeYontemi||'-'}</td>
+        <td class="${k.tip==='giris'?'tgn':'trd'} b">${k.tip==='giris'?'+':'-'}${fmt(k.tutar)}</td>
+        <td>${k.aciklama||'-'}</td>
+        <td><button class="btn bd bsm" onclick="deleteKasa('${k.id}')">🗑</button></td>
+    </tr>`).join('');
+}
+
+// ============ MÜŞTERİ MODAL ============
+function openMusteriMo(id=null){
+    editMusteriId=id?String(id):null;
+    document.getElementById('moMusteriTit').textContent=editMusteriId?'✏️ Müşteri Düzenle':'👥 Yeni Müşteri';
+    if(editMusteriId){const m=MD.find(x=>x.id===editMusteriId);if(m){document.getElementById('fm_ad').value=m.ad||'';document.getElementById('fm_tel').value=m.telefon||'';document.getElementById('fm_tc').value=m.tc||'';document.getElementById('fm_adres').value=m.adres||'';document.getElementById('fm_not').value=m.not||'';}}
+    else{['fm_ad','fm_tel','fm_tc','fm_adres','fm_not'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});}
+    document.getElementById('moMusteri').classList.add('open');
+}
+function closeMusteriMo(){document.getElementById('moMusteri').classList.remove('open');editMusteriId=null;}
+async function saveMusteri(){
+    const ad=document.getElementById('fm_ad')?.value.trim();
+    if(!ad){toast('Ad gerekli!','error');return;}
+    const m={id:editMusteriId||Date.now().toString(),tarih:getTodayDate(),ad,telefon:document.getElementById('fm_tel')?.value.trim()||'',tc:document.getElementById('fm_tc')?.value.trim()||'',adres:document.getElementById('fm_adres')?.value.trim()||'',not:document.getElementById('fm_not')?.value.trim()||'',toplamBorc:editMusteriId?(MD.find(x=>x.id===editMusteriId)?.toplamBorc||0):0};
+    showLo('Kaydediliyor...');
+    try{const res=await api({action:editMusteriId?'updateMusteri':'addMusteri',data:m});if(res.ok){if(editMusteriId){const i=MD.findIndex(x=>x.id===editMusteriId);if(i!==-1)MD[i]=m;}else MD.push(m);closeMusteriMo();rMusteriler();toast('Kaydedildi ✓','success');}else throw new Error(res.error);}catch(e){toast('Hata: '+e.message,'error');}
+    hideLo();
+}
+async function deleteMusteri(id){
+    if(!confirm('Müşteriyi silmek istiyor musunuz?'))return;
+    showLo('Siliniyor...');
+    try{const res=await api({action:'deleteMusteri',id:String(id)});if(res.ok){MD=MD.filter(x=>x.id!==String(id));rMusteriler();toast('Silindi','error');}}catch(e){toast('Hata: '+e.message,'error');}
+    hideLo();
+}
+function musteriDetay(id){
+    const m=MD.find(x=>x.id===String(id));if(!m)return;
+    const satirlar=[];
+    D.forEach(d=>{(d.satildiImei||[]).forEach(s=>{const p=s.split('||');if(p[3]===m.id)satirlar.push({tarih:p[1]||d.tarih,model:d.model,imei:p[0],fiyat:Number(p[2])||d.satis,odeme:p[4]||'nakit'});});});
+    satirlar.sort((a,b)=>b.tarih.localeCompare(a.tarih));
+    const toplamHarcama=satirlar.reduce((s,r)=>s+r.fiyat,0);
+    const oi={'nakit':'💵','havale':'🏦','taksit':'📋'};
+    let html=`<div style="background:var(--sf);border-radius:20px;padding:20px;max-width:480px;width:100%;max-height:80vh;overflow-y:auto">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <div><div style="font-size:17px;font-weight:800">${m.ad}</div>
+            <div style="font-size:12px;color:var(--tx2)">${m.telefon||''}${m.tc?' · TC: '+m.tc:''}</div>
+            ${m.adres?`<div style="font-size:11px;color:var(--tx3)">📍 ${m.adres}</div>`:''}</div>
+            ${m.telefon?`<button class="btn bg2 bsm" onclick="window.open('https://wa.me/90${m.telefon.replace(/^0/,'')}','_blank')">📱 WA</button>`:''}
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:14px">
+            <div class="card" style="flex:1;text-align:center;padding:10px"><div style="font-size:10px;color:var(--tx3)">Alışveriş</div><div style="font-weight:800">${satirlar.length}</div></div>
+            <div class="card" style="flex:1;text-align:center;padding:10px"><div style="font-size:10px;color:var(--tx3)">Toplam</div><div style="font-weight:800;color:var(--ac3)">${fmt(toplamHarcama)}</div></div>
+            <div class="card" style="flex:1;text-align:center;padding:10px"><div style="font-size:10px;color:var(--tx3)">Borç</div><div style="font-weight:800;color:${Number(m.toplamBorc)>0?'var(--rd)':'var(--gn)'}"> ${Number(m.toplamBorc)>0?fmt(m.toplamBorc):'✓'}</div></div>
+        </div>
+        <div style="font-size:12px;font-weight:700;margin-bottom:8px">📋 Alış Geçmişi</div>`;
+    if(satirlar.length)satirlar.forEach(s=>{html+=`<div style="background:var(--sf2);border-radius:10px;padding:10px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:600;font-size:12px">${s.model}</div><div style="font-size:10px;color:var(--tx3);font-family:monospace">${s.imei}</div><div style="font-size:10px;color:var(--tx2)">${formatTarih(s.tarih)} · ${oi[s.odeme]||''} ${s.odeme}</div></div><div style="font-weight:700;color:var(--ac3)">${fmt(s.fiyat)}</div></div>`;});
+    else html+=`<div style="text-align:center;color:var(--tx3);padding:16px">Henüz alışveriş yok</div>`;
+    if(Number(m.toplamBorc)>0)html+=`<div style="margin-top:12px;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);border-radius:12px;padding:12px"><div style="font-size:12px;font-weight:700;color:var(--rd);margin-bottom:8px">💳 Borç: ${fmt(m.toplamBorc)}</div><div style="display:flex;gap:8px"><input type="number" id="borcOdemeInp" placeholder="Ödeme miktarı ₺" style="flex:1"><button class="btn bs bsm" onclick="borcOde('${m.id}')">✓ Ödendi</button></div></div>`;
+    html+=`<button style="margin-top:14px;width:100%;padding:10px;background:var(--ac);color:white;border:none;border-radius:12px;cursor:pointer" onclick="document.getElementById('musteriDetayModal').remove()">Kapat</button></div>`;
+    const modal=document.createElement('div');modal.id='musteriDetayModal';modal.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px';modal.innerHTML=`<div style="display:flex;align-items:center;justify-content:center">${html}</div>`;modal.onclick=e=>{if(e.target===modal)modal.remove();};document.body.appendChild(modal);
+}
+async function borcOde(musteriId){
+    const m=MD.find(x=>x.id===String(musteriId));if(!m)return;
+    const miktar=Number(document.getElementById('borcOdemeInp')?.value)||0;
+    if(miktar<=0){toast('Geçerli miktar girin','error');return;}
+    m.toplamBorc=Math.max(0,(Number(m.toplamBorc)||0)-miktar);
+    showLo('Kaydediliyor...');
+    try{
+        await api({action:'updateMusteri',data:m});
+        const ke={id:Date.now().toString(),tarih:getTodayDate(),tip:'giris',kategori:'borc_tahsilat',odemeYontemi:'nakit',tutar:miktar,aciklama:'Borç ödemesi: '+m.ad,referansId:m.id,not:''};
+        KD.push(ke);await api({action:'addKasa',data:ke});
+        toast('Borç güncellendi ✓','success');
+        document.getElementById('musteriDetayModal')?.remove();
+        rMusteriler();
+    }catch(e){toast('Hata: '+e.message,'error');}
+    hideLo();
+}
+
+// ============ TEDARİKÇİ MODAL ============
+function openTedarikciMo(id=null){
+    editTedarikciId=id?String(id):null;
+    document.getElementById('moTedarikciTit').textContent=editTedarikciId?'✏️ Tedarikçi Düzenle':'🏪 Yeni Tedarikçi';
+    if(editTedarikciId){const t=TD.find(x=>x.id===editTedarikciId);if(t){document.getElementById('ft_ad').value=t.ad||'';document.getElementById('ft_tel').value=t.telefon||'';document.getElementById('ft_firma').value=t.firma||'';document.getElementById('ft_not').value=t.not||'';}}
+    else{['ft_ad','ft_tel','ft_firma','ft_not'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});}
+    document.getElementById('moTedarikci').classList.add('open');
+}
+function closeTedarikciMo(){document.getElementById('moTedarikci').classList.remove('open');editTedarikciId=null;}
+async function saveTedarikci(){
+    const ad=document.getElementById('ft_ad')?.value.trim();if(!ad){toast('Ad gerekli!','error');return;}
+    const t={id:editTedarikciId||Date.now().toString(),tarih:getTodayDate(),ad,telefon:document.getElementById('ft_tel')?.value.trim()||'',firma:document.getElementById('ft_firma')?.value.trim()||'',not:document.getElementById('ft_not')?.value.trim()||''};
+    showLo('Kaydediliyor...');
+    try{const res=await api({action:editTedarikciId?'updateTedarikci':'addTedarikci',data:t});if(res.ok){if(editTedarikciId){const i=TD.findIndex(x=>x.id===editTedarikciId);if(i!==-1)TD[i]=t;}else TD.push(t);closeTedarikciMo();rTedarikciler();toast('Kaydedildi ✓','success');}else throw new Error(res.error);}catch(e){toast('Hata: '+e.message,'error');}
+    hideLo();
+}
+async function deleteTedarikci(id){
+    if(!confirm('Tedarikçiyi silmek istiyor musunuz?'))return;showLo('Siliniyor...');
+    try{const res=await api({action:'deleteTedarikci',id:String(id)});if(res.ok){TD=TD.filter(x=>x.id!==String(id));rTedarikciler();toast('Silindi','error');}}catch(e){toast('Hata: '+e.message,'error');}hideLo();
+}
+
+// ============ KASA MODAL ============
+function openKasaMo(){document.getElementById('fk_tar').value=getTodayDate();document.getElementById('fk_tutar').value='';document.getElementById('fk_aciklama').value='';document.getElementById('moKasa').classList.add('open');}
+function closeKasaMo(){document.getElementById('moKasa').classList.remove('open');}
+async function saveKasaHareket(){
+    const tutar=Number(document.getElementById('fk_tutar')?.value)||0;if(tutar<=0){toast('Tutar gerekli!','error');return;}
+    const k={id:Date.now().toString(),tarih:document.getElementById('fk_tar')?.value||getTodayDate(),tip:document.getElementById('fk_tip')?.value||'giris',kategori:document.getElementById('fk_kat')?.value||'diger',odemeYontemi:document.getElementById('fk_odeme')?.value||'nakit',tutar,aciklama:document.getElementById('fk_aciklama')?.value.trim()||'',referansId:'',not:''};
+    showLo('Kaydediliyor...');
+    try{const res=await api({action:'addKasa',data:k});if(res.ok){KD.push(k);closeKasaMo();rKasa();toast('Kaydedildi ✓','success');}else throw new Error(res.error);}catch(e){toast('Hata: '+e.message,'error');}hideLo();
+}
+async function deleteKasa(id){
+    showLo('Siliniyor...');
+    try{const res=await api({action:'deleteKasa',id:String(id)});if(res.ok){KD=KD.filter(x=>x.id!==String(id));rKasa();toast('Silindi','error');}}catch(e){toast('Hata: '+e.message,'error');}hideLo();
+}
+
+// ============ VERESİYE TOGGLE ============
+function toggleVeresiye(){const sel=document.getElementById('satOdemeSel');const alan=document.getElementById('veresiyeAlan');if(alan)alan.style.display=sel?.value==='taksit'?'block':'none';}
 closeSatMo = function() {
     const mo = document.getElementById('moSat');
     if(mo) mo.classList.remove('open');
