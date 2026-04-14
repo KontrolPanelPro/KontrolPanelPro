@@ -2393,7 +2393,7 @@ function rMusteriler(){
         const borc=Number(m.toplamBorc)||0;
         const telefonStr = String(m.telefon || '');
         return `<tr>
-            <td class="b">${m.ad}${2}
+            <td class="b">${m.ad}</td>
             <td>
                 ${telefonStr ? `<a href="tel:${telefonStr}" style="color:var(--ac3)">${telefonStr}</a>
                 <button class="btn bg2 bsm" style="margin-left:4px" onclick="window.open('https://wa.me/90${telefonStr.replace(/^0/,'')}','_blank')">📱</button>` : '-'}
@@ -2409,10 +2409,9 @@ function rMusteriler(){
                 <button class="btn bg2 bsm" onclick="openMusteriMo('${m.id}')">✏️</button>
                 <button class="btn bd bsm" onclick="deleteMusteri('${m.id}')">🗑</button>
             </td>
-        </table>`;
+        </tr>`;
     }).join('');
 }
-
 // ============ RENDER: TEDARİKÇİLER ============
 function rTedarikciler(){
     const q=(document.getElementById('tedarikciSrc')?.value||'').toLowerCase();
@@ -2439,8 +2438,8 @@ function rTedarikciler(){
                 ${t.telefon ? `<button class="btn bg2 bsm" style="margin-left:4px" onclick="window.open('https://wa.me/90${String(t.telefon||'').replace(/^0/,'')}','_blank')">📱</button>` : ''}
             </td>
             <td>${t.firma||'-'}</td>
-            <td class="tx2" style="font-size:11px">${formatTarih(t.kayitTarihi) || '-'}${2}
-            <td class="tx2" style="font-size:11px">${sonAlis}${2}
+            <td class="tx2" style="font-size:11px">${formatTarih(t.kayitTarihi) || '-'}</td>
+            <td class="tx2" style="font-size:11px">${sonAlis}</td>
             <td>${t.not||'-'}</td>
             <td style="white-space:nowrap">
                 <button class="btn bg2 bsm" onclick="openTedarikciMo('${t.id}')">✏️</button>
