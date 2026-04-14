@@ -2382,24 +2382,26 @@ function getMusteriAdiById(id){if(!id)return'';const m=MD.find(x=>x.id===String(
 // ============ RENDER: MÜŞTERİLER ============
 function rMusteriler(){
     const q=(document.getElementById('musteriSrc')?.value||'').toLowerCase();
-    let list=q?MD.filter(m=>m.ad.toLowerCase().includes(q)||m.telefon.includes(q)):[...MD];
+    let list=q?MD.filter(m=>m.ad.toLowerCase().includes(q)||String(m.telefon||'').includes(q)):[...MD];
     const tb=document.getElementById('musteriTb');if(!tb)return;
-    if(!list.length){tb.innerHTML=`<tr><td colspan="8"><div class="empty"><i>👥</i>Müşteri yok</div></td></tr>`;return;}
+    if(!list.length){tb.innerHTML=`<tr><td colspan="9"><div class="empty"><i>👥</i>Müşteri yok</div></td></tr>`;return;}
     tb.innerHTML=list.map(m=>{
         const satirlar=[];
         D.forEach(d=>{(d.satildiImei||[]).forEach(s=>{const p=s.split('||');if(p[3]===m.id)satirlar.push({tarih:p[1]||d.tarih,fiyat:Number(p[2])||d.satis});});});
         const toplamHarcama=satirlar.reduce((s,r)=>s+r.fiyat,0);
         const sonAlis=satirlar.length?satirlar.sort((a,b)=>b.tarih.localeCompare(a.tarih))[0].tarih:'-';
         const borc=Number(m.toplamBorc)||0;
+        const telefonStr = String(m.telefon || '');
         return `<tr>
-            <td class="b">${m.ad}</td>
-            <td><a href="tel:${m.telefon}" style="color:var(--ac3)">${m.telefon||'-'}</a>
-                ${m.telefon?`<button class="btn bg2 bsm" style="margin-left:4px" onclick="window.open('https://wa.me/90${m.telefon.replace(/^0/,'')}','_blank')">📱</button>`:''}
+            <td class="b">${m.ad}${2}
+            <td>
+                ${telefonStr ? `<a href="tel:${telefonStr}" style="color:var(--ac3)">${telefonStr}</a>
+                <button class="btn bg2 bsm" style="margin-left:4px" onclick="window.open('https://wa.me/90${telefonStr.replace(/^0/,'')}','_blank')">📱</button>` : '-'}
             </td>
             <td>${m.tc||'-'}</td>
+            <td class="tx2" style="font-size:11px">${formatTarih(m.kayitTarihi) || '-'}</td>
             <td style="text-align:center">${satirlar.length}</td>
             <td class="tcy">${fmt(toplamHarcama)}</td>
-            <td class="tx2" style="font-size:11px">${formatTarih(m.kayitTarihi) || '-'}</td>
             <td class="${borc>0?'trd':'tgn'}">${borc>0?fmt(borc):'✓'}</td>
             <td>${sonAlis!=='-'?formatTarih(sonAlis):'-'}</td>
             <td style="white-space:nowrap">
@@ -2407,7 +2409,7 @@ function rMusteriler(){
                 <button class="btn bg2 bsm" onclick="openMusteriMo('${m.id}')">✏️</button>
                 <button class="btn bd bsm" onclick="deleteMusteri('${m.id}')">🗑</button>
             </td>
-        </tr>`;
+        </table>`;
     }).join('');
 }
 
@@ -2434,7 +2436,7 @@ function rTedarikciler(){
         return `<tr>
             <td class="b">${t.ad}</td>
             <td><a href="tel:${t.telefon}" style="color:var(--ac3)">${t.telefon||'-'}</a>
-                ${t.telefon?`<button class="btn bg2 bsm" style="margin-left:4px" onclick="window.open('https://wa.me/90${(t.telefon||'').replace(/^0/,'')}','_blank')">📱</button>`:''}
+                ${t.telefon ? `<button class="btn bg2 bsm" style="margin-left:4px" onclick="window.open('https://wa.me/90${String(t.telefon||'').replace(/^0/,'')}','_blank')">📱</button>` : ''}
             </td>
             <td>${t.firma||'-'}</td>
             <td class="tx2" style="font-size:11px">${formatTarih(t.kayitTarihi) || '-'}${2}
