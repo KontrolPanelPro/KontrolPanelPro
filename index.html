@@ -2477,10 +2477,30 @@ function rKasa(){
 
 // ============ MÜŞTERİ MODAL ============
 function openMusteriMo(id=null){
-    editMusteriId=id?String(id):null;
-    document.getElementById('moMusteriTit').textContent=editMusteriId?'✏️ Müşteri Düzenle':'👥 Yeni Müşteri';
-    if(editMusteriId){const m=MD.find(x=>x.id===editMusteriId);if(m){document.getElementById('fm_ad').value=m.ad||'';document.getElementById('fm_tel').value=m.telefon||'';document.getElementById('fm_tc').value=m.tc||'';document.getElementById('fm_adres').value=m.adres||'';document.getElementById('fm_not').value=m.not||'';}}
-    else{['fm_ad','fm_tel','fm_tc','fm_adres','fm_not'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});}
+    editMusteriId = id ? String(id) : null;
+    const tit = document.getElementById('moMusteriTit');
+    if(tit) tit.textContent = editMusteriId ? '✏️ Müşteri Düzenle' : '👥 Yeni Müşteri';
+    
+    if(editMusteriId){
+        const m = MD.find(x => x.id === editMusteriId);
+        if(m){
+            document.getElementById('fm_ad').value = m.ad || '';
+            document.getElementById('fm_tel').value = m.telefon || '';
+            document.getElementById('fm_tc').value = m.tc || '';
+            document.getElementById('fm_adres').value = m.adres || '';
+            document.getElementById('fm_not').value = m.not || '';
+        } else {
+            toast('Müşteri bulunamadı!', 'error');
+        }
+    } else {
+        // Yeni müşteri için formu temizle
+        document.getElementById('fm_ad').value = '';
+        document.getElementById('fm_tel').value = '';
+        document.getElementById('fm_tc').value = '';
+        document.getElementById('fm_adres').value = '';
+        document.getElementById('fm_not').value = '';
+    }
+    
     document.getElementById('moMusteri').classList.add('open');
 }
 function closeMusteriMo(){document.getElementById('moMusteri').classList.remove('open');editMusteriId=null;}
@@ -2526,30 +2546,97 @@ async function deleteMusteri(id){
     hideLo();
 }
 function musteriDetay(id){
-    const m=MD.find(x=>x.id===String(id));if(!m)return;
-    const satirlar=[];
-    D.forEach(d=>{(d.satildiImei||[]).forEach(s=>{const p=s.split('||');if(p[3]===m.id)satirlar.push({tarih:p[1]||d.tarih,model:d.model,imei:p[0],fiyat:Number(p[2])||d.satis,odeme:p[4]||'nakit'});});});
-    satirlar.sort((a,b)=>b.tarih.localeCompare(a.tarih));
-    const toplamHarcama=satirlar.reduce((s,r)=>s+r.fiyat,0);
-    const oi={'nakit':'💵','havale':'🏦','taksit':'📋'};
-    let html=`<div style="background:var(--sf);border-radius:20px;padding:20px;max-width:480px;width:100%;max-height:80vh;overflow-y:auto">
+    const m = MD.find(x => x.id === String(id));
+    if(!m){
+        toast('Müşteri bulunamadı!', 'error');
+        return;
+    }
+    
+    console.log('Müşteri detay açılıyor:', m);
+    
+    const satirlar = [];
+    D.forEach(d => {
+        (d.satildiImei || []).forEach(s => {
+            const p = s.split('||');
+            // p[3] müşteri ID'si
+            if(p[3] === m.id) {
+                satirlar.push({
+                    tarih: p[1] || d.tarih,
+                    model: d.model,
+                    imei: p[0],
+                    fiyat: Number(p[2]) || d.satis,
+                    odeme: p[4] || 'nakit'
+                });
+            }
+        });
+    });
+    
+    satirlar.sort((a,b) => b.tarih.localeCompare(a.tarih));
+    const toplamHarcama = satirlar.reduce((s,r) => s + r.fiyat, 0);
+    const oi = {'nakit':'💵','havale':'🏦','taksit':'📋'};
+    
+    let html = `<div style="background:var(--sf);border-radius:20px;padding:20px;max-width:500px;width:100%;max-height:80vh;overflow-y:auto">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-            <div><div style="font-size:17px;font-weight:800">${m.ad}</div>
-            <div style="font-size:12px;color:var(--tx2)">${m.telefon||''}${m.tc?' · TC: '+m.tc:''}</div>
-            ${m.adres?`<div style="font-size:11px;color:var(--tx3)">📍 ${m.adres}</div>`:''}</div>
-            ${m.telefon?`<button class="btn bg2 bsm" onclick="window.open('https://wa.me/90${m.telefon.replace(/^0/,'')}','_blank')">📱 WA</button>`:''}
+            <div>
+                <div style="font-size:18px;font-weight:800">${m.ad}</div>
+                <div style="font-size:12px;color:var(--tx2)">${m.telefon || ''} ${m.tc ? '· TC: '+m.tc : ''}</div>
+                ${m.adres ? `<div style="font-size:11px;color:var(--tx3)">📍 ${m.adres}</div>` : ''}
+            </div>
+            ${m.telefon ? `<button class="btn bg2 bsm" onclick="window.open('https://wa.me/90${String(m.telefon).replace(/^0/,'')}','_blank')">📱 WA</button>` : ''}
         </div>
+        
         <div style="display:flex;gap:8px;margin-bottom:14px">
-            <div class="card" style="flex:1;text-align:center;padding:10px"><div style="font-size:10px;color:var(--tx3)">Alışveriş</div><div style="font-weight:800">${satirlar.length}</div></div>
-            <div class="card" style="flex:1;text-align:center;padding:10px"><div style="font-size:10px;color:var(--tx3)">Toplam</div><div style="font-weight:800;color:var(--ac3)">${fmt(toplamHarcama)}</div></div>
-            <div class="card" style="flex:1;text-align:center;padding:10px"><div style="font-size:10px;color:var(--tx3)">Borç</div><div style="font-weight:800;color:${Number(m.toplamBorc)>0?'var(--rd)':'var(--gn)'}"> ${Number(m.toplamBorc)>0?fmt(m.toplamBorc):'✓'}</div></div>
+            <div class="card" style="flex:1;text-align:center;padding:10px">
+                <div style="font-size:10px;color:var(--tx3)">Alışveriş</div>
+                <div style="font-weight:800;font-size:16px">${satirlar.length}</div>
+            </div>
+            <div class="card" style="flex:1;text-align:center;padding:10px">
+                <div style="font-size:10px;color:var(--tx3)">Toplam Harcama</div>
+                <div style="font-weight:800;font-size:16px;color:var(--ac3)">${fmt(toplamHarcama)}</div>
+            </div>
+            <div class="card" style="flex:1;text-align:center;padding:10px">
+                <div style="font-size:10px;color:var(--tx3)">Borç</div>
+                <div style="font-weight:800;font-size:16px;color:${Number(m.toplamBorc)>0 ? 'var(--rd)' : 'var(--gn)'}">${Number(m.toplamBorc)>0 ? fmt(m.toplamBorc) : '✓'}</div>
+            </div>
         </div>
-        <div style="font-size:12px;font-weight:700;margin-bottom:8px">📋 Alış Geçmişi</div>`;
-    if(satirlar.length)satirlar.forEach(s=>{html+=`<div style="background:var(--sf2);border-radius:10px;padding:10px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:600;font-size:12px">${s.model}</div><div style="font-size:10px;color:var(--tx3);font-family:monospace">${s.imei}</div><div style="font-size:10px;color:var(--tx2)">${formatTarih(s.tarih)} · ${oi[s.odeme]||''} ${s.odeme}</div></div><div style="font-weight:700;color:var(--ac3)">${fmt(s.fiyat)}</div></div>`;});
-    else html+=`<div style="text-align:center;color:var(--tx3);padding:16px">Henüz alışveriş yok</div>`;
-    if(Number(m.toplamBorc)>0)html+=`<div style="margin-top:12px;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);border-radius:12px;padding:12px"><div style="font-size:12px;font-weight:700;color:var(--rd);margin-bottom:8px">💳 Borç: ${fmt(m.toplamBorc)}</div><div style="display:flex;gap:8px"><input type="number" id="borcOdemeInp" placeholder="Ödeme miktarı ₺" style="flex:1"><button class="btn bs bsm" onclick="borcOde('${m.id}')">✓ Ödendi</button></div></div>`;
-    html+=`<button style="margin-top:14px;width:100%;padding:10px;background:var(--ac);color:white;border:none;border-radius:12px;cursor:pointer" onclick="document.getElementById('musteriDetayModal').remove()">Kapat</button></div>`;
-    const modal=document.createElement('div');modal.id='musteriDetayModal';modal.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px';modal.innerHTML=`<div style="display:flex;align-items:center;justify-content:center">${html}</div>`;modal.onclick=e=>{if(e.target===modal)modal.remove();};document.body.appendChild(modal);
+        
+        <div style="font-size:13px;font-weight:700;margin-bottom:10px">📋 Alış Geçmişi</div>`;
+    
+    if(satirlar.length) {
+        satirlar.forEach(s => {
+            html += `<div style="background:var(--sf2);border-radius:10px;padding:10px;margin-bottom:8px">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                    <div>
+                        <div style="font-weight:600;font-size:13px">${s.model}</div>
+                        <div style="font-size:10px;color:var(--tx3);font-family:monospace">IMEI: ${s.imei}</div>
+                        <div style="font-size:10px;color:var(--tx2)">📅 ${formatTarih(s.tarih)} · ${oi[s.odeme] || ''} ${s.odeme}</div>
+                    </div>
+                    <div style="font-weight:700;font-size:15px;color:var(--ac3)">${fmt(s.fiyat)}</div>
+                </div>
+            </div>`;
+        });
+    } else {
+        html += `<div style="text-align:center;color:var(--tx3);padding:20px">📭 Henüz alışveriş yok</div>`;
+    }
+    
+    if(Number(m.toplamBorc) > 0) {
+        html += `<div style="margin-top:14px;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.2);border-radius:12px;padding:14px">
+            <div style="font-size:13px;font-weight:700;color:var(--rd);margin-bottom:10px">💳 Borç: ${fmt(m.toplamBorc)}</div>
+            <div style="display:flex;gap:8px">
+                <input type="number" id="borcOdemeInp" placeholder="Ödeme miktarı ₺" style="flex:1;padding:8px;border-radius:8px">
+                <button class="btn bs" onclick="borcOde('${m.id}')">✓ Ödendi</button>
+            </div>
+        </div>`;
+    }
+    
+    html += `<button style="margin-top:16px;width:100%;padding:10px;background:var(--ac);color:white;border:none;border-radius:12px;cursor:pointer" onclick="document.getElementById('musteriDetayModal').remove()">Kapat</button></div>`;
+    
+    const modal = document.createElement('div');
+    modal.id = 'musteriDetayModal';
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px';
+    modal.innerHTML = `<div style="display:flex;align-items:center;justify-content:center">${html}</div>`;
+    modal.onclick = e => { if(e.target === modal) modal.remove(); };
+    document.body.appendChild(modal);
 }
 async function borcOde(musteriId){
     const m=MD.find(x=>x.id===String(musteriId));if(!m)return;
@@ -2570,10 +2657,27 @@ async function borcOde(musteriId){
 
 // ============ TEDARİKÇİ MODAL ============
 function openTedarikciMo(id=null){
-    editTedarikciId=id?String(id):null;
-    document.getElementById('moTedarikciTit').textContent=editTedarikciId?'✏️ Tedarikçi Düzenle':'🏪 Yeni Tedarikçi';
-    if(editTedarikciId){const t=TD.find(x=>x.id===editTedarikciId);if(t){document.getElementById('ft_ad').value=t.ad||'';document.getElementById('ft_tel').value=t.telefon||'';document.getElementById('ft_firma').value=t.firma||'';document.getElementById('ft_not').value=t.not||'';}}
-    else{['ft_ad','ft_tel','ft_firma','ft_not'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});}
+    editTedarikciId = id ? String(id) : null;
+    const tit = document.getElementById('moTedarikciTit');
+    if(tit) tit.textContent = editTedarikciId ? '✏️ Tedarikçi Düzenle' : '🏪 Yeni Tedarikçi';
+    
+    if(editTedarikciId){
+        const t = TD.find(x => x.id === editTedarikciId);
+        if(t){
+            document.getElementById('ft_ad').value = t.ad || '';
+            document.getElementById('ft_tel').value = t.telefon || '';
+            document.getElementById('ft_firma').value = t.firma || '';
+            document.getElementById('ft_not').value = t.not || '';
+        } else {
+            toast('Tedarikçi bulunamadı!', 'error');
+        }
+    } else {
+        document.getElementById('ft_ad').value = '';
+        document.getElementById('ft_tel').value = '';
+        document.getElementById('ft_firma').value = '';
+        document.getElementById('ft_not').value = '';
+    }
+    
     document.getElementById('moTedarikci').classList.add('open');
 }
 function closeTedarikciMo(){document.getElementById('moTedarikci').classList.remove('open');editTedarikciId=null;}
