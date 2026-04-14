@@ -866,7 +866,7 @@ input,select{padding:8px 10px;font-size:12px}
   </div>
   <div class="tw">
     <table><thead><tr>
-      <th>Ad Soyad</th><th>Telefon</th><th>TC</th><th>Alışveriş</th><th>Toplam</th><th>Borç</th><th>Son Alış</th><th>İşlem</th>
+      <th>Ad Soyad</th><th>Telefon</th><th>TC</th><th>Kayıt Tarihi</th><th>Alışveriş</th><th>Toplam</th><th>Borç</th><th>Son Alış</th><th>İşlem</th>
     </tr></thead><tbody id="musteriTb"></tbody></table>
   </div>
 </div>
@@ -881,7 +881,7 @@ input,select{padding:8px 10px;font-size:12px}
   </div>
   <div class="tw">
     <table><thead><tr>
-      <th>Ad Soyad</th><th>Telefon</th><th>Firma</th><th>Not</th><th>İşlem</th>
+      <th>Ad Soyad</th><th>Telefon</th><th>Firma</th><th>Kayıt Tarihi</th><th>Son Alış</th><th>Not</th><th>İşlem</th>
     </tr></thead><tbody id="tedarikciTb"></tbody></table>
   </div>
 </div>
@@ -968,7 +968,7 @@ input,select{padding:8px 10px;font-size:12px}
 
 </div>
 
-<div class="mo" id="moIsl" onclick="if(event.target===this)closeMo()"><div class="md"><div class="mh"><div class="mtt" id="moTit">➕ Yeni İşlem</div><button class="xb" onclick="closeMo()">✕</button></div><form id="islForm" onsubmit="saveIsl(event)"><div class="fg"><div class="fgr"><label>Tarih</label><input type="date" id="f_tar" required></div><div class="fgr"><label>Model</label><input type="text" id="f_mod" placeholder="iPhone 15 Pro" required></div><div class="fgr"><label>El</label><select id="f_el"><option value="1.El">1. El</option><option value="2.El">2. El</option></select></div><div class="fgr"><label>GB</label><select id="f_gb"><option>64</option><option>128</option><option selected>256</option><option>512</option><option>1 TB</option></select></div><div class="fgr"><label>RAM</label><input type="number" id="f_ram" value="8" min="1"></div><div class="fgr"><label>Renk</label><input type="text" id="f_rnk" placeholder="Renk"></div><div class="fgr"><label>Adet</label><input type="number" id="f_adt" value="1" min="1" required oninput="calcK()"></div><div class="fgr"><label>Alış (Birim)</label><input type="number" id="f_ali" placeholder="0" required oninput="calcK()"></div><div class="fgr"><label>Satış (Birim)</label><input type="number" id="f_sat" placeholder="0" required oninput="calcK()"></div><div class="fgr"><label>İskonto</label><input type="number" id="f_isk" value="0" min="0" oninput="calcK()"></div><div class="fgr full"><label>IMEI (virgülle)</label><input type="text" id="f_im" placeholder="355643210000001, 355643210000002"></div><div class="fgr full"><label>Not</label><input type="text" id="f_not" placeholder="Not"></div></div><div class="pvb"><div style="font-size:11px;font-weight:700;margin-bottom:10px">💡 Önizleme</div><div class="sr2"><span class="sk">Toplam Alış</span><span class="sv2 trd" id="pAli">₺0</span></div><div class="sr2"><span class="sk">Toplam Satış</span><span class="sv2 tcy" id="pSat">₺0</span></div><div class="sr2"><span class="sk">İskonto</span><span class="sv2 tyw" id="pIsk">₺0</span></div><div class="sr2"><span class="sk">Net Kar</span><span class="sv2 tgn" id="pKar">₺0</span></div></div><div style="display:flex;gap:10px;margin-top:16px;justify-content:flex-end"><button type="button" class="btn bg2" onclick="closeMo()">İptal</button><button type="submit" class="btn bp" id="moBtnSub">✓ Kaydet</button></div></form></div></div>
+<div class="mo" id="moIsl" onclick="if(event.target===this)closeMo()"><div class="md"><div class="mh"><div class="mtt" id="moTit">➕ Yeni İşlem</div><button class="xb" onclick="closeMo()">✕</button></div><form id="islForm" onsubmit="saveIsl(event)"><div class="fg"><div class="fgr"><label>Tarih</label><input type="date" id="f_tar" required></div><div class="fgr"><label>Model</label><input type="text" id="f_mod" placeholder="iPhone 15 Pro" required></div><div class="fgr"><label>El</label><select id="f_el"><option value="1.El">1. El</option><option value="2.El">2. El</option></select></div><div class="fgr"><label>GB</label><select id="f_gb"><option>64</option><option>128</option><option selected>256</option><option>512</option><option>1 TB</option></select></div><div class="fgr"><label>RAM</label><input type="number" id="f_ram" value="8" min="1"></div><div class="fgr"><label>Renk</label><input type="text" id="f_rnk" placeholder="Renk"></div><div class="fgr"><label>Adet</label><input type="number" id="f_adt" value="1" min="1" required oninput="calcK()"></div><div class="fgr"><label>Alış (Birim)</label><input type="number" id="f_ali" placeholder="0" required oninput="calcK()"></div><div class="fgr"><label>Satış (Birim)</label><input type="number" id="f_sat" placeholder="0" required oninput="calcK()"></div><div class="fgr"><label>İskonto</label><input type="number" id="f_isk" value="0" min="0" oninput="calcK()"></div><div class="fgr full"><label>IMEI (virgülle)</label><input type="text" id="f_im" placeholder="355643210000001, 355643210000002"></div><div class="fgr full"><label>🏪 Tedarikçi</label><select id="f_tedarikci"><option value="">— Seçiniz —</option></select></div><div class="fgr full"><label>Not</label><input type="text" id="f_not" placeholder="Not"></div></div><div class="pvb"><div style="font-size:11px;font-weight:700;margin-bottom:10px">💡 Önizleme</div><div class="sr2"><span class="sk">Toplam Alış</span><span class="sv2 trd" id="pAli">₺0</span></div><div class="sr2"><span class="sk">Toplam Satış</span><span class="sv2 tcy" id="pSat">₺0</span></div><div class="sr2"><span class="sk">İskonto</span><span class="sv2 tyw" id="pIsk">₺0</span></div><div class="sr2"><span class="sk">Net Kar</span><span class="sv2 tgn" id="pKar">₺0</span></div></div><div style="display:flex;gap:10px;margin-top:16px;justify-content:flex-end"><button type="button" class="btn bg2" onclick="closeMo()">İptal</button><button type="submit" class="btn bp" id="moBtnSub">✓ Kaydet</button></div></form></div></div>
 
 <div class="mo" id="moSat" onclick="if(event.target===this)closeSatMo()"><div class="md mdsm"><div class="mh"><div class="mtt">✅ Satış İşaretle</div><button class="xb" onclick="closeSatMo()">✕</button></div><div id="satMoC"></div></div></div>
 <div class="mo" id="moMusteri" onclick="if(event.target===this)closeMusteriMo()">
@@ -1116,7 +1116,32 @@ function hideLo(){const lo=document.getElementById('lo');if(lo)lo.classList.remo
 async function api(body){if(offlineMode){toast('Offline modda, değişiklikler kaydedildi','warning');return {ok:true,data:[]};}try{const r=await fetch(URL2,{method:'POST',body:JSON.stringify(body)});return JSON.parse(await r.text());}catch(e){toast('Bağlantı hatası, offline moda geçiliyor','error');enableOfflineMode();return {ok:false,error:e.message};}}
 function enableOfflineMode(){offlineMode=true;document.getElementById('offlineBadge').style.display='inline-block';setDot('offline','Offline Mod');}
 function tryP(s){try{const v=JSON.parse(s||'[]');return Array.isArray(v)?v:[];}catch{return[];}}
-function norm(d){let tarih=String(d.tarih||'');if(tarih.includes('T'))tarih=tarih.split('T')[0];return{...d,id:String(d.id||''),tarih:tarih,model:String(d.model||''),el:String(d.el||'1.El'),gb:String(d.gb||'256'),ram:+d.ram||8,renk:String(d.renk||''),not:String(d.not||''),adet:+d.adet||0,alis:+d.alis||0,satis:+d.satis||0,iskonto:+d.iskonto||0,toplamAlis:+d.toplamAlis||0,toplamSatis:+d.toplamSatis||0,kar:+d.kar||0,satılanAdet:+d.satılanAdet||0,imeiList:Array.isArray(d.imeiList)?d.imeiList:tryP(d.imeiList),satildiImei:Array.isArray(d.satildiImei)?d.satildiImei:tryP(d.satildiImei)};}
+function norm(d){
+    let tarih=String(d.tarih||'');
+    if(tarih.includes('T'))tarih=tarih.split('T')[0];
+    return{
+        ...d,
+        id:String(d.id||''),
+        tarih:tarih,
+        model:String(d.model||''),
+        el:String(d.el||'1.El'),
+        gb:String(d.gb||'256'),
+        ram:+d.ram||8,
+        renk:String(d.renk||''),
+        not:String(d.not||''),
+        adet:+d.adet||0,
+        alis:+d.alis||0,
+        satis:+d.satis||0,
+        iskonto:+d.iskonto||0,
+        toplamAlis:+d.toplamAlis||0,
+        toplamSatis:+d.toplamSatis||0,
+        kar:+d.kar||0,
+        satılanAdet:+d.satılanAdet||0,
+        imeiList:Array.isArray(d.imeiList)?d.imeiList:tryP(d.imeiList),
+        satildiImei:Array.isArray(d.satildiImei)?d.satildiImei:tryP(d.satildiImei),
+        tedarikciId: String(d.tedarikciId || '')   // <--- BURASI EKLENDİ
+    };
+}
 function saveUrl(){
     const u = document.getElementById('urlInp')?.value.trim();
     if(!u || !u.startsWith('https://script.google.com')){
@@ -1218,10 +1243,126 @@ const fmtYuzde=n=>{const val=Number(n||0);return val.toFixed(1)+'%';};
 function getDur(d){const s=+(d.satılanAdet||0);if(s<=0)return'stokta';if(s>=d.adet)return'satildi';return'kismi';}
 function getDurB(d){const s=getDur(d);if(s==='satildi')return'<span class="badge bgn">✓ Satıldı</span>';if(s==='kismi')return`<span class="badge byw">⚡ ${d.satılanAdet}/${d.adet}</span>`;return'<span class="badge bcy">📦 Stokta</span>';}
 function goPage(id,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));const page=document.getElementById('page-'+id);if(page)page.classList.add('active');if(el)el.classList.add('active');const m={Anasayfa:rDash,stok:rStok,islemler:rIslemler,urunler:function(){rTop();rUrunler();},imei:rImei,raporlar:rRaporlarSayfasi,hareketler:()=>stokHareketRaporu(),musteriler:rMusteriler,tedarikciler:rTedarikciler,kasa:rKasa};if(m[id])m[id]();if(id!=='barkod')stopScan();}
-function openModal(id=null){editId=id?String(id):null;const moTit=document.getElementById('moTit');if(moTit)moTit.textContent=editId?'✏️ İşlemi Düzenle':'➕ Yeni İşlem';const moBtn=document.getElementById('moBtnSub');if(moBtn)moBtn.textContent=editId?'✓ Güncelle':'✓ Kaydet';if(editId){const d=D.find(x=>x.id===editId);if(!d){toast('Kayıt bulunamadı!','error');return;}document.getElementById('f_tar').value=d.tarih;document.getElementById('f_mod').value=d.model;document.getElementById('f_el').value=d.el;document.getElementById('f_gb').value=d.gb;document.getElementById('f_ram').value=d.ram;document.getElementById('f_rnk').value=d.renk;document.getElementById('f_adt').value=d.adet;document.getElementById('f_ali').value=d.alis;document.getElementById('f_sat').value=d.satis;document.getElementById('f_isk').value=d.iskonto;document.getElementById('f_im').value=(d.imeiList||[]).join(', ');document.getElementById('f_not').value=d.not;}else{const form=document.getElementById('islForm');if(form)form.reset();document.getElementById('f_tar').value=getTodayDate();document.getElementById('f_adt').value=1;document.getElementById('f_isk').value=0;document.getElementById('f_ram').value=8;document.getElementById('f_gb').value='256';document.getElementById('f_el').value='1.El';}calcK();document.getElementById('moIsl').classList.add('open');}
+function openModal(id=null){
+    editId=id?String(id):null;
+    const moTit=document.getElementById('moTit');
+    if(moTit)moTit.textContent=editId?'✏️ İşlemi Düzenle':'➕ Yeni İşlem';
+    const moBtn=document.getElementById('moBtnSub');
+    if(moBtn)moBtn.textContent=editId?'✓ Güncelle':'✓ Kaydet';
+    
+    if(editId){
+        const d=D.find(x=>x.id===editId);
+        if(!d){toast('Kayıt bulunamadı!','error');return;}
+        document.getElementById('f_tar').value=d.tarih;
+        document.getElementById('f_mod').value=d.model;
+        document.getElementById('f_el').value=d.el;
+        document.getElementById('f_gb').value=d.gb;
+        document.getElementById('f_ram').value=d.ram;
+        document.getElementById('f_rnk').value=d.renk;
+        document.getElementById('f_adt').value=d.adet;
+        document.getElementById('f_ali').value=d.alis;
+        document.getElementById('f_sat').value=d.satis;
+        document.getElementById('f_isk').value=d.iskonto;
+        document.getElementById('f_im').value=(d.imeiList||[]).join(', ');
+        document.getElementById('f_not').value=d.not;
+    } else {
+        const form=document.getElementById('islForm');
+        if(form)form.reset();
+        document.getElementById('f_tar').value=getTodayDate();
+        document.getElementById('f_adt').value=1;
+        document.getElementById('f_isk').value=0;
+        document.getElementById('f_ram').value=8;
+        document.getElementById('f_gb').value='256';
+        document.getElementById('f_el').value='1.El';
+    }
+    
+    // ============ TEDARİKÇİ SELECT'İNİ DOLDUR (EKLEDİK) ============
+    const tedarikciSelect = document.getElementById('f_tedarikci');
+    if(tedarikciSelect) {
+        tedarikciSelect.innerHTML = '<option value="">— Seçiniz —</option>';
+        TD.forEach(t => {
+            const selected = (editId && D.find(x=>x.id===editId)?.tedarikciId === t.id) ? 'selected' : '';
+            tedarikciSelect.innerHTML += `<option value="${t.id}" ${selected}>${t.ad} ${t.firma ? '('+t.firma+')' : ''}</option>`;
+        });
+    }
+    // ==============================================================
+    
+    calcK();
+    document.getElementById('moIsl').classList.add('open');
+}
 function closeMo(){document.getElementById('moIsl').classList.remove('open');editId=null;}
 function calcK(){const a=+(document.getElementById('f_adt')?.value||0);const al=+(document.getElementById('f_ali')?.value||0);const sa=+(document.getElementById('f_sat')?.value||0);const is=+(document.getElementById('f_isk')?.value||0);const tA=al*a,tS=sa*a,kar=tS-tA-is;const pAli=document.getElementById('pAli');if(pAli)pAli.textContent=fmt(tA);const pSat=document.getElementById('pSat');if(pSat)pSat.textContent=fmt(tS);const pIsk=document.getElementById('pIsk');if(pIsk)pIsk.textContent=fmt(is);const pKar=document.getElementById('pKar');if(pKar){pKar.textContent=fmt(kar);pKar.className='sv2 '+(kar>=0?'tgn':'trd');}}
-async function saveIsl(e){e.preventDefault();const btn=document.getElementById('moBtnSub');if(btn)btn.disabled=true;const imRaw=document.getElementById('f_im')?.value||'';const imList=imRaw?imRaw.split(',').map(x=>x.trim()).filter(Boolean):[];const adet=+(document.getElementById('f_adt')?.value||0);const alis=+(document.getElementById('f_ali')?.value||0);const satis=+(document.getElementById('f_sat')?.value||0);const iskonto=+(document.getElementById('f_isk')?.value||0);const ex=editId?D.find(x=>x.id===editId):null;const item={id:editId||Date.now().toString(),tarih:document.getElementById('f_tar')?.value||'',model:document.getElementById('f_mod')?.value.trim()||'',el:document.getElementById('f_el')?.value||'1.El',gb:document.getElementById('f_gb')?.value||'256',ram:+(document.getElementById('f_ram')?.value||8),renk:document.getElementById('f_rnk')?.value.trim()||'',adet,alis,satis,iskonto,imeiList:imList,not:document.getElementById('f_not')?.value.trim()||'',toplamAlis:alis*adet,toplamSatis:satis*adet,kar:(satis*adet)-(alis*adet)-iskonto,satılanAdet:ex?ex.satılanAdet:0,satildiImei:ex?ex.satildiImei:[]};actionHistory.push({type:editId?'update':'add',data:item,oldData:ex});showLo(editId?'Güncelleniyor...':'Kaydediliyor...');try{const res=await api({action:editId?'update':'add',data:item});if(res.ok){if(editId){const i=D.findIndex(x=>x.id===editId);if(i!==-1)D[i]=norm(item);}else D.push(norm(item));closeMo();rAll();toast(editId?'Güncellendi ✓':'Kaydedildi ✓','success');playBeep();}else throw new Error(res.error);}catch(e){toast('Hata: '+e.message,'error');}hideLo();if(btn)btn.disabled=false;}
+async function saveIsl(e){
+    e.preventDefault();
+    const btn=document.getElementById('moBtnSub');
+    if(btn)btn.disabled=true;
+    
+    const imRaw=document.getElementById('f_im')?.value||'';
+    const imList=imRaw?imRaw.split(',').map(x=>x.trim()).filter(Boolean):[];
+    const adet=+(document.getElementById('f_adt')?.value||0);
+    const alis=+(document.getElementById('f_ali')?.value||0);
+    const satis=+(document.getElementById('f_sat')?.value||0);
+    const iskonto=+(document.getElementById('f_isk')?.value||0);
+    const tedarikciId = document.getElementById('f_tedarikci')?.value || '';  // ← EKLENDİ
+    const ex=editId?D.find(x=>x.id===editId):null;
+    
+    const item={
+        id:editId||Date.now().toString(),
+        tarih:document.getElementById('f_tar')?.value||'',
+        model:document.getElementById('f_mod')?.value.trim()||'',
+        el:document.getElementById('f_el')?.value||'1.El',
+        gb:document.getElementById('f_gb')?.value||'256',
+        ram:+(document.getElementById('f_ram')?.value||8),
+        renk:document.getElementById('f_rnk')?.value.trim()||'',
+        adet,alis,satis,iskonto,
+        imeiList:imList,
+        not:document.getElementById('f_not')?.value.trim()||'',
+        toplamAlis:alis*adet,
+        toplamSatis:satis*adet,
+        kar:(satis*adet)-(alis*adet)-iskonto,
+        satılanAdet:ex?ex.satılanAdet:0,
+        satildiImei:ex?ex.satildiImei:[],
+        tedarikciId: tedarikciId  // ← EKLENDİ
+    };
+    
+    actionHistory.push({type:editId?'update':'add',data:item,oldData:ex});
+    showLo(editId?'Güncelleniyor...':'Kaydediliyor...');
+    
+    try{
+        const res=await api({action:editId?'update':'add',data:item});
+        if(res.ok){
+            if(editId){
+                const i=D.findIndex(x=>x.id===editId);
+                if(i!==-1)D[i]=norm(item);
+            } else {
+                D.push(norm(item));
+            }
+            
+            // ============ TEDARİKÇİNİN SON ALIŞ TARİHİNİ GÜNCELLE (EKLEDİK) ============
+            if(tedarikciId && !editId) {  // Sadece yeni eklemede yap
+                const tedarikci = TD.find(x => x.id === tedarikciId);
+                if(tedarikci) {
+                    tedarikci.sonAlisTarihi = document.getElementById('f_tar')?.value || getTodayDate();
+                    try {
+                        await api({ action: 'updateTedarikci', data: tedarikci });
+                        const idx = TD.findIndex(x => x.id === tedarikciId);
+                        if(idx !== -1) TD[idx] = tedarikci;
+                    } catch(e) { console.error('Tedarikçi güncelleme hatası:', e); }
+                }
+            }
+            // ========================================================================
+            
+            closeMo();
+            rAll();
+            toast(editId?'Güncellendi ✓':'Kaydedildi ✓','success');
+            playBeep();
+        } else throw new Error(res.error);
+    } catch(e){
+        toast('Hata: '+e.message,'error');
+    }
+    hideLo();
+    if(btn)btn.disabled=false;
+}
 function openSatMo(id) {
     satTgt = String(id);
     console.log("🔍 Açılan ID:", satTgt);
@@ -1419,6 +1560,19 @@ async function saveSat() {
             const m = MD.find(x=>x.id===musteriId);
             if(m) { m.toplamBorc = (Number(m.toplamBorc)||0) + toplamBorc; await api({action:'updateMusteri', data:m}); }
         }
+
+        // ============ MÜŞTERİNİN SON ALIŞ TARİHİNİ GÜNCELLE (EKLEDİK) ============
+        if(musteriId) {
+            const musteri = MD.find(x => x.id === musteriId);
+            if(musteri) {
+                musteri.sonAlisTarihi = bugun;
+                await api({ action: 'updateMusteri', data: musteri });
+                // Local array'i de güncelle
+                const idx = MD.findIndex(x => x.id === musteriId);
+                if(idx !== -1) MD[idx] = musteri;
+            }
+        }
+        // =========================================================================
 
         closeSatMo(); rAll(); rKasa();
         toast('Satış kaydedildi ✓', 'success'); playBeep();
@@ -2245,6 +2399,7 @@ function rMusteriler(){
             <td>${m.tc||'-'}</td>
             <td style="text-align:center">${satirlar.length}</td>
             <td class="tcy">${fmt(toplamHarcama)}</td>
+            <td class="tx2" style="font-size:11px">${formatTarih(m.kayitTarihi) || '-'}</td>
             <td class="${borc>0?'trd':'tgn'}">${borc>0?fmt(borc):'✓'}</td>
             <td>${sonAlis!=='-'?formatTarih(sonAlis):'-'}</td>
             <td style="white-space:nowrap">
@@ -2261,21 +2416,37 @@ function rTedarikciler(){
     const q=(document.getElementById('tedarikciSrc')?.value||'').toLowerCase();
     let list=q?TD.filter(t=>t.ad.toLowerCase().includes(q)||(t.firma||'').toLowerCase().includes(q)):[...TD];
     const tb=document.getElementById('tedarikciTb');if(!tb)return;
-    if(!list.length){tb.innerHTML=`<tr><td colspan="5"><div class="empty"><i>🏪</i>Tedarikçi yok</div></td></tr>`;return;}
-    tb.innerHTML=list.map(t=>`<tr>
-        <td class="b">${t.ad}</td>
-        <td><a href="tel:${t.telefon}" style="color:var(--ac3)">${t.telefon||'-'}</a>
-            ${t.telefon?`<button class="btn bg2 bsm" style="margin-left:4px" onclick="window.open('https://wa.me/90${(t.telefon||'').replace(/^0/,'')}','_blank')">📱</button>`:''}
-        </td>
-        <td>${t.firma||'-'}</td>
-        <td>${t.not||'-'}</td>
-        <td style="white-space:nowrap">
-            <button class="btn bg2 bsm" onclick="openTedarikciMo('${t.id}')">✏️</button>
-            <button class="btn bd bsm" onclick="deleteTedarikci('${t.id}')">🗑</button>
-        </td>
-    </tr>`).join('');
+    if(!list.length){tb.innerHTML=`<tr><td colspan="7"><div class="empty"><i>🏪</i>Tedarikçi yok</div></td></tr>`;return;}
+    
+    tb.innerHTML=list.map(t=>{
+        // Bu tedarikçiden alınan en son ürünün tarihini bul (sonAlisTarihi yoksa hesapla)
+        let sonAlis = t.sonAlisTarihi || '-';
+        if(!sonAlis || sonAlis === '-') {
+            const tedarikciUrunleri = D.filter(d => d.tedarikciId === t.id);
+            if(tedarikciUrunleri.length) {
+                const enSon = tedarikciUrunleri.sort((a,b) => new Date(b.tarih) - new Date(a.tarih))[0];
+                sonAlis = formatTarih(enSon.tarih);
+            }
+        } else {
+            sonAlis = formatTarih(sonAlis);
+        }
+        
+        return `<tr>
+            <td class="b">${t.ad}</td>
+            <td><a href="tel:${t.telefon}" style="color:var(--ac3)">${t.telefon||'-'}</a>
+                ${t.telefon?`<button class="btn bg2 bsm" style="margin-left:4px" onclick="window.open('https://wa.me/90${(t.telefon||'').replace(/^0/,'')}','_blank')">📱</button>`:''}
+            </td>
+            <td>${t.firma||'-'}</td>
+            <td class="tx2" style="font-size:11px">${formatTarih(t.kayitTarihi) || '-'}${2}
+            <td class="tx2" style="font-size:11px">${sonAlis}${2}
+            <td>${t.not||'-'}</td>
+            <td style="white-space:nowrap">
+                <button class="btn bg2 bsm" onclick="openTedarikciMo('${t.id}')">✏️</button>
+                <button class="btn bd bsm" onclick="deleteTedarikci('${t.id}')">🗑</button>
+            </td>
+        </tr>`;
+    }).join('');
 }
-
 // ============ RENDER: KASA ============
 function rKasa(){
     const fil=document.getElementById('kasaFil')?.value||'';
@@ -2315,9 +2486,36 @@ function closeMusteriMo(){document.getElementById('moMusteri').classList.remove(
 async function saveMusteri(){
     const ad=document.getElementById('fm_ad')?.value.trim();
     if(!ad){toast('Ad gerekli!','error');return;}
-    const m={id:editMusteriId||Date.now().toString(),tarih:getTodayDate(),ad,telefon:document.getElementById('fm_tel')?.value.trim()||'',tc:document.getElementById('fm_tc')?.value.trim()||'',adres:document.getElementById('fm_adres')?.value.trim()||'',not:document.getElementById('fm_not')?.value.trim()||'',toplamBorc:editMusteriId?(MD.find(x=>x.id===editMusteriId)?.toplamBorc||0):0};
+    
+    const m={
+        id:editMusteriId||Date.now().toString(),
+        kayitTarihi: editMusteriId ? (MD.find(x=>x.id===editMusteriId)?.kayitTarihi || getTodayDate()) : getTodayDate(),
+        ad: ad,
+        telefon: document.getElementById('fm_tel')?.value.trim()||'',
+        tc: document.getElementById('fm_tc')?.value.trim()||'',
+        adres: document.getElementById('fm_adres')?.value.trim()||'',
+        not: document.getElementById('fm_not')?.value.trim()||'',
+        toplamBorc: editMusteriId ? (MD.find(x=>x.id===editMusteriId)?.toplamBorc||0) : 0,
+        sonAlisTarihi: editMusteriId ? (MD.find(x=>x.id===editMusteriId)?.sonAlisTarihi || '') : ''
+    };
+    
     showLo('Kaydediliyor...');
-    try{const res=await api({action:editMusteriId?'updateMusteri':'addMusteri',data:m});if(res.ok){if(editMusteriId){const i=MD.findIndex(x=>x.id===editMusteriId);if(i!==-1)MD[i]=m;}else MD.push(m);closeMusteriMo();rMusteriler();toast('Kaydedildi ✓','success');}else throw new Error(res.error);}catch(e){toast('Hata: '+e.message,'error');}
+    try{
+        const res=await api({action:editMusteriId?'updateMusteri':'addMusteri',data:m});
+        if(res.ok){
+            if(editMusteriId){
+                const i=MD.findIndex(x=>x.id===editMusteriId);
+                if(i!==-1)MD[i]=m;
+            } else {
+                MD.push(m);
+            }
+            closeMusteriMo();
+            rMusteriler();
+            toast('Kaydedildi ✓','success');
+        } else throw new Error(res.error);
+    } catch(e){
+        toast('Hata: '+e.message,'error');
+    }
     hideLo();
 }
 async function deleteMusteri(id){
@@ -2379,10 +2577,36 @@ function openTedarikciMo(id=null){
 }
 function closeTedarikciMo(){document.getElementById('moTedarikci').classList.remove('open');editTedarikciId=null;}
 async function saveTedarikci(){
-    const ad=document.getElementById('ft_ad')?.value.trim();if(!ad){toast('Ad gerekli!','error');return;}
-    const t={id:editTedarikciId||Date.now().toString(),tarih:getTodayDate(),ad,telefon:document.getElementById('ft_tel')?.value.trim()||'',firma:document.getElementById('ft_firma')?.value.trim()||'',not:document.getElementById('ft_not')?.value.trim()||''};
+    const ad=document.getElementById('ft_ad')?.value.trim();
+    if(!ad){toast('Ad gerekli!','error');return;}
+    
+    const t={
+        id: editTedarikciId || Date.now().toString(),
+        kayitTarihi: editTedarikciId ? (TD.find(x=>x.id===editTedarikciId)?.kayitTarihi || getTodayDate()) : getTodayDate(),
+        ad: ad,
+        telefon: document.getElementById('ft_tel')?.value.trim()||'',
+        firma: document.getElementById('ft_firma')?.value.trim()||'',
+        not: document.getElementById('ft_not')?.value.trim()||'',
+        sonAlisTarihi: editTedarikciId ? (TD.find(x=>x.id===editTedarikciId)?.sonAlisTarihi || '') : ''
+    };
+    
     showLo('Kaydediliyor...');
-    try{const res=await api({action:editTedarikciId?'updateTedarikci':'addTedarikci',data:t});if(res.ok){if(editTedarikciId){const i=TD.findIndex(x=>x.id===editTedarikciId);if(i!==-1)TD[i]=t;}else TD.push(t);closeTedarikciMo();rTedarikciler();toast('Kaydedildi ✓','success');}else throw new Error(res.error);}catch(e){toast('Hata: '+e.message,'error');}
+    try{
+        const res=await api({action:editTedarikciId?'updateTedarikci':'addTedarikci',data:t});
+        if(res.ok){
+            if(editTedarikciId){
+                const i=TD.findIndex(x=>x.id===editTedarikciId);
+                if(i!==-1)TD[i]=t;
+            } else {
+                TD.push(t);
+            }
+            closeTedarikciMo();
+            rTedarikciler();
+            toast('Kaydedildi ✓','success');
+        } else throw new Error(res.error);
+    } catch(e){
+        toast('Hata: '+e.message,'error');
+    }
     hideLo();
 }
 async function deleteTedarikci(id){
