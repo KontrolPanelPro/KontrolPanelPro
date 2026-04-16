@@ -1116,7 +1116,24 @@ function getTodayDate(){const now=new Date();const y=now.getFullYear();const m=S
 function setDot(s,t){const d=document.getElementById('dot'),tx=document.getElementById('dbtx');if(!d)return;d.className='dot'+(s==='ok'?' ok':s==='er'?' er':s==='ld'?' ld':s==='offline'?' offline':'');if(tx)tx.textContent=t;}
 function showLo(t='İşleniyor...'){const txt=document.getElementById('loTxt');if(txt)txt.textContent=t;const lo=document.getElementById('lo');if(lo)lo.classList.add('show');}
 function hideLo(){const lo=document.getElementById('lo');if(lo)lo.classList.remove('show');}
-async function api(body){if(offlineMode){toast('Offline modda, değişiklikler kaydedildi','warning');return {ok:true,data:[]};}try{const r=await fetch(URL2,{method:'POST',body:JSON.stringify(body)});return JSON.parse(await r.text());}catch(e){toast('Bağlantı hatası, offline moda geçiliyor','error');enableOfflineMode();return {ok:false,error:e.message};}}
+async function api(body){
+    const writeActions = ['add','update','delete','deleteAll','addMusteri','updateMusteri','deleteMusteri','addTedarikci','updateTedarikci','deleteTedarikci','addKasa','updateKasa','deleteKasa'];
+    if(offlineMode){
+        if(writeActions.includes(body.action)){
+            toast('⚠️ Offline mod aktif — Google Sheets\'e bağlanılamıyor, kayıt yapılamaz!','error');
+            return {ok:false, error:'Offline mod aktif'};
+        }
+        return {ok:true, data:[]};
+    }
+    try{
+        const r=await fetch(URL2,{method:'POST',body:JSON.stringify(body)});
+        return JSON.parse(await r.text());
+    }catch(e){
+        toast('Bağlantı hatası, offline moda geçiliyor','error');
+        enableOfflineMode();
+        return {ok:false,error:e.message};
+    }
+}
 function enableOfflineMode(){offlineMode=true;document.getElementById('offlineBadge').style.display='inline-block';setDot('offline','Offline Mod');}
 function tryP(s){try{const v=JSON.parse(s||'[]');return Array.isArray(v)?v:[];}catch{return[];}}
 function norm(d){
@@ -1239,7 +1256,31 @@ async function init(){
 function initChartButtons(){const btns=document.querySelectorAll('#chartPeriodButtons .chart-btn');btns.forEach(btn=>{btn.addEventListener('click',()=>{btns.forEach(b=>b.classList.remove('active'));btn.classList.add('active');chartPeriod=btn.dataset.period;rCharts();});});}
 function initAnalizButtons(){const btns=document.querySelectorAll('#analizSortButtons .analiz-sort-btn');btns.forEach(btn=>{btn.addEventListener('click',()=>{if(analizSort===btn.dataset.sort){analizSortDirection=analizSortDirection==='desc'?'asc':'desc';}else{analizSort=btn.dataset.sort;analizSortDirection='desc';}btns.forEach(b=>b.classList.remove('active'));btn.classList.add('active');rUrunler();});});}
 function initElChartButtons(){const btns=document.querySelectorAll('#elChartButtons .el-chart-btn');btns.forEach(btn=>{btn.addEventListener('click',()=>{btns.forEach(b=>b.classList.remove('active'));btn.classList.add('active');currentElFilter=btn.dataset.el;updateElChart();});});}
-async function syncData(){setDot('ld','Bağlanıyor...');showLo('Google Sheets\'ten yükleniyor...');try{const res=await api({action:'getAll'});if(res.ok){D=res.data.map(norm);setDot('ok','✓ Bağlı');offlineMode=false;document.getElementById('offlineBadge').style.display='none';await Promise.all([syncMusteriler(),syncTedarikciler(),syncKasa()]);rAll();toast('Senkronize edildi','success');}else throw new Error(res.error);}catch(e){setDot('er','✗ Hata');toast('Hata: '+e.message,'error');}hideLo();}
+async function syncData(){
+    setDot('ld','Bağlanıyor...');
+    showLo('Google Sheets\'ten yükleniyor...');
+    try{
+        const res=await api({action:'getAll'});
+        if(res.ok && !offlineMode){
+            D=res.data.map(norm);
+            setDot('ok','✓ Bağlı');
+            offlineMode=false;
+            document.getElementById('offlineBadge').style.display='none';
+            await Promise.all([syncMusteriler(),syncTedarikciler(),syncKasa()]);
+            rAll();
+            toast('Senkronize edildi','success');
+        } else if(offlineMode){
+            setDot('offline','Offline Mod');
+            toast('⚠️ Google Sheets\'e bağlanılamıyor. Bağlantıyı kontrol edin.','error');
+        } else {
+            throw new Error(res.error||'Bilinmeyen hata');
+        }
+    }catch(e){
+        setDot('er','✗ Hata');
+        toast('Bağlantı hatası: '+e.message,'error');
+    }
+    hideLo();
+}
 const fmt=n=>isNaN(n)||n==null?'₺0':'₺'+Number(n).toLocaleString('tr-TR',{minimumFractionDigits:0,maximumFractionDigits:0});
 const fmtN=n=>Number(n||0).toLocaleString('tr-TR');
 const fmtYuzde=n=>{const val=Number(n||0);return val.toFixed(1)+'%';};
@@ -1341,7 +1382,26 @@ async function saveIsl(e){
                 D.push(norm(item));
             }
             
-            // ============ TEDARİKÇİNİN SON ALIŞ TARİHİNİ GÜNCELLE (EKLEDİK) ============
+            // ============ YENİ ÜRÜN → KASA ÇIKIŞI ============
+            if(!editId && item.toplamAlis > 0) {
+                const tedarikciAdi = tedarikciId ? (TD.find(x=>String(x.id)===String(tedarikciId))?.ad || '') : '';
+                const ke = {
+                    id: 'K'+Date.now(),
+                    tarih: item.tarih || getTodayDate(),
+                    tip: 'cikis',
+                    kategori: 'stok_alim',
+                    odemeYontemi: 'nakit',
+                    tutar: item.toplamAlis,
+                    aciklama: `Stok alımı: ${item.model} ${item.gb}GB · ${item.adet} adet${tedarikciAdi ? ' · '+tedarikciAdi : ''}`,
+                    referansId: item.id,
+                    not: ''
+                };
+                KD.push(ke);
+                await api({action:'addKasa', data:ke});
+            }
+            // ====================================================
+
+            // ============ TEDARİKÇİNİN SON ALIŞ TARİHİNİ GÜNCELLE ============
             if(tedarikciId && !editId) {  // Sadece yeni eklemede yap
                 const tedarikci = TD.find(x => x.id === tedarikciId);
                 if(tedarikci) {
@@ -2868,12 +2928,25 @@ function gonderWABulk(tip){
     const secilen = [...checkboxler].map(c => liste[Number(c.value)]).filter(k=>k&&k.telefon);
     if(!secilen.length){ toast('Telefonu olan kişi seçin!','error'); return; }
     const mesajEncoded = encodeURIComponent(mesaj);
-    secilen.forEach((k,i) => {
-        const tel = '90'+String(k.telefon).replace(/^0/,'').replace(/\D/g,'');
-        setTimeout(()=>{ window.open(`https://wa.me/${tel}?text=${mesajEncoded}`,'_blank'); }, i*600);
-    });
-    toast(`${secilen.length} kişiye mesaj açılıyor...`,'success');
+
+    // Popup blocker'ı aşmak için linkler listesi göster
     document.getElementById('waBulkModal')?.remove();
+    const modal2 = document.createElement('div');
+    modal2.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);z-index:10000;display:flex;align-items:center;justify-content:center;padding:16px';
+    const linkler = secilen.map(k=>{
+        const tel = '90'+String(k.telefon).replace(/^0/,'').replace(/\D/g,'');
+        return `<a href="https://wa.me/${tel}?text=${mesajEncoded}" target="_blank" 
+            style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#25D366;color:white;border-radius:10px;text-decoration:none;font-size:13px;font-weight:600;margin-bottom:6px">
+            <span>📱</span><span>${k.ad}</span><span style="opacity:.8;font-size:11px">${k.telefon}</span>
+        </a>`;
+    }).join('');
+    modal2.innerHTML = `<div style="background:var(--panel,#1e1e2e);border-radius:20px;padding:22px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto;border:1px solid #333">
+        <div style="font-size:15px;font-weight:700;margin-bottom:4px">📤 Gönder (${secilen.length} kişi)</div>
+        <div style="font-size:11px;color:#888;margin-bottom:14px">Her isime tıkla → WhatsApp açılır, mesaj hazır gelir</div>
+        ${linkler}
+        <button onclick="this.closest('div[style*=fixed]').remove()" style="margin-top:14px;width:100%;padding:10px;background:#444;color:white;border:none;border-radius:10px;cursor:pointer;font-size:13px">Kapat</button>
+    </div>`;
+    document.body.appendChild(modal2);
 }
 
 // ============ BİLDİRİMLER ============
