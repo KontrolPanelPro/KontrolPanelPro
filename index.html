@@ -2961,7 +2961,21 @@ function gonderWABulk(tip){
             <span>📱</span><span>${k.ad}</span><span style="opacity:.8;font-size:11px">${k.telefon}</span>
         </a>`;
     }).join('');
-    modal2.innerHTML = `<div style="background:var(--panel,#1e1e2e);border-radius:20px;padding:22px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto;border:1px solid #333">
+    function gonderWABulk(tip){
+    const mesaj = document.getElementById('waBulkMesaj')?.value.trim();
+    if(!mesaj){ toast('Mesaj yazın!','error'); return; }
+    const liste = tip==='musteri' ? MD : TD;
+    const checkboxler = document.querySelectorAll('#waBulkKisi input:checked');
+    const secilen = [...checkboxler].map(c=>liste[Number(c.value)]).filter(k=>k&&k.telefon);
+    if(!secilen.length){ toast('Telefonu olan kişi seçin!','error'); return; }
+    document.getElementById('waBulkModal')?.remove();
+    const enc = encodeURIComponent(mesaj);
+    secilen.forEach((k,i)=>{
+        const tel='90'+String(k.telefon).replace(/^0/,'').replace(/\D/g,'');
+        setTimeout(()=>window.open(`https://wa.me/${tel}?text=${enc}`,'_blank'), i*800);
+    });
+    toast(`${secilen.length} sekme açılıyor... (popup izni gerekli)`,'success');
+},#1e1e2e);border-radius:20px;padding:22px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto;border:1px solid #333">
         <div style="font-size:15px;font-weight:700;margin-bottom:4px">📤 Gönder (${secilen.length} kişi)</div>
         <div style="font-size:11px;color:#888;margin-bottom:14px">Her isime tıkla → WhatsApp açılır, mesaj hazır gelir</div>
         ${linkler}
