@@ -863,7 +863,7 @@ input,select{padding:8px 10px;font-size:12px}
     <div class="stt">👥 Müşteriler</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <input type="text" id="musteriSrc" placeholder="🔍 İsim/Telefon..." style="width:160px" oninput="rMusteriler()">
-      <button class="btn bg2 bsm" onclick="openWABulkModal('musteri')">📨 Toplu WA</button>
+      <button class="btn bg2 bsm" onclick="(function(){if(!MD||!MD.length){alert('Önce müşteri ekleyin');return;}openWABulkModal('musteri');})()">📨 Toplu WA</button>
       <button class="btn bp bsm" onclick="openMusteriMo()">➕ Yeni</button>
     </div>
   </div>
@@ -879,7 +879,7 @@ input,select{padding:8px 10px;font-size:12px}
     <div class="stt">🏪 Tedarikçiler</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <input type="text" id="tedarikciSrc" placeholder="🔍 İsim/Firma..." style="width:160px" oninput="rTedarikciler()">
-      <button class="btn bg2 bsm" onclick="openWABulkModal('tedarikci')">📨 Toplu WA</button>
+      <button class="btn bg2 bsm" onclick="(function(){if(!TD||!TD.length){alert('Önce tedarikçi ekleyin');return;}openWABulkModal('tedarikci');})()">📨 Toplu WA</button>
       <button class="btn bp bsm" onclick="openTedarikciMo()">➕ Yeni</button>
     </div>
   </div>
