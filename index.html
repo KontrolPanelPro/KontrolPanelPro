@@ -956,7 +956,8 @@ input,select{padding:8px 10px;font-size:12px}
 <div class="page" id="page-raporlar">
 <div class="card"><div class="stt">📑 Rapor Oluştur</div><div class="filter-bar" style="margin-top:12px"><select id="raporTipi"><option value="aylik">Aylık</option><option value="3aylik">3 Aylık</option><option value="yillik">Yıllık</option></select><input type="month" id="raporAy" value="2024-03"><div class="rapor-btn-group"><button class="btn bp" onclick="raporOlustur('excel')">📊 Excel</button><button class="btn bp" onclick="raporOlustur('pdf')">📄 PDF</button></div></div></div>
 <div class="card" style="margin-top:16px"><div class="stt">📈 En Çok Satan Modeller (Top 10)</div><div id="cokSatanList" style="margin-top:12px"></div></div>
-<div class="card" style="margin-top:16px"><div class="stt">🏆 En Karlı Modeller (Birim Bazında)</div><div id="enKarliList" style="margin-top:12px"></div></div>
+<div class="card" style="margin-top:16px"><div class="stt">🏆 En Karlı Modeller (Toplam Kar)</div><div id="enKarliList" style="margin-top:12px"></div></div>
+<div class="card" style="margin-top:16px"><div class="stt">📊 En Yüksek Marjlı Modeller (Kar%)</div><div id="enYuksekMarjList" style="margin-top:12px"></div></div>
 <div class="card" style="margin-top:16px"><div class="stt">📈 Fiyat Trendleri</div><div class="cw"><canvas id="fiyatTrendChart"></canvas></div></div>
 </div>
 
@@ -1956,7 +1957,7 @@ function stokHareketRaporu() {
   let hareketler = [];
   
   D.forEach(d => {
-    // Giriş hareketleri
+    // GİRİŞ: stok eklendiği tarih (d.tarih)
     if(tip === 'giris' || !tip) {
       hareketler.push({
         tarih: d.tarih,
@@ -1969,25 +1970,43 @@ function stokHareketRaporu() {
         toplam: d.toplamAlis
       });
     }
-    // Çıkış hareketleri (satış)
-    if((tip === 'cikis' || !tip) && d.satılanAdet > 0) {
-      hareketler.push({
-        tarih: d.tarih,
-        tip: '📤 Çıkış (Satış)',
-        model: d.model,
-        el: d.el,
-        gb: d.gb,
-        adet: d.satılanAdet,
-        fiyat: d.satis,
-        toplam: d.toplamSatis * (d.satılanAdet / d.adet)
-      });
+    // ÇIKIŞ: her satış kendi gerçek tarihiyle - satildiImei'den al
+    if(tip === 'cikis' || !tip) {
+      const satislar = d.satildiImei || [];
+      if(satislar.length > 0) {
+        // IMEI bazlı satışlar - her biri kendi tarihiyle
+        satislar.forEach(s => {
+          const p = s.split('||');
+          const satisTarih = p[1] || d.tarih;
+          const satisFiyat = p[2] ? Number(p[2]) : d.satis;
+          hareketler.push({
+            tarih: satisTarih,
+            tip: '📤 Çıkış (Satış)',
+            model: d.model,
+            el: d.el,
+            gb: d.gb,
+            adet: 1,
+            fiyat: satisFiyat,
+            toplam: satisFiyat
+          });
+        });
+      } else if(d.satılanAdet > 0) {
+        // IMEI'siz satış — kaç tane satıldığını biliyoruz ama tarihi bilmiyoruz, d.tarih kullan
+        hareketler.push({
+          tarih: d.tarih,
+          tip: '📤 Çıkış (Satış)',
+          model: d.model,
+          el: d.el,
+          gb: d.gb,
+          adet: d.satılanAdet,
+          fiyat: d.satis,
+          toplam: d.satis * d.satılanAdet
+        });
+      }
     }
   });
   
-  // Tarihe göre sırala (büyükten küçüğe)
-  hareketler.sort((a, b) => new Date(b.tarih) - new Date(a.tarih));
-  
-  // Tarih filtresi
+  hareketler.sort((a, b) => b.tarih.localeCompare(a.tarih));
   if(baslangic) hareketler = hareketler.filter(h => h.tarih >= baslangic);
   if(bitis) hareketler = hareketler.filter(h => h.tarih <= bitis);
   
@@ -1999,9 +2018,46 @@ function stokHareketRaporu() {
     return;
   }
   
-  tb.innerHTML = `<table><thead><tr><th>Tarih</th><th>Tip</th><th>Model</th><th>El</th><th>GB</th><th>Adet</th><th>Birim Fiyat</th><th>Toplam</th></tr></thead><tbody>${hareketler.map(h => `<tr><td>${formatTarih(h.tarih)}</td><td>${h.tip}</td><td class="b">${h.model}</td><td>${h.el}</td><td>${h.gb}GB</td><td>${h.adet}</td><td>${fmt(h.fiyat)}</td><td>${fmt(h.toplam)}</td>`).join('')}</tbody></tr>`;
+  tb.innerHTML = `<table><thead><tr><th>Tarih</th><th>Tip</th><th>Model</th><th>El</th><th>GB</th><th>Adet</th><th>Birim Fiyat</th><th>Toplam</th></tr></thead><tbody>${hareketler.map(h => `<tr><td>${formatTarih(h.tarih)}</td><td>${h.tip}</td><td class="b">${h.model}</td><td>${h.el}</td><td>${h.gb}GB</td><td>${h.adet}</td><td>${fmt(h.fiyat)}</td><td>${fmt(h.toplam)}</td></tr>`).join('')}</tbody></table>`;
 }
-function rRaporlarSayfasi(){const cokSatan=[];const modelMap={};D.forEach(d=>{if(!modelMap[d.model])modelMap[d.model]={model:d.model,adet:0,satilan:0,toplamKar:0};modelMap[d.model].adet+=d.adet;modelMap[d.model].satilan+=d.satılanAdet||0;modelMap[d.model].toplamKar+=d.kar;});Object.values(modelMap).forEach(m=>{cokSatan.push({model:m.model,satilan:m.satilan,kar:m.toplamKar});});cokSatan.sort((a,b)=>b.satilan-a.satilan);const cokSatanDiv=document.getElementById('cokSatanList');if(cokSatanDiv){cokSatanDiv.innerHTML=`<div class="g3">${cokSatan.slice(0,10).map((m,i)=>`<div class="card"><div style="font-size:20px;font-weight:800">${i+1}.</div><div style="font-weight:700">${m.model}</div><div>📊 Satılan: ${m.satilan} adet</div><div>💰 Kar: ${fmt(m.kar)}</div></div>`).join('')}</div>`;}const enKarli=[...cokSatan].sort((a,b)=>b.kar-a.kar);const enKarliDiv=document.getElementById('enKarliList');if(enKarliDiv){enKarliDiv.innerHTML=`<div class="g3">${enKarli.slice(0,10).map((m,i)=>`<div class="card"><div style="font-size:20px;font-weight:800">${i+1}.</div><div style="font-weight:700">${m.model}</div><div>💰 Toplam Kar: ${fmt(m.kar)}</div><div>📊 Satılan: ${m.satilan} adet</div></div>`).join('')}</div>`;}fiyatTrendGrafik();}
+function rRaporlarSayfasi(){
+    const cokSatan=[];
+    const modelMap={};
+    D.forEach(d=>{
+        if(!modelMap[d.model])modelMap[d.model]={model:d.model,adet:0,satilan:0,toplamKar:0,toplamSatis:0,toplamAlis:0};
+        const satilan=d.satılanAdet||0;
+        // Kar: gerçek satış fiyatlarını satildiImei'den al
+        let gercekSatisToplam=0;
+        const satislar=d.satildiImei||[];
+        if(satislar.length>0){
+            satislar.forEach(s=>{const p=s.split('||');gercekSatisToplam+=p[2]?Number(p[2]):d.satis;});
+        } else {
+            gercekSatisToplam=d.satis*satilan;
+        }
+        const gercekAlisToplam=d.alis*satilan;
+        const gercekKar=gercekSatisToplam-gercekAlisToplam;
+        modelMap[d.model].adet+=d.adet;
+        modelMap[d.model].satilan+=satilan;
+        modelMap[d.model].toplamKar+=gercekKar;
+        modelMap[d.model].toplamSatis+=gercekSatisToplam;
+        modelMap[d.model].toplamAlis+=gercekAlisToplam;
+    });
+    Object.values(modelMap).forEach(m=>{
+        const marj=m.toplamSatis>0?((m.toplamKar/m.toplamSatis)*100).toFixed(1):0;
+        cokSatan.push({model:m.model,satilan:m.satilan,kar:m.toplamKar,marj:+marj,toplamSatis:m.toplamSatis});
+    });
+    cokSatan.sort((a,b)=>b.satilan-a.satilan);
+    const cokSatanDiv=document.getElementById('cokSatanList');
+    if(cokSatanDiv){cokSatanDiv.innerHTML=`<div class="g3">${cokSatan.slice(0,10).map((m,i)=>`<div class="card"><div style="font-size:20px;font-weight:800">${i+1}.</div><div style="font-weight:700">${m.model}</div><div>📊 Satılan: ${m.satilan} adet</div><div>💰 Kar: ${fmt(m.kar)}</div><div style="font-size:11px;color:var(--tx2)">Marj: %${m.marj}</div></div>`).join('')}</div>`;}
+    const enKarli=[...cokSatan].sort((a,b)=>b.kar-a.kar);
+    const enKarliDiv=document.getElementById('enKarliList');
+    if(enKarliDiv){enKarliDiv.innerHTML=`<div class="g3">${enKarli.slice(0,10).map((m,i)=>`<div class="card"><div style="font-size:20px;font-weight:800">${i+1}.</div><div style="font-weight:700">${m.model}</div><div>💰 Toplam Kar: ${fmt(m.kar)}</div><div>📊 Satılan: ${m.satilan} adet</div><div style="font-size:11px;color:var(--tx2)">Marj: %${m.marj}</div></div>`).join('')}</div>`;}
+    // Marj sıralaması
+    const enYuksekMarj=[...cokSatan].filter(m=>m.satilan>0).sort((a,b)=>b.marj-a.marj);
+    const marjDiv=document.getElementById('enYuksekMarjList');
+    if(marjDiv){marjDiv.innerHTML=`<div class="g3">${enYuksekMarj.slice(0,10).map((m,i)=>`<div class="card"><div style="font-size:20px;font-weight:800">${i+1}.</div><div style="font-weight:700">${m.model}</div><div>📈 Marj: <span class="tgn b">%${m.marj}</span></div><div>💰 Kar: ${fmt(m.kar)}</div><div>📊 Satılan: ${m.satilan} adet</div></div>`).join('')}</div>`;}
+    fiyatTrendGrafik();
+}
 function fiyatTrendGrafik(){const modelFiyatlari={};D.forEach(d=>{if(!modelFiyatlari[d.model])modelFiyatlari[d.model]=[];modelFiyatlari[d.model].push({tarih:d.tarih,alis:d.alis,satis:d.satis});});const enCokSatilan=Object.keys(modelFiyatlari).slice(0,5);const ctx=document.getElementById('fiyatTrendChart')?.getContext('2d');if(!ctx)return;if(charts.fiyatTrend)charts.fiyatTrend.destroy();charts.fiyatTrend=new Chart(ctx,{type:'line',data:{labels:[],datasets:[]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top'}}}});}
 function raporOlustur(tip){const raporTipi=document.getElementById('raporTipi').value;let tarih=new Date(document.getElementById('raporAy').value);if(isNaN(tarih.getTime()))tarih=new Date();let baslangic,bitis;if(raporTipi==='aylik'){baslangic=new Date(tarih.getFullYear(),tarih.getMonth(),1);bitis=new Date(tarih.getFullYear(),tarih.getMonth()+1,0);}else if(raporTipi==='3aylik'){baslangic=new Date(tarih.getFullYear(),tarih.getMonth()-2,1);bitis=new Date(tarih.getFullYear(),tarih.getMonth()+1,0);}else{baslangic=new Date(tarih.getFullYear(),0,1);bitis=new Date(tarih.getFullYear(),11,31);}const filtered=D.filter(d=>{const dT=new Date(d.tarih);return dT>=baslangic&&dT<=bitis;});let toplamAlis=0,toplamSatis=0,toplamKar=0,toplamAdet=0,toplamSatilan=0;filtered.forEach(d=>{toplamAlis+=d.toplamAlis;toplamSatis+=d.toplamSatis;toplamKar+=d.kar;toplamAdet+=d.adet;toplamSatilan+=d.satılanAdet||0;});const raporData={baslangic:baslangic.toLocaleDateString('tr-TR'),bitis:bitis.toLocaleDateString('tr-TR'),toplamAlis,toplamSatis,toplamKar,toplamAdet,toplamSatilan,urunler:filtered};if(tip==='excel'){excelRapor(raporData);}else{pdfRapor(raporData);}}
 function excelRapor(data){const wsData=[['Rapor Tarihi',`${data.baslangic} - ${data.bitis}`],['Toplam Alış',data.toplamAlis],['Toplam Satış',data.toplamSatis],['Toplam Kar',data.toplamKar],['Toplam Adet',data.toplamAdet],['Toplam Satılan',data.toplamSatilan],[''],['Ürün Bazlı Rapor'],['Model','El','GB','Adet','Satılan','Alış','Satış','Kar']];data.urunler.forEach(u=>{wsData.push([u.model,u.el,u.gb,u.adet,u.satılanAdet||0,u.alis,u.satis,u.kar]);});const ws=XLSX.utils.aoa_to_sheet(wsData);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Rapor');XLSX.writeFile(wb,`rapor_${data.baslangic}_${data.bitis}.xlsx`);toast('Excel raporu oluşturuldu','success');}
@@ -3204,6 +3260,7 @@ async function saveKasaHareket(){
     try{const res=await api({action:'addKasa',data:k});if(res.ok){KD.push(k);closeKasaMo();rKasa();toast('Kaydedildi ✓','success');}else throw new Error(res.error);}catch(e){toast('Hata: '+e.message,'error');}hideLo();
 }
 async function deleteKasa(id){
+    if(!confirm('Bu kasa hareketini silmek istediğinize emin misiniz?'))return;
     showLo('Siliniyor...');
     try{const res=await api({action:'deleteKasa',id:String(id)});if(res.ok){KD=KD.filter(x=>x.id!==String(id));rKasa();toast('Silindi','error');}}catch(e){toast('Hata: '+e.message,'error');}hideLo();
 }
