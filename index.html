@@ -1297,32 +1297,60 @@ async function saveIade(id) {
     const neden = document.getElementById('iadeNeden')?.value||'diger';
     const bugun = getTodayDate();
     const seciliImei = [...document.querySelectorAll('#iadeMoC input[type=checkbox]:checked')].map(cb=>cb.getAttribute('data-im'));
-    
+
+    // Takas ile satılan ürün mü kontrol et
+    const takasSatislar = (d.satildiImei||[]).filter(s=>{
+        const p=s.split('||'); return seciliImei.includes(p[0]) && p[4]==='takas';
+    });
+
+    // Local stok güncelle
     if(seciliImei.length > 0) {
         d.satildiImei = (d.satildiImei||[]).filter(s => !seciliImei.includes(s.split('||')[0]));
         d.satılanAdet = Math.max(0, (d.satılanAdet||0) - seciliImei.length);
     } else {
-        const adeEl = document.getElementById('iadeAdet');
-        const iadeSayisi = adeEl ? +(adeEl.value||1) : 1;
+        const iadeSayisi = +(document.getElementById('iadeAdet')?.value||1);
         d.satılanAdet = Math.max(0, (d.satılanAdet||0) - iadeSayisi);
-        if((d.satildiImei||[]).length > 0) {
-            d.satildiImei = d.satildiImei.slice(0, d.satılanAdet);
-        }
+        if((d.satildiImei||[]).length > 0) d.satildiImei = d.satildiImei.slice(0, d.satılanAdet);
     }
     const idx = D.findIndex(x=>x.id===String(id));
     if(idx!==-1) D[idx]=d;
-    await api({action:'update', data:d});
-    
-    // İade kasa çıkışı (müşteriye para iadesi)
+
+    // Kasa kaydı local ekle
     const iadeTutar = seciliImei.length > 0 ? seciliImei.length * d.satis : (+(document.getElementById('iadeAdet')?.value||1)) * d.satis;
     const ke = {id:'IA'+Date.now(), tarih:bugun, tip:'cikis', kategori:'iade',
         odemeYontemi:'nakit', tutar:iadeTutar,
         aciklama:`İade: ${d.model} · Neden: ${neden}`, referansId:id, not:''};
     KD.push(ke);
-    await api({action:'addKasa', data:ke});
-    
+
+    // Takas iade: verilen ürün geri geldiyse, karşılığında alınan TK ürünü de stoktan çıkar
+    const takasIadeKayitlar = [];
+    if(takasSatislar.length > 0) {
+        // TK* kayıtları içinde bu ürüne karşılık alınanı bul (tarih + model eşleşmesiyle)
+        takasSatislar.forEach(ts => {
+            const p = ts.split('||');
+            const tsTarih = p[1];
+            // Aynı tarihte TK* olarak eklenen ürünleri bul
+            const tkUrun = D.find(x => x.id.startsWith('TK') && x.tarih === tsTarih && x.not && x.not.includes('Takas ile alındı'));
+            if(tkUrun) takasIadeKayitlar.push(tkUrun);
+        });
+    }
+
+    // UI hemen güncelle
     closeIadeMo(); rAll(); rKasa();
     toast('İade kaydedildi ✓', 'success');
+
+    // API arka planda
+    Promise.all([
+        api({action:'update', data:d}),
+        api({action:'addKasa', data:ke}),
+        ...takasIadeKayitlar.map(tk => {
+            // Takas ile alınan ürünü stoktan çıkar (satılanAdet artır)
+            tk.satılanAdet = Math.min(tk.adet, (tk.satılanAdet||0)+1);
+            const tki = D.findIndex(x=>x.id===tk.id);
+            if(tki!==-1) D[tki]=tk;
+            return api({action:'update', data:tk});
+        })
+    ]).catch(e=>console.warn('İade sync hatası:',e));
 }
 
 // ============================================================
@@ -2001,23 +2029,17 @@ async function delIsl(id){
     if(!confirm('Bu işlemi silmek istediğinize emin misiniz?'))return;
     const deleted=D.find(x=>x.id===String(id));
     actionHistory.push({type:'delete',data:deleted});
-    showLo('Siliniyor...');
-    try{
-        const res=await api({action:'delete',id:String(id)});
-        if(res.ok){
-            D=D.filter(x=>x.id!==String(id));
-            // İlgili kasa kayıtlarını da sil
-            const ilgiliKasa = KD.filter(k=>String(k.referansId)===String(id));
-            for(const k of ilgiliKasa){
-                await api({action:'deleteKasa',id:String(k.id)});
-            }
-            KD=KD.filter(k=>String(k.referansId)!==String(id));
-            if(ilgiliKasa.length) toast(`Silindi + ${ilgiliKasa.length} kasa kaydı temizlendi`,'error');
-            else toast('Silindi','error');
-            rAll(); rKasa();
-        }else throw new Error(res.error);
-    }catch(e){toast('Hata: '+e.message,'error');}
-    hideLo();
+    // Local state hemen güncelle
+    D=D.filter(x=>x.id!==String(id));
+    const ilgiliKasa=KD.filter(k=>String(k.referansId)===String(id));
+    KD=KD.filter(k=>String(k.referansId)!==String(id));
+    rAll(); rKasa();
+    toast('Silindi','error');
+    // API arka planda paralel
+    Promise.all([
+        api({action:'delete',id:String(id)}),
+        ...ilgiliKasa.map(k=>api({action:'deleteKasa',id:String(k.id)}))
+    ]).catch(e=>console.warn('Silme sync hatası:',e));
 }
 async function clearAll(){if(!confirm('TÜM VERİLER SİLİNECEK!'))return;actionHistory.push({type:'clearAll',data:[...D]});showLo('Siliniyor...');try{const res=await api({action:'deleteAll'});if(res.ok){D=[];rAll();toast('Tüm veriler silindi','error');}else throw new Error(res.error);}catch(e){toast('Hata: '+e.message,'error');}hideLo();}
 function undoLastAction(){if(actionHistory.length===0){toast('Geri alınacak işlem yok','error');return;}const last=actionHistory.pop();showLo('Geri alınıyor...');if(last.type==='add'){D=D.filter(x=>x.id!==last.data.id);toast('Ekleme işlemi geri alındı','success');}else if(last.type==='update'){const idx=D.findIndex(x=>x.id===last.data.id);if(idx!==-1)D[idx]=norm(last.oldData);toast('Güncelleme geri alındı','success');}else if(last.type==='delete'){D.push(norm(last.data));toast('Silme işlemi geri alındı','success');}else if(last.type==='sell'){const idx=D.findIndex(x=>x.id===last.data.id);if(idx!==-1)D[idx]=norm(last.oldData);toast('Satış işlemi geri alındı','success');}else if(last.type==='clearAll'){D=last.data;toast('Temizleme işlemi geri alındı','success');}rAll();hideLo();}
@@ -3114,41 +3136,55 @@ async function saveMusteri(){
 }
 async function deleteMusteri(id){
     if(!confirm('Müşteriyi silmek istiyor musunuz?'))return;
-    showLo('Siliniyor...');
-    try{const res=await api({action:'deleteMusteri',id:String(id)});if(res.ok){MD=MD.filter(x=>x.id!==String(id));rMusteriler();toast('Silindi','error');}}catch(e){toast('Hata: '+e.message,'error');}
-    hideLo();
+    MD=MD.filter(x=>x.id!==String(id)); rMusteriler(); toast('Silindi','error');
+    api({action:'deleteMusteri',id:String(id)}).catch(e=>console.warn('Müşteri silme sync:',e));
 }
 function musteriDetay(id){
     const m = MD.find(x => String(x.id) === String(id));
-    if(!m){
-        toast('Müşteri bulunamadı!', 'error');
-        return;
-    }
-    
-    console.log('Müşteri detay açılıyor:', m);
-    
+    if(!m){ toast('Müşteri bulunamadı!', 'error'); return; }
+
     const satirlar = [];
+    const takaslar = [];
+    const oi = {'nakit':'💵','havale':'🏦','taksit':'📋','kart':'💳','takas':'🔄'};
+
     D.forEach(d => {
         (d.satildiImei || []).forEach(s => {
             const p = s.split('||');
-            // p[3] müşteri ID'si
-            if(p[3] === m.id) {
+            if(String(p[3]) !== String(m.id)) return;
+            const tip = p[4] || 'nakit';
+            if(tip === 'takas') {
+                // Takas: bu ürün müşteriye verildi
+                // Karşılığında alınan TK ürününü bul (aynı tarih)
+                const verilenTarih = p[1] || d.tarih;
+                const alinanUrun = D.find(x => x.id.startsWith('TK') && x.tarih === verilenTarih);
+                takaslar.push({
+                    tarih: verilenTarih,
+                    verilen: d.model + ' ' + d.gb + 'GB',
+                    verilenFiyat: Number(p[2]) || d.satis,
+                    alinan: alinanUrun ? alinanUrun.model + ' ' + alinanUrun.gb + 'GB' : '?',
+                    alinanDeger: alinanUrun ? alinanUrun.alis : 0,
+                    nakitFark: (Number(p[2]) || d.satis) - (alinanUrun ? alinanUrun.alis : 0),
+                    verilenImei: p[0],
+                    alinanImei: alinanUrun ? (alinanUrun.imeiList||[]).join(', ') : ''
+                });
+            } else {
                 satirlar.push({
                     tarih: p[1] || d.tarih,
-                    model: d.model,
+                    model: d.model, gb: d.gb,
                     imei: p[0],
                     fiyat: Number(p[2]) || d.satis,
-                    odeme: p[4] || 'nakit'
+                    odeme: tip
                 });
             }
         });
     });
-    
+
     satirlar.sort((a,b) => b.tarih.localeCompare(a.tarih));
+    takaslar.sort((a,b) => b.tarih.localeCompare(a.tarih));
     const toplamHarcama = satirlar.reduce((s,r) => s + r.fiyat, 0);
-    const oi = {'nakit':'💵','havale':'🏦','taksit':'📋'};
-    
-    let html = `<div style="background:var(--sf);border-radius:20px;padding:20px;max-width:500px;width:100%;max-height:80vh;overflow-y:auto">
+    const toplamTakas = takaslar.reduce((s,t) => s + t.nakitFark, 0);
+
+    let html = `<div style="background:var(--sf);border-radius:20px;padding:20px;max-width:520px;width:100%;max-height:85vh;overflow-y:auto">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
             <div>
                 <div style="font-size:18px;font-weight:800">${m.ad}</div>
@@ -3157,41 +3193,77 @@ function musteriDetay(id){
             </div>
             ${m.telefon ? `<button class="btn bg2 bsm" onclick="window.open('https://wa.me/90${String(m.telefon).replace(/^0/,'')}','_blank')">📱 WA</button>` : ''}
         </div>
-        
-        <div style="display:flex;gap:8px;margin-bottom:14px">
-            <div class="card" style="flex:1;text-align:center;padding:10px">
-                <div style="font-size:10px;color:var(--tx3)">Alışveriş</div>
+        <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+            <div class="card" style="flex:1;min-width:80px;text-align:center;padding:10px">
+                <div style="font-size:10px;color:var(--tx3)">Satış</div>
                 <div style="font-weight:800;font-size:16px">${satirlar.length}</div>
             </div>
-            <div class="card" style="flex:1;text-align:center;padding:10px">
+            <div class="card" style="flex:1;min-width:80px;text-align:center;padding:10px">
+                <div style="font-size:10px;color:var(--tx3)">Takas</div>
+                <div style="font-weight:800;font-size:16px;color:var(--ac2)">${takaslar.length}</div>
+            </div>
+            <div class="card" style="flex:1;min-width:100px;text-align:center;padding:10px">
                 <div style="font-size:10px;color:var(--tx3)">Toplam Harcama</div>
-                <div style="font-weight:800;font-size:16px;color:var(--ac3)">${fmt(toplamHarcama)}</div>
+                <div style="font-weight:800;font-size:14px;color:var(--ac3)">${fmt(toplamHarcama + toplamTakas)}</div>
             </div>
-            <div class="card" style="flex:1;text-align:center;padding:10px">
+            <div class="card" style="flex:1;min-width:80px;text-align:center;padding:10px">
                 <div style="font-size:10px;color:var(--tx3)">Borç</div>
-                <div style="font-weight:800;font-size:16px;color:${Number(m.toplamBorc)>0 ? 'var(--rd)' : 'var(--gn)'}">${Number(m.toplamBorc)>0 ? fmt(m.toplamBorc) : '✓'}</div>
+                <div style="font-weight:800;font-size:14px;color:${Number(m.toplamBorc)>0?'var(--rd)':'var(--gn)'}">
+                    ${Number(m.toplamBorc)>0?fmt(m.toplamBorc):'✓'}
+                </div>
             </div>
-        </div>
-        
-        <div style="font-size:13px;font-weight:700;margin-bottom:10px">📋 Alış Geçmişi</div>`;
-    
+        </div>`;
+
+    // Normal satışlar
     if(satirlar.length) {
+        html += `<div style="font-size:13px;font-weight:700;margin-bottom:8px">🛒 Satış Geçmişi</div>`;
         satirlar.forEach(s => {
-            html += `<div style="background:var(--sf2);border-radius:10px;padding:10px;margin-bottom:8px">
+            html += `<div style="background:var(--sf2);border-radius:10px;padding:10px;margin-bottom:6px">
                 <div style="display:flex;justify-content:space-between;align-items:center">
                     <div>
-                        <div style="font-weight:600;font-size:13px">${s.model}</div>
-                        <div style="font-size:10px;color:var(--tx3);font-family:monospace">IMEI: ${s.imei}</div>
-                        <div style="font-size:10px;color:var(--tx2)">📅 ${formatTarih(s.tarih)} · ${oi[s.odeme] || ''} ${s.odeme}</div>
+                        <div style="font-weight:600;font-size:13px">${s.model} ${s.gb}GB</div>
+                        <div style="font-size:10px;color:var(--tx3);font-family:monospace">IMEI: ${s.imei||'—'}</div>
+                        <div style="font-size:10px;color:var(--tx2)">📅 ${formatTarih(s.tarih)} · ${oi[s.odeme]||''} ${s.odeme}</div>
                     </div>
                     <div style="font-weight:700;font-size:15px;color:var(--ac3)">${fmt(s.fiyat)}</div>
                 </div>
             </div>`;
         });
-    } else {
-        html += `<div style="text-align:center;color:var(--tx3);padding:20px">📭 Henüz alışveriş yok</div>`;
     }
-    
+
+    // Takas işlemleri
+    if(takaslar.length) {
+        html += `<div style="font-size:13px;font-weight:700;margin:12px 0 8px">🔄 Takas Geçmişi</div>`;
+        takaslar.forEach(t => {
+            html += `<div style="background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.2);border-radius:10px;padding:10px;margin-bottom:6px">
+                <div style="font-size:10px;color:var(--tx2);margin-bottom:6px">📅 ${formatTarih(t.tarih)}</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                    <div style="flex:1;min-width:120px">
+                        <div style="font-size:9px;color:var(--tx3);text-transform:uppercase">Müşteriye Verilen</div>
+                        <div style="font-weight:700;font-size:12px;color:var(--rd)">${t.verilen}</div>
+                        <div style="font-size:11px;color:var(--ac3)">${fmt(t.verilenFiyat)}</div>
+                        ${t.verilenImei?`<div style="font-size:9px;font-family:monospace;color:var(--tx3)">${t.verilenImei}</div>`:''}
+                    </div>
+                    <div style="display:flex;align-items:center;font-size:16px">⇄</div>
+                    <div style="flex:1;min-width:120px">
+                        <div style="font-size:9px;color:var(--tx3);text-transform:uppercase">Müşteriden Alınan</div>
+                        <div style="font-weight:700;font-size:12px;color:var(--gn)">${t.alinan}</div>
+                        <div style="font-size:11px;color:var(--tx2)">${fmt(t.alinanDeger)}</div>
+                        ${t.alinanImei?`<div style="font-size:9px;font-family:monospace;color:var(--tx3)">${t.alinanImei}</div>`:''}
+                    </div>
+                </div>
+                <div style="margin-top:8px;padding-top:6px;border-top:1px solid rgba(168,85,247,.15);display:flex;justify-content:space-between">
+                    <span style="font-size:11px;color:var(--tx2)">Nakit Fark</span>
+                    <span style="font-weight:700;font-size:12px;color:${t.nakitFark>=0?'var(--gn)':'var(--rd)'}">${t.nakitFark>=0?'+':''}${fmt(t.nakitFark)}</span>
+                </div>
+            </div>`;
+        });
+    }
+
+    if(!satirlar.length && !takaslar.length) {
+        html += `<div style="text-align:center;color:var(--tx3);padding:20px">📭 Henüz işlem yok</div>`;
+    }
+
     if(Number(m.toplamBorc) > 0) {
         html += `<div style="margin-top:14px;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.2);border-radius:12px;padding:14px">
             <div style="font-size:13px;font-weight:700;color:var(--rd);margin-bottom:10px">💳 Borç: ${fmt(m.toplamBorc)}</div>
@@ -3201,9 +3273,9 @@ function musteriDetay(id){
             </div>
         </div>`;
     }
-    
-    html += `<button style="margin-top:16px;width:100%;padding:10px;background:var(--ac);color:white;border:none;border-radius:12px;cursor:pointer" onclick="document.getElementById('musteriDetayModal').remove()">Kapat</button></div>`;
-    
+
+    html += `<button style="margin-top:16px;width:100%;padding:10px;background:var(--ac);color:white;border:none;border-radius:12px;cursor:pointer;font-size:13px;font-weight:700" onclick="document.getElementById('musteriDetayModal').remove()">Kapat</button></div>`;
+
     const modal = document.createElement('div');
     modal.id = 'musteriDetayModal';
     modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px';
@@ -3364,8 +3436,9 @@ async function saveTedarikci(){
     hideLo();
 }
 async function deleteTedarikci(id){
-    if(!confirm('Tedarikçiyi silmek istiyor musunuz?'))return;showLo('Siliniyor...');
-    try{const res=await api({action:'deleteTedarikci',id:String(id)});if(res.ok){TD=TD.filter(x=>x.id!==String(id));rTedarikciler();toast('Silindi','error');}}catch(e){toast('Hata: '+e.message,'error');}hideLo();
+    if(!confirm('Tedarikçiyi silmek istiyor musunuz?'))return;
+    TD=TD.filter(x=>x.id!==String(id)); rTedarikciler(); toast('Silindi','error');
+    api({action:'deleteTedarikci',id:String(id)}).catch(e=>console.warn('Tedarikçi silme sync:',e));
 }
 
 // ============ KASA MODAL ============
@@ -3374,13 +3447,13 @@ function closeKasaMo(){document.getElementById('moKasa').classList.remove('open'
 async function saveKasaHareket(){
     const tutar=Number(document.getElementById('fk_tutar')?.value)||0;if(tutar<=0){toast('Tutar gerekli!','error');return;}
     const k={id:Date.now().toString(),tarih:document.getElementById('fk_tar')?.value||getTodayDate(),tip:document.getElementById('fk_tip')?.value||'giris',kategori:document.getElementById('fk_kat')?.value||'diger',odemeYontemi:document.getElementById('fk_odeme')?.value||'nakit',tutar,aciklama:document.getElementById('fk_aciklama')?.value.trim()||'',referansId:'',not:''};
-    showLo('Kaydediliyor...');
-    try{const res=await api({action:'addKasa',data:k});if(res.ok){KD.push(k);closeKasaMo();rKasa();toast('Kaydedildi ✓','success');}else throw new Error(res.error);}catch(e){toast('Hata: '+e.message,'error');}hideLo();
+    KD.push(k); closeKasaMo(); rKasa(); toast('Kaydedildi ✓','success');
+    api({action:'addKasa',data:k}).catch(e=>console.warn('Kasa kayıt sync:',e));
 }
 async function deleteKasa(id){
     if(!confirm('Bu kasa hareketini silmek istediğinize emin misiniz?'))return;
-    showLo('Siliniyor...');
-    try{const res=await api({action:'deleteKasa',id:String(id)});if(res.ok){KD=KD.filter(x=>x.id!==String(id));rKasa();toast('Silindi','error');}}catch(e){toast('Hata: '+e.message,'error');}hideLo();
+    KD=KD.filter(x=>x.id!==String(id)); rKasa(); toast('Silindi','error');
+    api({action:'deleteKasa',id:String(id)}).catch(e=>console.warn('Kasa silme sync:',e));
 }
 
 // ============ TOPLU WHATSAPP ============
