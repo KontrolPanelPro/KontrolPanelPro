@@ -829,7 +829,25 @@ input,select{padding:8px 10px;font-size:12px}
 #toast{bottom:60px;padding:8px 14px;font-size:11px}
 }
 
-/* ── RESPONSIVE 480 ── */
+/* ── PC PERFORMANS: blur GPU yükünü kapat ── */
+@media(min-width:769px){
+/* Sadece gerçek overlay'ler blur kullanır: hdr, mo, lo, md, lb, toast */
+/* İçerik elemanlarındaki blur faydasız ama GPU'ya çok yük bindiriyor */
+.card,.tw,.sc,.flip-card-front,.flip-card-back,
+.three-face-face,.top-card,.top-sub,.top-other-row,
+.bres,.analiz-sort-btn,.chart-btn,.top-btn,
+.dbs,.tt,.live-clock,.bg2,
+input,select,textarea,
+.mbt,.qbtn,.filter-bar,.undo-notify{
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+/* Üst mesh arka plan: 3 gradient yerine 1'e indir */
+[data-theme="dark"] body::before{
+  background:radial-gradient(ellipse 70% 50% at 15% 10%, rgba(99,102,241,.14) 0%, transparent 55%)!important;
+}
+}
+
 @media(max-width:480px){
 .sg{grid-template-columns:repeat(2,1fr);gap:7px}
 .sc{padding:10px}
