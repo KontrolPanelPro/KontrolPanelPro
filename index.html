@@ -279,8 +279,9 @@ html{overflow-y:scroll;scrollbar-gutter:stable}
 
 /* ── MAIN ── */
 .main{padding:18px;max-width:100%;margin:0 auto;padding-bottom:80px}
-.page{display:none;animation:fadeIn .22s ease}
+.page{display:none;animation:fadeIn .22s ease;will-change:opacity,transform}
 .page.active{display:block}
+.flip-card-inner{will-change:transform}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
 /* ── CLOCK ── */
@@ -1398,6 +1399,8 @@ let bMod = 'ara', bScan = false, bReader = null, bCode = '';
 let bSatTgt = null, bSatMax = 0, bQty = 1;
 let sortState = {};
 let chartPeriod = 'month';
+let _rChartsTimer = null;
+const rChartsDebounced = () => { clearTimeout(_rChartsTimer); _rChartsTimer = setTimeout(rCharts, 80); };
 let analizSort = 'kar';
 let analizSortDirection = 'desc';
 let currentElFilter = 'all';
@@ -1617,7 +1620,7 @@ async function init(){
     }
    initImeiSorting();
 }
-function initChartButtons(){const btns=document.querySelectorAll('#chartPeriodButtons .chart-btn');btns.forEach(btn=>{btn.addEventListener('click',()=>{btns.forEach(b=>b.classList.remove('active'));btn.classList.add('active');chartPeriod=btn.dataset.period;rCharts();});});}
+function initChartButtons(){const btns=document.querySelectorAll('#chartPeriodButtons .chart-btn');btns.forEach(btn=>{btn.addEventListener('click',()=>{btns.forEach(b=>b.classList.remove('active'));btn.classList.add('active');chartPeriod=btn.dataset.period;rChartsDebounced();});});}
 function initAnalizButtons(){const btns=document.querySelectorAll('#analizSortButtons .analiz-sort-btn');btns.forEach(btn=>{btn.addEventListener('click',()=>{if(analizSort===btn.dataset.sort){analizSortDirection=analizSortDirection==='desc'?'asc':'desc';}else{analizSort=btn.dataset.sort;analizSortDirection='desc';}btns.forEach(b=>b.classList.remove('active'));btn.classList.add('active');rUrunler();});});}
 function initElChartButtons(){const btns=document.querySelectorAll('#elChartButtons .el-chart-btn');btns.forEach(btn=>{btn.addEventListener('click',()=>{btns.forEach(b=>b.classList.remove('active'));btn.classList.add('active');currentElFilter=btn.dataset.el;updateElChart();});});}
 async function syncData(){
@@ -2843,7 +2846,7 @@ function topRender(c){
 }
 window.topSwitch=topSwitch;
 
-function rAll(){rDash();const act=document.querySelector('.page.active');const id=act?act.id.replace('page-',''):'';if(id==='stok')rStok();else if(id==='islemler')rIslemler();else if(id==='urunler'){rTop();rUrunler();}else if(id==='imei')rImei();else if(id==='raporlar')rRaporlarSayfasi();else if(id==='hareketler')stokHareketRaporu();rStok();rIslemler();setTimeout(initTopScrollbars,50);}
+function rAll(){const act=document.querySelector('.page.active');const id=act?act.id.replace('page-',''):'Anasayfa';if(id==='Anasayfa'||id==='')rDash();else if(id==='stok')rStok();else if(id==='islemler')rIslemler();else if(id==='urunler'){rTop();rUrunler();}else if(id==='imei')rImei();else if(id==='raporlar')rRaporlarSayfasi();else if(id==='hareketler')stokHareketRaporu();else if(id==='musteriler')rMusteriler();else if(id==='tedarikciler')rTedarikciler();else if(id==='kasa')rKasa();setTimeout(initTopScrollbars,50);}
 
 // ===== ÜST SCROLLBAR (mirror) =====
 function initTopScrollbars(){
