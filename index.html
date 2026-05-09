@@ -932,7 +932,7 @@ input,select{padding:8px 10px;font-size:12px}
 <div class="sg" id="statsG"></div>
 <div class="g2">
 <div class="card"><div class="chart-header"><div class="stt">📈 Alış/Satış/Kar</div><div class="chart-buttons" id="chartPeriodButtons"><button class="chart-btn" data-period="day">Gün</button><button class="chart-btn" data-period="week">Hafta</button><button class="chart-btn active" data-period="month">Ay</button><button class="chart-btn" data-period="year">Yıl</button></div></div><div class="cw"><canvas id="cAy"></canvas></div></div>
-<div class="card"><div class="stt">💰 Kar Dağılımı</div><div class="cw"><canvas id="cDo"></canvas></div></div>
+<div class="card"><div class="stt">💰 Kar Dağılımı</div><div class="cw" style="height:300px"><canvas id="cDo"></canvas></div></div>
 </div>
 <div class="g2">
 <div class="card"><div class="stt">💰 Model Bazlı Kar</div><div class="cw"><canvas id="cKar"></canvas></div></div>
@@ -2325,14 +2325,36 @@ function getPeriodRange(period) {
 
 function rCharts(){Object.values(charts).forEach(c=>{try{c.destroy();}catch(e){}});charts={};const tc=getTextColor();const gc=getGridColor();const CLR=['#7c3aed','#06b6d4','#10b981','#f59e0b','#ef4444','#a855f7','#ec4899','#14b8a6'];
 const range = getPeriodRange(chartPeriod);
-const satilanlar=D.filter(d=>{
-    if(d.satılanAdet<=0) return false;
-    if(range.start && d.tarih < range.start) return false;
-    if(range.end && d.tarih > range.end) return false;
-    return true;
+let periodData={};let labels=[];const kMPeriod={};
+// Satış tarihlerine göre gruplama (alış tarihi değil, gerçek satış tarihi)
+D.forEach(d=>{
+    const satislar=d.satildiImei||[];
+    if(satislar.length>0){
+        satislar.forEach(s=>{
+            const p=s.split('||');
+            const sDate=p[1]||d.tarih;
+            if(range.start&&sDate<range.start)return;
+            if(range.end&&sDate>range.end)return;
+            const satis=p[2]?Number(p[2]):d.satis;
+            const periodKey=range.groupBy==='day'?sDate:sDate.substring(0,7);
+            if(!periodData[periodKey])periodData[periodKey]={a:0,s:0,k:0};
+            periodData[periodKey].a+=d.alis;
+            periodData[periodKey].s+=satis;
+            periodData[periodKey].k+=satis-d.alis;
+            kMPeriod[d.model]=(kMPeriod[d.model]||0)+(satis-d.alis);
+        });
+    } else if((d.satılanAdet||0)>0){
+        if(range.start&&d.tarih<range.start)return;
+        if(range.end&&d.tarih>range.end)return;
+        const periodKey=range.groupBy==='day'?d.tarih:d.tarih.substring(0,7);
+        if(!periodData[periodKey])periodData[periodKey]={a:0,s:0,k:0};
+        const oran=d.satılanAdet/d.adet;
+        periodData[periodKey].a+=d.toplamAlis*oran;
+        periodData[periodKey].s+=d.toplamSatis*oran;
+        periodData[periodKey].k+=d.kar*oran;
+        kMPeriod[d.model]=(kMPeriod[d.model]||0)+d.kar*oran;
+    }
 });
-let periodData={};let labels=[];
-satilanlar.forEach(d=>{let periodKey;let date=new Date(d.tarih);if(range.groupBy==='day')periodKey=d.tarih;else{periodKey=`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`;}if(!periodData[periodKey])periodData[periodKey]={a:0,s:0,k:0};const oran=d.satılanAdet/d.adet;periodData[periodKey].a+=d.toplamAlis*oran;periodData[periodKey].s+=d.toplamSatis*oran;periodData[periodKey].k+=d.kar*oran;});
 const periods=Object.keys(periodData).sort();
 if(range.groupBy==='day'){const MN=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];labels=periods.map(p=>{const parts=p.split('-');return parts[2]+' '+MN[+parts[1]-1];});}
 else{const MN=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];labels=periods.map(p=>{const [y2,m2]=p.split('-');return MN[+m2-1]+' '+y2;});}
@@ -2353,9 +2375,9 @@ D.forEach(d=>{
 const kdMs=Object.keys(kDagilim).sort((a,b)=>kDagilim[b]-kDagilim[a]);
 const toplamKar=Object.values(kDagilim).reduce((s,v)=>s+v,0);
 const ctxDo=document.getElementById('cDo')?.getContext('2d');
-if(ctxDo){charts.b=new Chart(ctxDo,{type:'doughnut',data:{labels:kdMs.length?kdMs.map(m=>`${m} (%${toplamKar>0?((kDagilim[m]/toplamKar)*100).toFixed(0):0})`):['Veri yok'],datasets:[{data:kdMs.length?kdMs.map(m=>kDagilim[m]):[1],backgroundColor:CLR}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'right',labels:{color:tc,font:{family:'Sora',size:11},boxWidth:12,padding:10}}}}});}
+if(ctxDo){const trunc=(s,n=13)=>s.length>n?s.slice(0,n)+'…':s;charts.b=new Chart(ctxDo,{type:'doughnut',data:{labels:kdMs.length?kdMs.map(m=>`${trunc(m)} %${toplamKar>0?((kDagilim[m]/toplamKar)*100).toFixed(0):0}`):['Veri yok'],datasets:[{data:kdMs.length?kdMs.map(m=>kDagilim[m]):[1],backgroundColor:CLR}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{tooltip:{callbacks:{label:ctx=>`${kdMs[ctx.dataIndex]}: ₺${Number(kDagilim[kdMs[ctx.dataIndex]]||0).toLocaleString('tr-TR')}`}},legend:{position:'bottom',labels:{color:tc,font:{family:'Sora',size:10},boxWidth:10,padding:8}}}}});}
 
-const kM={};satilanlar.forEach(d=>{const karOran=d.kar*(d.satılanAdet/d.adet);kM[d.model]=(kM[d.model]||0)+karOran;});const km=Object.keys(kM).sort((a,b)=>kM[b]-kM[a]).slice(0,8);const ctxKar=document.getElementById('cKar')?.getContext('2d');if(ctxKar){charts.c=new Chart(ctxKar,{type:'bar',data:{labels:km.length?km:['Veri yok'],datasets:[{label:'Kar (Satılan)',data:km.map(m=>kM[m]),backgroundColor:km.map(m=>kM[m]>=0?'rgba(16,185,129,.75)':'rgba(239,68,68,.75)')}]},options:{...cO('₺'),indexAxis:'y'}});}
+const km=Object.keys(kMPeriod).sort((a,b)=>kMPeriod[b]-kMPeriod[a]).slice(0,8);const ctxKar=document.getElementById('cKar')?.getContext('2d');if(ctxKar){charts.c=new Chart(ctxKar,{type:'bar',data:{labels:km.length?km:['Veri yok'],datasets:[{label:'Kar (Satılan)',data:km.map(m=>kMPeriod[m]),backgroundColor:km.map(m=>kMPeriod[m]>=0?'rgba(16,185,129,.75)':'rgba(239,68,68,.75)')}]},options:{...cO('₺'),indexAxis:'y'}});}
 const ctxEl=document.getElementById('cEl')?.getContext('2d');if(ctxEl){charts.elChart=new Chart(ctxEl,{type:'bar',data:{labels:[],datasets:[{label:'Alış (Satılan)',backgroundColor:'rgba(239,68,68,.7)',borderRadius:6},{label:'Satış',backgroundColor:'rgba(6,182,212,.7)',borderRadius:6},{label:'Kar',backgroundColor:'rgba(16,185,129,.7)',borderRadius:6}]},options:cO('₺')});updateElChart();}}
 function rSon(){const son=[...D].sort((a,b)=>{const td=b.tarih.localeCompare(a.tarih);return td!==0?td:idTs(b.id)-idTs(a.id);}).slice(0,10);const tb=document.getElementById('sonTb');if(!tb)return;if(!son.length){tb.innerHTML='<tr><td colspan="9"><div class="empty"><i>📭</i>Henüz işlem yok</div></td></tr>';return;}tb.innerHTML=son.map(d=>`<tr class="${getDur(d)==='satildi'?'sr':''}"><td>${formatTarih(d.tarih)}</td><td class="b">${d.model}</td><td><span class="badge ${d.el==='1.El'?'bpu':'bcy'}">${d.el}</span></td><td>${d.gb}GB/${d.ram}GB</td><td>${d.adet}</td><td class="trd">${fmt(d.toplamAlis)}</td><td class="tcy">${fmt(d.toplamSatis)}</td><td class="${d.kar>=0?'tgn':'trd'} b">${fmt(d.kar)}</td><td>${getDurB(d)}</td></tr>`).join('');}
 function rStok() {
