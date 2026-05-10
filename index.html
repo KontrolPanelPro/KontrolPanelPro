@@ -504,31 +504,6 @@ input:focus,select:focus,textarea:focus{
 [data-theme="dark"] select option{background:#0d1020;color:#f0f4ff;}
 [data-theme="light"] select option{background:#eef2ff;color:#0f1229;}
 
-/* ── CUSTOM SELECT ── */
-.csel-wrap{position:relative;width:100%}
-.csel-wrap select{display:none!important}
-.csel-trigger{
-  display:flex;align-items:center;justify-content:space-between;
-  background:var(--sf2);border:1px solid var(--br);border-radius:10px;
-  padding:10px 12px;color:var(--tx);font-family:'Sora',sans-serif;font-size:13px;
-  cursor:pointer;user-select:none;width:100%;
-  transition:border-color .2s,box-shadow .2s;
-}
-.csel-trigger:focus,.csel-trigger.open{border-color:var(--ac);box-shadow:0 0 0 3px var(--ac-glow)}
-.csel-arrow{font-size:10px;opacity:.6;transition:transform .2s}
-.csel-trigger.open .csel-arrow{transform:rotate(180deg)}
-.csel-drop{
-  position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:9999;
-  background:var(--sf2);border:1px solid var(--ac);border-radius:10px;
-  max-height:220px;overflow-y:auto;
-  box-shadow:0 8px 32px rgba(0,0,0,.35);
-}
-.csel-opt{
-  padding:9px 12px;font-size:13px;font-family:'Sora',sans-serif;
-  color:var(--tx);cursor:pointer;transition:background .12s;
-}
-.csel-opt:hover{background:var(--ac);color:#fff}
-.csel-opt.selected{font-weight:700;color:var(--ac)}
 /* ── MODAL ── */
 .mo{
   display:none;position:fixed;inset:0;
@@ -3719,70 +3694,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const observer = new MutationObserver(() => setTimeout(alisFiyatlariniGizle, 300));
     const target = document.getElementById('mainC');
     if(target) observer.observe(target, { childList: true, subtree: true });
-})();
-</script>
-<script>
-// ── CUSTOM SELECT ENGINE ──
-(function(){
-  function buildCustomSelect(sel){
-    if(sel.dataset.cselDone)return;
-    sel.dataset.cselDone='1';
-    const wrap=document.createElement('div');
-    wrap.className='csel-wrap';
-    sel.parentNode.insertBefore(wrap,sel);
-    wrap.appendChild(sel);
-
-    const trigger=document.createElement('div');
-    trigger.className='csel-trigger';
-    trigger.tabIndex=0;
-    trigger.innerHTML='<span class="csel-label"></span><span class="csel-arrow">▼</span>';
-    wrap.appendChild(trigger);
-
-    const drop=document.createElement('div');
-    drop.className='csel-drop';
-    drop.style.display='none';
-    wrap.appendChild(drop);
-
-    function sync(){
-      const opt=sel.options[sel.selectedIndex];
-      trigger.querySelector('.csel-label').textContent=opt?opt.text:'';
-    }
-    function buildOpts(){
-      drop.innerHTML='';
-      Array.from(sel.options).forEach((o,i)=>{
-        const d=document.createElement('div');
-        d.className='csel-opt'+(sel.selectedIndex===i?' selected':'');
-        d.textContent=o.text;
-        d.addEventListener('mousedown',e=>{e.preventDefault();sel.selectedIndex=i;sel.dispatchEvent(new Event('change',{bubbles:true}));sync();close();});
-        drop.appendChild(d);
-      });
-    }
-    function open(){trigger.classList.add('open');drop.style.display='block';buildOpts();}
-    function close(){trigger.classList.remove('open');drop.style.display='none';}
-
-    trigger.addEventListener('click',()=>drop.style.display==='none'?open():close());
-    trigger.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')drop.style.display==='none'?open():close();if(e.key==='Escape')close();});
-    document.addEventListener('mousedown',e=>{if(!wrap.contains(e.target))close();},{passive:true});
-
-    // Dışarıdan set edilirse (rStok, rIslemler vb.) sync et
-    const orig=Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,'value');
-    // MutationObserver ile option değişimini yakala
-    const mo2=new MutationObserver(()=>{sync();});
-    mo2.observe(sel,{childList:true,subtree:true});
-    sel.addEventListener('change',sync);
-    sync();
-  }
-
-  function initAll(){
-    document.querySelectorAll('select:not([data-csel-done])').forEach(buildCustomSelect);
-  }
-
-  // Sayfa yüklenince
-  document.addEventListener('DOMContentLoaded',()=>setTimeout(initAll,400));
-
-  // Modal açılınca / yeni select eklenir
-  const obs=new MutationObserver(()=>initAll());
-  obs.observe(document.body,{childList:true,subtree:true});
 })();
 </script>
 </body>
