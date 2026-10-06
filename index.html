@@ -276,6 +276,64 @@ html{overflow-y:scroll;scrollbar-gutter:stable}
 .tab.active{color:var(--ac2);border-bottom-color:var(--ac)}
 .tab:focus-visible,.btn:focus-visible,.tt:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
 
+/* ══ MODERN SAYFALAR (Ana sayfa ve Analiz hariç) ══ */
+.page:not(#page-Anasayfa):not(#page-urunler) .sh2{margin-bottom:16px}
+.page:not(#page-Anasayfa):not(#page-urunler) .sh2 .stt{font-size:20px;font-weight:800;letter-spacing:-.5px}
+.page:not(#page-Anasayfa):not(#page-urunler) .tw{border-radius:18px;background:var(--sf);box-shadow:0 1px 0 rgba(255,255,255,.03) inset,0 10px 30px -18px var(--sh)}
+.page:not(#page-Anasayfa):not(#page-urunler) thead tr{background:transparent}
+.page:not(#page-Anasayfa):not(#page-urunler) thead th{font-size:10px;letter-spacing:.6px;padding:14px 16px;color:var(--tx3);border-bottom:1px solid var(--br);white-space:nowrap}
+.page:not(#page-Anasayfa):not(#page-urunler) tbody td{padding:13px 16px;font-size:13px}
+.page:not(#page-Anasayfa):not(#page-urunler) tbody tr:hover{background:rgba(99,102,241,.06)}
+.page:not(#page-Anasayfa):not(#page-urunler) .filter-bar{border-radius:16px;gap:8px}
+.page:not(#page-Anasayfa):not(#page-urunler) .sbg,.page:not(#page-Anasayfa):not(#page-urunler) .badge{white-space:nowrap}
+.mobil-sirala{display:none}
+.kisi{display:flex;align-items:center;gap:10px;white-space:nowrap}
+.avatar{width:32px;height:32px;border-radius:50%;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;letter-spacing:.3px;color:hsl(var(--h) 80% 78%);background:hsl(var(--h) 60% 50% / .18);border:1px solid hsl(var(--h) 60% 60% / .3)}
+[data-theme="light"] .avatar{color:hsl(var(--h) 60% 35%);background:hsl(var(--h) 70% 50% / .14)}
+.tel-hucre{display:flex;align-items:center;gap:6px;white-space:nowrap}
+.tel-hucre a{color:var(--ac3);text-decoration:none;font-variant-numeric:tabular-nums}
+.wa-btn{padding:3px 7px!important;font-size:12px!important}
+.brd{background:rgba(248,113,113,.12);color:var(--rd);border:1px solid rgba(248,113,113,.25)}
+.ozet-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:14px}
+.ozet-kutu{display:flex;align-items:center;gap:12px;padding:14px;border-radius:16px;background:var(--sf);border:1px solid var(--br)}
+.ozet-ikon{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;background:color-mix(in srgb,var(--c) 14%,transparent);border:1px solid color-mix(in srgb,var(--c) 25%,transparent)}
+.ozet-et{font-size:10px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.5px}
+.ozet-deger{font-size:18px;font-weight:800;letter-spacing:-.5px;line-height:1.2;font-variant-numeric:tabular-nums}
+
+/* Mobil: tablolar kart listesine dönüşür */
+@media(max-width:640px){
+.page:not(#page-Anasayfa):not(#page-urunler) .sh2{flex-direction:column;align-items:stretch}
+.page:not(#page-Anasayfa):not(#page-urunler) .sh2>div:not(.stt){width:100%}
+.page:not(#page-Anasayfa):not(#page-urunler) .sh2 input[type=text]{flex:1 1 100%;width:100%!important}
+.page:not(#page-Anasayfa):not(#page-urunler) .sh2 select{flex:1}
+.page:not(#page-Anasayfa):not(#page-urunler) .filter-bar{display:grid;grid-template-columns:1fr 1fr}
+.page:not(#page-Anasayfa):not(#page-urunler) .filter-bar input,.page:not(#page-Anasayfa):not(#page-urunler) .filter-bar select{min-width:0;width:100%}
+.page:not(#page-Anasayfa):not(#page-urunler) .filter-bar input[type=text]{grid-column:1/-1}
+.page:not(#page-Anasayfa):not(#page-urunler) .tw-top-scroll{display:none!important}
+.page:not(#page-Anasayfa):not(#page-urunler) .tw{overflow:visible;border:none;background:none;box-shadow:none;backdrop-filter:none}
+.page:not(#page-Anasayfa):not(#page-urunler) .tw table{min-width:0;display:block}
+.page:not(#page-Anasayfa):not(#page-urunler) .tw thead{display:none}
+.page:not(#page-Anasayfa):not(#page-urunler) .tw tbody{display:flex;flex-direction:column;gap:10px}
+.page:not(#page-Anasayfa):not(#page-urunler) .tw tbody tr{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 12px;padding:14px 16px;border:1px solid var(--br);border-radius:16px;background:var(--sf)}
+.page:not(#page-Anasayfa):not(#page-urunler) .tw tbody tr.sr{opacity:.55}
+.page:not(#page-Anasayfa):not(#page-urunler) .tw tbody td{padding:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;font-size:13px;min-width:0;white-space:normal!important;text-align:left!important}
+.page:not(#page-Anasayfa):not(#page-urunler) .tw tbody td::before{content:attr(data-label);font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--tx3)}
+.page:not(#page-Anasayfa):not(#page-urunler) .tw tbody td[data-label=""]::before{display:none}
+.page:not(#page-Anasayfa):not(#page-urunler) .tw tbody td.k-baslik{grid-column:1/-1;order:-1;flex-direction:row;flex-wrap:wrap;align-items:center;gap:6px;font-size:15px;padding-bottom:8px;border-bottom:1px solid var(--br)}
+.page:not(#page-Anasayfa):not(#page-urunler) .tw tbody td.k-baslik::before{display:none}
+.page:not(#page-Anasayfa):not(#page-urunler) .tw tbody td.k-tam{grid-column:1/-1}
+.page:not(#page-Anasayfa):not(#page-urunler) .tw tbody td.k-genis{grid-column:span 2}
+.page:not(#page-Anasayfa):not(#page-urunler) .tw tbody td.k-aksiyon{grid-column:1/-1;order:99;flex-direction:row;flex-wrap:wrap;justify-content:flex-end;gap:8px;padding-top:8px;border-top:1px solid var(--br)}
+.page:not(#page-Anasayfa):not(#page-urunler) .tw tbody td.k-aksiyon::before{display:none}
+.page:not(#page-Anasayfa):not(#page-urunler) .tw tbody td.k-aksiyon .btn{padding:8px 13px;font-size:14px;min-width:42px;justify-content:center}
+.page:not(#page-Anasayfa):not(#page-urunler) .tw tbody td{font-size:12.5px}
+.page:not(#page-Anasayfa):not(#page-urunler) .tw tbody td.k-tam .empty{width:100%}
+.ozet-grid{grid-template-columns:1fr 1fr}
+.mobil-sirala{display:block!important;width:100%;margin-bottom:10px}
+.ozet-kutu{padding:12px;gap:10px}
+.ozet-deger{font-size:16px}
+}
+
 /* ── KASAYA İŞLENMEMİŞ SATIŞLAR ── */
 .eksik-kart{border:1px solid rgba(251,191,36,.35);background:rgba(251,191,36,.06);border-radius:16px;padding:14px;margin-bottom:14px}
 .eksik-bas{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px}
@@ -964,7 +1022,7 @@ input,select,textarea,
       <button class="btn bp bsm" onclick="openKasaMo()">➕ Hareket</button>
     </div>
   </div>
-  <div id="kasaOzet" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px"></div>
+  <div id="kasaOzet" class="ozet-grid"></div>
   <div id="kasaEksik"></div>
   <div class="tw">
     <table><thead><tr>
@@ -1511,6 +1569,9 @@ function tarihNorm(v){
     }
     return s;
 }
+// Kişi avatarı: baş harfler ve isimden türetilen sabit renk tonu
+function basHarf(ad){return String(ad||'?').trim().split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toLocaleUpperCase('tr-TR')||'?';}
+function avatarRenk(ad){let h=0;for(const c of String(ad||''))h=(h*31+c.charCodeAt(0))%360;return h;}
 // WhatsApp için numarayı 90XXXXXXXXXX biçimine getirir
 function waNo(t){let n=String(t||'').replace(/\D/g,'');if(n.startsWith('90')&&n.length===12)return n;n=n.replace(/^0+/,'');return '90'+n;}
 
@@ -1702,6 +1763,52 @@ function saveUrl(){
     setupFocusOnTouch();
 }
 function changeUrl(){const n=prompt('Yeni Apps Script URL:',URL2);if(n===null)return;const u=n.trim();if(!u.startsWith('https://script.google.com')){toast('Geçerli bir Apps Script URL girin!','error');return;}URL2=u;localStorage.setItem(SK,URL2);syncData();}
+// Mobil kart görünümü için her hücreye sütun başlığını data-label olarak yazar.
+// Tablolar her çizildiğinde (tbody değişince) otomatik çalışır.
+function tablolariEtiketle(){
+    document.querySelectorAll('.page .tw table').forEach(tbl=>{
+        const basliklar=[...tbl.querySelectorAll('thead th')].map(th=>th.textContent.replace(/[⇅↑↓]/g,'').trim());
+        tbl.querySelectorAll('tbody tr').forEach(tr=>{
+            if(tr.dataset.etiketli)return;
+            tr.dataset.etiketli='1';
+            let baslikVar=false;
+            [...tr.children].forEach((td,i)=>{
+                if(td.colSpan>1){td.classList.add('k-tam');return;}
+                td.setAttribute('data-label',basliklar[i]||'');
+                const butonlar=td.querySelectorAll('button');
+                if(butonlar.length){const disi=td.textContent.replace(/\s/g,'').length,ici=[...butonlar].reduce((n,b)=>n+b.textContent.replace(/\s/g,'').length,0);if(disi===ici)td.classList.add('k-aksiyon');}
+                if(td.querySelectorAll('.itag').length>1)td.classList.add('k-tam');
+                if(td.querySelector('.tel-hucre'))td.classList.add('k-genis');
+                if(!baslikVar&&td.classList.contains('b')){td.classList.add('k-baslik');baslikVar=true;}
+            });
+        });
+    });
+}
+// Mobilde başlıklar gizli olduğundan sıralanabilir tablolara bir "Sırala" seçici eklenir
+const SIRALA_RENDER={stokTable:()=>rStok(),islemlerTable:()=>rIslemler(),imeiTable:()=>rImei()};
+function mobilSiralaEkle(){
+    Object.keys(SIRALA_RENDER).forEach(id=>{
+        const tw=document.getElementById(id);if(!tw||tw.previousElementSibling?.classList?.contains('mobil-sirala'))return;
+        const ths=[...tw.querySelectorAll('thead th.sortable')];if(!ths.length)return;
+        const sel=document.createElement('select');
+        sel.className='mobil-sirala';sel.setAttribute('aria-label','Sırala');
+        sel.innerHTML='<option value="">↕️ Sırala: varsayılan</option>'+ths.map(th=>{const ad=esc(th.textContent.replace(/[⇅↑↓]/g,'').trim()),f=esc(th.dataset.sort);return `<option value="${f}|desc">${ad} ↓ (büyükten)</option><option value="${f}|asc">${ad} ↑ (küçükten)</option>`;}).join('');
+        sel.addEventListener('change',()=>{
+            const [field,yon]=sel.value.split('|');
+            if(field)sortState[id]={field,yon};else delete sortState[id];
+            tw.querySelectorAll('thead th.sortable').forEach(th=>{th.classList.remove('asc','desc');if(field&&th.dataset.sort===field)th.classList.add(yon);});
+            SIRALA_RENDER[id]();
+        });
+        tw.parentNode.insertBefore(sel,tw.previousElementSibling?.classList?.contains('tw-top-scroll')?tw.previousElementSibling:tw);
+    });
+}
+function tabloGozlemcisi(){
+    mobilSiralaEkle();
+    const kok=document.getElementById('mainC');if(!kok||!window.MutationObserver)return;
+    let bekliyor=false;
+    new MutationObserver(()=>{if(bekliyor)return;bekliyor=true;requestAnimationFrame(()=>{bekliyor=false;tablolariEtiketle();});}).observe(kok,{childList:true,subtree:true});
+    tablolariEtiketle();
+}
 // Sekmeler klavyeyle de kullanılabilsin; nav başlığın hemen altına yapışsın
 function initNavErisim(){
     document.querySelectorAll('.tab').forEach(t=>{
@@ -1717,6 +1824,7 @@ async function init(){
     initTheme();
     startClock();
     initNavErisim();
+    tabloGozlemcisi();
     
     let storedUrl = localStorage.getItem(SK);
     if(storedUrl && storedUrl !== ''){
@@ -2610,8 +2718,8 @@ function rStok() {
         
         return `<tr class="${kalan<=0?'sr':''}">
             <td class="b" style="white-space:nowrap">${esc(d.model)}${kalan>0&&kalan<=3?' <span style="color:#f59e0b">⚠️</span>':''}</td>
-            <td style="text-align:center"><span class="badge ${d.el==='1.El'?'bpu':'bcy'}">${d.el}</span></td>
-            <td style="text-align:center">${d.gb}GB</td><td style="text-align:center">${d.ram}GB</td>
+            <td style="text-align:center"><span class="badge ${d.el==='1.El'?'bpu':'bcy'}">${esc(d.el)}</span></td>
+            <td style="text-align:center">${esc(d.gb)}GB</td><td style="text-align:center">${d.ram}GB</td>
             <td style="text-align:center"><b>${d.adet}</b></td>
             <td style="text-align:center;color:var(--gn)"><b>${d.satılanAdet||0}</b></td>
             <td style="text-align:center"><span class="sbg ${durumRenk}">${durum}</span></td>
@@ -2930,7 +3038,7 @@ function topRender(c){
     div.innerHTML=`<div class="top-badge">${rNum[i]}</div>
       <div class="top-img-wrap" id="tpimg_${i}" style="background:${bg}"></div>
       <div class="top-model">${esc(item.model)}</div>
-      <div class="top-variant">${item.el}</div>
+      <div class="top-variant">${esc(item.el)}</div>
       <div class="top-stat">${statStr}</div>
       <div class="top-lbl">${topMode==='satis'?'Satış':(topMode==='kar'?'Kar':'Birim Kar%')}</div>
       <div class="top-bar-w"><div class="top-bar" style="width:${pct}%"></div></div>
@@ -2974,6 +3082,7 @@ function initTopScrollbars(){
       const table=tw.querySelector('table');
       inner.style.width=(table?table.scrollWidth:tw.scrollWidth)+'px';
     }
+    mirror.style.display=tw.scrollWidth>tw.clientWidth+2?'':'none';
   });
 }
 async function zoomIn() {
@@ -3079,7 +3188,7 @@ window.tarihceGoster = function(id) {
     let html = `<div style="background:var(--sf);border-radius:20px;padding:20px;max-width:450px;width:100%">
         <div style="text-align:center;margin-bottom:16px">
             <div style="font-size:18px;font-weight:800">${esc(item.model)}</div>
-            <div style="font-size:12px;color:var(--tx2)">${item.el} · ${item.gb}GB · ${item.ram}GB RAM</div>
+            <div style="font-size:12px;color:var(--tx2)">${esc(item.el)} · ${esc(item.gb)}GB · ${item.ram}GB RAM</div>
         </div>
         <div style="max-height:400px;overflow-y:auto">`;
     
@@ -3159,16 +3268,16 @@ function rMusteriler(){
         const borc=Number(m.toplamBorc)||0;
         const telefonStr = String(m.telefon || '');
         return `<tr>
-            <td class="b">${esc(m.ad)}</td>
+            <td class="b"><div class="kisi"><span class="avatar" style="--h:${avatarRenk(m.ad)}">${esc(basHarf(m.ad))}</span><span>${esc(m.ad)}</span></div></td>
             <td>
-                ${telefonStr ? `<a href="tel:${esc(telefonStr)}" style="color:var(--ac3)">${esc(telefonStr)}</a>
-                <button class="btn bg2 bsm" style="margin-left:4px" onclick="window.open('https://wa.me/${waNo(telefonStr)}','_blank')">📱</button>` : '-'}
+                ${telefonStr ? `<div class="tel-hucre"><a href="tel:${esc(telefonStr)}">${esc(telefonStr)}</a>
+                <button class="btn bg2 bsm wa-btn" onclick="window.open('https://wa.me/${waNo(telefonStr)}','_blank')" aria-label="WhatsApp">💬</button></div>` : '-'}
             </td>
             <td>${esc(m.tc||'-')}</td>
             <td class="tx2" style="font-size:11px">${formatTarih(m.kayitTarihi) || '-'}</td>
             <td style="text-align:center">${satirlar.length}</td>
             <td class="tcy">${fmt(toplamHarcama)}</td>
-            <td class="${borc>0?'trd':'tgn'}">${borc>0?fmt(borc):'✓'}</td>
+            <td>${borc>0?`<span class="badge brd">${fmt(borc)}</span>`:'<span class="badge bgn">✓ Yok</span>'}</td>
             <td>${sonAlis!=='-'?formatTarih(sonAlis):'-'}</td>
             <td style="white-space:nowrap">
                 <button class="btn bg2 bsm" onclick="musteriDetay('${m.id}')">📋</button>
@@ -3199,9 +3308,9 @@ function rTedarikciler(){
         }
         
         return `<tr>
-            <td class="b">${esc(t.ad)}</td>
-            <td><a href="tel:${esc(t.telefon)}" style="color:var(--ac3)">${esc(t.telefon||'-')}</a>
-                ${t.telefon ? `<button class="btn bg2 bsm" style="margin-left:4px" onclick="window.open('https://wa.me/${waNo(t.telefon)}','_blank')">📱</button>` : ''}
+            <td class="b"><div class="kisi"><span class="avatar" style="--h:${avatarRenk(t.ad)}">${esc(basHarf(t.ad))}</span><span>${esc(t.ad)}</span></div></td>
+            <td>${t.telefon ? `<div class="tel-hucre"><a href="tel:${esc(t.telefon)}">${esc(t.telefon)}</a>
+                <button class="btn bg2 bsm wa-btn" onclick="window.open('https://wa.me/${waNo(t.telefon)}','_blank')" aria-label="WhatsApp">💬</button></div>` : '-'}
             </td>
             <td>${esc(t.firma||'-')}</td>
             <td class="tx2" style="font-size:11px">${formatTarih(t.kayitTarihi) || '-'}</td>
@@ -3231,13 +3340,15 @@ function rKasa(){
     const topKart=KD.filter(k=>k.odemeYontemi==='kart').reduce((s,k)=>s+Number(k.tutar),0);
     const net=topGiris-topCikis;
     const ozet=document.getElementById('kasaOzet');
-    if(ozet)ozet.innerHTML=`
-        <div class="card" style="text-align:center"><div class="sl">Toplam Giriş</div><div class="sv tgn">${fmt(topGiris)}</div></div>
-        <div class="card" style="text-align:center"><div class="sl">Toplam Çıkış</div><div class="sv trd">${fmt(topCikis)}</div></div>
-        <div class="card" style="text-align:center"><div class="sl">Net Kasa</div><div class="sv ${net>=0?'tgn':'trd'}">${fmt(net)}</div></div>
-        <div class="card" style="text-align:center"><div class="sl">💳 Kart Cirosu</div><div class="sv tcy">${fmt(topKart)}</div></div>
-        <div class="card" style="text-align:center"><div class="sl">💵 Nakit Cirosu</div><div class="sv tgn">${fmt(KD.filter(k=>k.odemeYontemi==='nakit'&&k.tip==='giris').reduce((s,k)=>s+Number(k.tutar),0))}</div></div>
-        <div class="card" style="text-align:center"><div class="sl">🏦 Havale Cirosu</div><div class="sv tcy">${fmt(KD.filter(k=>k.odemeYontemi==='havale'&&k.tip==='giris').reduce((s,k)=>s+Number(k.tutar),0))}</div></div>`;
+    const odemeTop=o=>KD.filter(k=>k.odemeYontemi===o&&k.tip==='giris').reduce((s,k)=>s+Number(k.tutar),0);
+    const kutu=(ikon,etiket,deger,renk)=>`<div class="ozet-kutu"><div class="ozet-ikon" style="--c:${renk}">${ikon}</div><div><div class="ozet-et">${etiket}</div><div class="ozet-deger" style="color:${renk}">${fmt(deger)}</div></div></div>`;
+    if(ozet)ozet.innerHTML=
+        kutu('📥','Toplam Giriş',topGiris,'var(--gn)')+
+        kutu('📤','Toplam Çıkış',topCikis,'var(--rd)')+
+        kutu('🧮','Net Kasa',net,net>=0?'var(--gn)':'var(--rd)')+
+        kutu('💳','Kart',topKart,'var(--ac3)')+
+        kutu('💵','Nakit',odemeTop('nakit'),'var(--gn)')+
+        kutu('🏦','Havale',odemeTop('havale'),'var(--ac2)');
     rKasaEksik();
     const tb=document.getElementById('kasaTb');if(!tb)return;
     if(!list.length){tb.innerHTML=`<tr><td colspan="7"><div class="empty"><i>💵</i>Hareket yok</div></td></tr>`;return;}
@@ -3246,7 +3357,7 @@ function rKasa(){
         <td>${formatTarih(k.tarih)}</td>
         <td><span class="badge ${k.tip==='giris'?'bgn':'byw'}">${k.tip==='giris'?'📥 Giriş':'📤 Çıkış'}</span></td>
         <td>${esc(k.kategori||'-')}</td>
-        <td>${oi[k.odemeYontemi]||''} ${k.odemeYontemi||'-'}</td>
+        <td>${oi[k.odemeYontemi]||''} ${esc(k.odemeYontemi||'-')}</td>
         <td class="${k.tip==='giris'?'tgn':'trd'} b">${k.tip==='giris'?'+':'-'}${fmt(k.tutar)}</td>
         <td>${esc(k.aciklama||'-')}</td>
         <td><button class="btn bd bsm" onclick="deleteKasa('${k.id}')">🗑</button></td>
