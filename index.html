@@ -1467,8 +1467,9 @@ let editMusteriId = null, editTedarikciId = null;
 // ============================================================
 // HTML'e basılan her kullanıcı verisi esc() ile kaçışlanır
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-// Sheets'ten gelen kayıtlarda HTML etiketi ve ID'lerde beklenmeyen karakter bırakılmaz
-function cleanRec(o){const r={};for(const k in o){const v=o[k];if(/^id$|Id$/.test(k)&&v!=null&&v!=='')r[k]=String(v).replace(/[^\w.\-]/g,'');else if(typeof v==='string')r[k]=v.replace(/[<>]/g,'');else if(Array.isArray(v))r[k]=v.map(x=>typeof x==='string'?x.replace(/[<>]/g,''):x);else r[k]=v;}return r;}
+// ID'ler onclick içinde kullanıldığından yalnızca tırnak vb. tehlikeli karakterler çıkarılır;
+// diğer alanlara dokunulmaz (veri Sheets'e aynen geri yazılır, ekrana basarken esc() kullanılır)
+function cleanRec(o){const r={...o};for(const k in r){if(/^id$|Id$/.test(k)&&typeof r[k]==='string')r[k]=r[k].replace(/['"<>&\\`]/g,'');}return r;}
 // Ağır kütüphaneler ilk kullanımda yüklenir (açılış hızlansın diye)
 const KUTUPHANELER={
     xlsx:['https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js'],
@@ -1561,6 +1562,11 @@ function hideLo(){const lo=document.getElementById('lo');if(lo)lo.classList.remo
 const WRITE_ACTIONS = ['add','update','delete','deleteAll','addMusteri','updateMusteri','deleteMusteri','addTedarikci','updateTedarikci','deleteTedarikci','addKasa','updateKasa','deleteKasa'];
 async function api(body){
     const yazma = WRITE_ACTIONS.includes(body.action);
+    if(yazma && onbellekVerisi){
+        // Ekrandaki veri cihazdaki eski kopya: yazılırsa Sheets'teki yeni kayıtları ezebilir
+        toast('⚠️ Ekrandaki veriler eski kopya. Kayıt için önce bağlanıp 🔄 senkronize edin','error');
+        return {ok:false,error:'Önce senkronize edin'};
+    }
     let r;
     try{
         r=await fetch(URL2,{method:'POST',body:JSON.stringify(body)});
@@ -1581,6 +1587,7 @@ function enableOfflineMode(){offlineMode=true;document.getElementById('offlineBa
 function disableOfflineMode(){offlineMode=false;document.getElementById('offlineBadge').style.display='none';setDot('ok','✓ Bağlı');}
 // Son başarılı senkronun yerel kopyası: internet yokken veriler görüntülenebilsin
 const CACHE_KEY = 'kp_veri_onbellek';
+let onbellekVerisi = false; // true: ekrandaki veri sunucudan değil yerel kopyadan
 function veriOnbellegeYaz(){try{localStorage.setItem(CACHE_KEY,JSON.stringify({t:Date.now(),D,MD,TD,KD}));}catch(e){}}
 function veriOnbellektenOku(){try{const c=JSON.parse(localStorage.getItem(CACHE_KEY)||'null');if(!c||!Array.isArray(c.D))return null;return c;}catch(e){return null;}}
 window.addEventListener('online',()=>{if(URL2&&offlineMode)syncData();});
@@ -1700,6 +1707,7 @@ async function syncData(){
         const res=await api({action:'getAll'});
         if(res.ok){
             D=res.data.map(norm);
+            onbellekVerisi=false;
             setDot('ok','✓ Bağlı');
             await Promise.all([syncMusteriler(),syncTedarikciler(),syncKasa()]);
             veriOnbellegeYaz();
@@ -1707,7 +1715,7 @@ async function syncData(){
             toast('Senkronize edildi','success');
         } else if(offlineMode){
             const c=veriOnbellektenOku();
-            if(c&&!D.length){D=c.D.map(norm);MD=c.MD||[];TD=c.TD||[];KD=c.KD||[];rAll();}
+            if(c&&!D.length){D=c.D.map(norm);MD=c.MD||[];TD=c.TD||[];KD=c.KD||[];onbellekVerisi=true;rAll();}
             setDot('offline',c?'Offline · '+new Date(c.t).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'Offline Mod');
         } else {
             throw new Error(res.error||'Bilinmeyen hata');
@@ -2117,7 +2125,7 @@ async function clearAll(){
     const onay=prompt(`⚠️ ${D.length} ürün kaydı Google Sheets'ten KALICI olarak silinecek.\n\nSilmeden önce otomatik yedek indirilecek.\nDevam etmek için büyük harflerle SİL yazın:`);
     if(onay===null)return;
     if(onay.trim().toLocaleUpperCase('tr-TR')!=='SİL'){toast('Onay metni hatalı, silme iptal edildi','error');return;}
-    await veriYedekIndir('json');
+    if(!await veriYedekIndir('json')){toast('Yedek alınamadığı için silme iptal edildi','error');return;}
     actionHistory.push({type:'clearAll',data:[...D]});
     showLo('Siliniyor...');
     try{const res=await api({action:'deleteAll'});if(res.ok){D=[];veriOnbellegeYaz();rAll();toast('Tüm veriler silindi (yedek indirildi)','error');}else throw new Error(res.error);}catch(e){toast('Hata: '+e.message,'error');}
@@ -3629,7 +3637,8 @@ async function veriYedekIndir(tur){
         }
         try{localStorage.setItem('kp_son_yedek',String(Date.now()));}catch(e){}
         toast('💾 Yedek indirildi','success');
-    }catch(e){toast('Yedek alınamadı: '+e.message,'error');}
+        return true;
+    }catch(e){toast('Yedek alınamadı: '+e.message,'error');return false;}
 }
 function toggleVeresiye(){const sel=document.getElementById('satOdemeSel');const alan=document.getElementById('veresiyeAlan');if(alan)alan.style.display=sel?.value==='taksit'?'block':'none';}
 function closeSatMo() {
