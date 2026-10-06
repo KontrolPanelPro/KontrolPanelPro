@@ -947,6 +947,49 @@ input,select,textarea,
 @media(max-width:400px){
 .lt{display:none}
 }
+
+/* ══ 3B BUTONLAR & iOS BASMA HİSSİ ══ */
+:root{--b3-ust:rgba(255,255,255,.22);--b3-alt:rgba(0,0,0,.24);--b3-golge:rgba(0,0,0,.55);--b3-parlak:rgba(255,255,255,.14)}
+[data-theme="light"]{--b3-ust:rgba(255,255,255,.95);--b3-alt:rgba(15,18,41,.10);--b3-golge:rgba(79,70,229,.28);--b3-parlak:rgba(255,255,255,.55)}
+.btn,.tt,.xb,.qbtn,.qab,.mbt,.chart-btn,.el-chart-btn,.analiz-sort-btn,.top-btn,.tab{
+  -webkit-user-select:none;user-select:none;touch-action:manipulation;-webkit-touch-callout:none;
+  transition:transform .5s cubic-bezier(.34,1.56,.64,1),box-shadow .25s ease,filter .2s ease,background-color .2s,color .2s,border-color .2s;
+}
+.btn,.tt,.xb,.qbtn,.qab,.mbt{
+  background-image:linear-gradient(180deg,var(--b3-parlak) 0%,rgba(255,255,255,0) 48%,rgba(0,0,0,.08) 100%);
+  box-shadow:inset 0 1px 0 var(--b3-ust),inset 0 -2px 0 var(--b3-alt),0 6px 14px -7px var(--b3-golge),0 1px 2px rgba(0,0,0,.18);
+}
+.btn.bp{
+  background:linear-gradient(180deg,#9a9cfb 0%,#6d70f5 42%,#5145e6 100%);color:#fff;border:1px solid rgba(255,255,255,.12);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.45),inset 0 -2px 0 rgba(30,20,120,.35),0 8px 18px -6px rgba(99,102,241,.75),0 1px 2px rgba(0,0,0,.25);
+  text-shadow:0 1px 1px rgba(30,20,120,.35);
+}
+.btn.bp:hover{background:linear-gradient(180deg,#a5a7fc 0%,#777af7 42%,#574be9 100%);transform:translateY(-1px)}
+.chart-btn.active,.el-chart-btn.active,.analiz-sort-btn.active,.top-btn.active{
+  background:linear-gradient(180deg,#9a9cfb 0%,#6d70f5 45%,#5145e6 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.4),inset 0 -1px 0 rgba(30,20,120,.3),0 4px 10px -4px rgba(99,102,241,.7);
+}
+/* Basılı an: içeri çökme + kararma; bırakınca yaylanarak dönüş (transition yukarıda) */
+.btn.bas,.tt.bas,.xb.bas,.qbtn.bas,.qab.bas,.mbt.bas,.chart-btn.bas,.el-chart-btn.bas,.analiz-sort-btn.bas,.top-btn.bas{
+  transform:scale(.93) translateY(1px)!important;filter:brightness(.88) saturate(1.1);
+  transition:transform .09s ease-out,box-shadow .09s,filter .09s;
+  box-shadow:inset 0 2px 5px rgba(0,0,0,.35),inset 0 -1px 0 rgba(255,255,255,.06),0 1px 2px -1px rgba(0,0,0,.4)!important;
+}
+.tab.bas{transform:scale(.95);opacity:.75;transition:transform .09s,opacity .09s}
+/* Yalnız ikonlu butonlar: kare 3B kutucuk, ikon kabartmalı */
+.btn.ikon-btn{min-width:36px;height:36px;padding:0 9px;justify-content:center;font-size:15px;border-radius:12px}
+.btn.ikon-btn,.tt,.xb,.mbt span,.qab,.ozet-ikon,.lic{text-shadow:0 2px 2px rgba(0,0,0,.35),0 0 1px rgba(0,0,0,.2)}
+[data-theme="light"] .btn.ikon-btn,[data-theme="light"] .tt,[data-theme="light"] .mbt span,[data-theme="light"] .ozet-ikon{text-shadow:0 2px 2px rgba(15,18,41,.22)}
+.tt{border-radius:12px}
+.lic{box-shadow:inset 0 1px 0 rgba(255,255,255,.45),inset 0 -2px 0 rgba(0,0,0,.25),0 6px 16px -4px var(--ac-glow)!important;background-image:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,0) 50%),linear-gradient(135deg,var(--ac),var(--ac3))!important}
+.ozet-ikon,.avatar{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),inset 0 -2px 0 rgba(0,0,0,.18),0 4px 10px -5px rgba(0,0,0,.5);background-image:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,0) 55%)}
+@media (prefers-reduced-motion:reduce){
+  .btn,.tt,.xb,.qbtn,.qab,.mbt,.chart-btn,.el-chart-btn,.analiz-sort-btn,.top-btn,.tab{transition:none}
+  .bas{transform:none!important}
+}
+@media(max-width:640px){
+  .page:not(#page-Anasayfa):not(#page-urunler) .tw tbody td.k-aksiyon .btn.ikon-btn{min-width:46px;height:42px;font-size:17px;border-radius:13px}
+}
 </style>
 </head>
 <body>
@@ -1763,6 +1806,23 @@ function saveUrl(){
     setupFocusOnTouch();
 }
 function changeUrl(){const n=prompt('Yeni Apps Script URL:',URL2);if(n===null)return;const u=n.trim();if(!u.startsWith('https://script.google.com')){toast('Geçerli bir Apps Script URL girin!','error');return;}URL2=u;localStorage.setItem(SK,URL2);syncData();}
+// iOS benzeri basma hissi: dokununca buton çöker, bırakınca yaylanır (Android'de kısa titreşim)
+const BASILABILIR='.btn,.tt,.xb,.qbtn,.qab,.mbt,.chart-btn,.el-chart-btn,.analiz-sort-btn,.top-btn,.tab';
+function basmaHissi(){
+    let aktif=null;
+    const birak=()=>{if(aktif){aktif.classList.remove('bas');aktif=null;}};
+    document.addEventListener('pointerdown',e=>{
+        const el=e.target.closest(BASILABILIR);if(!el||el.disabled)return;
+        birak();aktif=el;el.classList.add('bas');
+        if(e.pointerType==='touch'&&navigator.vibrate){try{navigator.vibrate(8);}catch(_){}}
+    },{passive:true});
+    ['pointerup','pointercancel','dragstart','scroll'].forEach(t=>document.addEventListener(t,birak,{passive:true,capture:true}));
+    document.addEventListener('pointermove',e=>{if(aktif&&!aktif.contains(document.elementFromPoint(e.clientX,e.clientY)))birak();},{passive:true});
+}
+// Yalnızca ikon (emoji) içeren butonları işaretler: kare 3B kutucuk olarak çizilir
+function ikonButonlariIsaretle(kok=document){
+    kok.querySelectorAll('.btn:not([data-ikon])').forEach(b=>{b.dataset.ikon='1';if(/^[^\p{L}\p{N}]+$/u.test(b.textContent.trim()))b.classList.add('ikon-btn');});
+}
 // Mobil kart görünümü için her hücreye sütun başlığını data-label olarak yazar.
 // Tablolar her çizildiğinde (tbody değişince) otomatik çalışır.
 function tablolariEtiketle(){
@@ -1804,10 +1864,14 @@ function mobilSiralaEkle(){
 }
 function tabloGozlemcisi(){
     mobilSiralaEkle();
-    const kok=document.getElementById('mainC');if(!kok||!window.MutationObserver)return;
+    if(!window.MutationObserver)return;
+    const saat=document.getElementById('liveClock');
     let bekliyor=false;
-    new MutationObserver(()=>{if(bekliyor)return;bekliyor=true;requestAnimationFrame(()=>{bekliyor=false;tablolariEtiketle();});}).observe(kok,{childList:true,subtree:true});
-    tablolariEtiketle();
+    new MutationObserver(m=>{
+        if(bekliyor||m.every(x=>saat&&saat.contains(x.target)))return;
+        bekliyor=true;requestAnimationFrame(()=>{bekliyor=false;tablolariEtiketle();ikonButonlariIsaretle();});
+    }).observe(document.body,{childList:true,subtree:true});
+    tablolariEtiketle();ikonButonlariIsaretle();
 }
 // Sekmeler klavyeyle de kullanılabilsin; nav başlığın hemen altına yapışsın
 function initNavErisim(){
@@ -1825,6 +1889,7 @@ async function init(){
     startClock();
     initNavErisim();
     tabloGozlemcisi();
+    basmaHissi();
     
     let storedUrl = localStorage.getItem(SK);
     if(storedUrl && storedUrl !== ''){
