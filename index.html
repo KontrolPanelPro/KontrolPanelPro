@@ -10,7 +10,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="manifest" href="/KontrolPanelPro/manifest.json">
 <title>📱 KontrolPanelPro</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -1560,35 +1560,66 @@ function setDot(s,t){const d=document.getElementById('dot'),tx=document.getEleme
 function showLo(t='İşleniyor...'){const txt=document.getElementById('loTxt');if(txt)txt.textContent=t;const lo=document.getElementById('lo');if(lo)lo.classList.add('show');}
 function hideLo(){const lo=document.getElementById('lo');if(lo)lo.classList.remove('show');}
 const WRITE_ACTIONS = ['add','update','delete','deleteAll','addMusteri','updateMusteri','deleteMusteri','addTedarikci','updateTedarikci','deleteTedarikci','addKasa','updateKasa','deleteKasa'];
-async function api(body){
+// Her yazma işleminin dokunduğu veriler: bunlar sunucudan taze yüklenmeden yazılırsa
+// Sheets'teki daha yeni kayıtlar ezilebilir. Ekleme işlemleri (addKasa vb.) eski veriyle çakışmaz.
+const YAZMA_GEREKSINIM = {
+    add:['D','MD'], update:['D','MD'], delete:['D','MD'], deleteAll:['D','MD'],
+    updateMusteri:['MD'], deleteMusteri:['MD'],
+    updateTedarikci:['TD'], deleteTedarikci:['TD'],
+    updateKasa:['KD'], deleteKasa:['KD']
+};
+const VERI_ADI = {D:'Ürünler',MD:'Müşteriler',TD:'Tedarikçiler',KD:'Kasa'};
+const taze = {D:false,MD:false,TD:false,KD:false}; // true: sunucudan bu oturumda yüklendi
+async function api(body,{sessiz=false}={}){
     const yazma = WRITE_ACTIONS.includes(body.action);
-    if(yazma && onbellekVerisi){
-        // Ekrandaki veri cihazdaki eski kopya: yazılırsa Sheets'teki yeni kayıtları ezebilir
-        toast('⚠️ Ekrandaki veriler eski kopya. Kayıt için önce bağlanıp 🔄 senkronize edin','error');
-        return {ok:false,error:'Önce senkronize edin'};
+    // Yavaş da olsa tamamlanan bir kayıt 'başarısız' sanılıp tekrar girilmesin diye yazmalarda süre uzun
+    const zamanAsimi = yazma ? 120000 : 30000;
+    const eksik = (YAZMA_GEREKSINIM[body.action]||[]).filter(k=>!taze[k]);
+    if(eksik.length){
+        toast(`⚠️ ${eksik.map(k=>VERI_ADI[k]).join(', ')} henüz güncel yüklenmedi. Kayıt için 🔄 ile yenileyin`,'error');
+        return {ok:false,error:'Veriler güncel değil'};
     }
+    const ctrl = new AbortController();
+    const zamanlayici = setTimeout(()=>ctrl.abort(), zamanAsimi);
     let r;
     try{
-        r=await fetch(URL2,{method:'POST',body:JSON.stringify(body)});
+        r=await fetch(URL2,{method:'POST',body:JSON.stringify(body),signal:ctrl.signal});
     }catch(e){
-        // Ağ hatası: offline moda geç ama sonraki istekler yine denenecek
-        enableOfflineMode();
-        toast(yazma?'⚠️ Bağlantı yok — kayıt yapılamadı, tekrar deneyin':'📴 Bağlantı yok, son kaydedilen veriler gösteriliyor','error');
-        return {ok:false,error:e.message};
+        clearTimeout(zamanlayici);
+        const zaman = e.name==='AbortError';
+        if(!zaman) enableOfflineMode();
+        if(!sessiz) toast(yazma?'⚠️ Bağlantı sorunu — kayıt yapılamadı, tekrar deneyin':(zaman?'⏳ Sunucu yanıt vermedi':'📴 Bağlantı yok'),'error');
+        return {ok:false,error:zaman?'Zaman aşımı':e.message};
     }
     if(offlineMode) disableOfflineMode();
     try{
-        return JSON.parse(await r.text());
+        const j=JSON.parse(await r.text());
+        clearTimeout(zamanlayici);
+        if(yazma&&j&&j.ok) setTimeout(veriOnbellegeYaz,500);
+        return j;
     }catch(e){
+        clearTimeout(zamanlayici);
         return {ok:false,error:'Sunucu yanıtı okunamadı (HTTP '+r.status+')'};
     }
+}
+// Okuma: hata/zaman aşımında 2 kez daha dener. Yazmalar ASLA otomatik tekrarlanmaz (kopya kayıt olmasın)
+async function oku(action){
+    let son={ok:false,error:'Bilinmeyen hata'};
+    for(let i=0;i<3;i++){
+        const r=await api({action},{sessiz:true});
+        if(r&&r.ok&&Array.isArray(r.data))return r;
+        son=r||son;
+        if(i<2)await new Promise(ok=>setTimeout(ok,1500*(i+1)));
+    }
+    return son;
 }
 function enableOfflineMode(){offlineMode=true;document.getElementById('offlineBadge').style.display='inline-block';setDot('offline','Offline Mod');}
 function disableOfflineMode(){offlineMode=false;document.getElementById('offlineBadge').style.display='none';setDot('ok','✓ Bağlı');}
 // Son başarılı senkronun yerel kopyası: internet yokken veriler görüntülenebilsin
 const CACHE_KEY = 'kp_veri_onbellek';
-let onbellekVerisi = false; // true: ekrandaki veri sunucudan değil yerel kopyadan
 function veriOnbellegeYaz(){try{localStorage.setItem(CACHE_KEY,JSON.stringify({t:Date.now(),D,MD,TD,KD}));}catch(e){}}
+// Açılışta son verileri hemen göster; güncel veri arka planda gelir (yazmalar o zamana kadar kilitli)
+function onbellektenGoster(){const c=veriOnbellektenOku();if(!c)return false;D=c.D.map(norm);MD=c.MD||[];TD=c.TD||[];KD=c.KD||[];rAll();return c.t;}
 function veriOnbellektenOku(){try{const c=JSON.parse(localStorage.getItem(CACHE_KEY)||'null');if(!c||!Array.isArray(c.D))return null;return c;}catch(e){return null;}}
 window.addEventListener('online',()=>{if(URL2&&offlineMode)syncData();});
 window.addEventListener('offline',()=>{if(URL2)enableOfflineMode();});
@@ -1689,6 +1720,8 @@ async function init(){
     const main = document.getElementById('mainC');
     if(main) main.style.display = 'block';
     
+    const onbellekZamani = onbellektenGoster();
+    if(onbellekZamani) setDot('ld','Güncelleniyor...');
     await syncData();
     initSortable();
     initChartButtons();
@@ -1700,29 +1733,40 @@ async function init(){
 function initChartButtons(){const btns=document.querySelectorAll('#chartPeriodButtons .chart-btn');btns.forEach(btn=>{btn.addEventListener('click',()=>{btns.forEach(b=>b.classList.remove('active'));btn.classList.add('active');chartPeriod=btn.dataset.period;rChartsDebounced();});});}
 function initAnalizButtons(){const btns=document.querySelectorAll('#analizSortButtons .analiz-sort-btn');btns.forEach(btn=>{btn.addEventListener('click',()=>{if(analizSort===btn.dataset.sort){analizSortDirection=analizSortDirection==='desc'?'asc':'desc';}else{analizSort=btn.dataset.sort;analizSortDirection='desc';}btns.forEach(b=>b.classList.remove('active'));btn.classList.add('active');rUrunler();});});}
 function initElChartButtons(){const btns=document.querySelectorAll('#elChartButtons .el-chart-btn');btns.forEach(btn=>{btn.addEventListener('click',()=>{btns.forEach(b=>b.classList.remove('active'));btn.classList.add('active');currentElFilter=btn.dataset.el;updateElChart();});});}
-async function syncData(){
-    setDot('ld','Bağlanıyor...');
-    showLo('Google Sheets\'ten yükleniyor...');
+let _syncSuruyor=null;
+function syncData(){
+    if(!_syncSuruyor)_syncSuruyor=_syncData().finally(()=>{_syncSuruyor=null;});
+    return _syncSuruyor;
+}
+async function _syncData(){
+    const ekrandaVeriVar = D.length||MD.length;
+    setDot('ld',ekrandaVeriVar?'Güncelleniyor...':'Bağlanıyor...');
+    if(!ekrandaVeriVar) showLo('Google Sheets\'ten yükleniyor...');
     try{
-        const res=await api({action:'getAll'});
-        if(res.ok){
-            D=res.data.map(norm);
-            onbellekVerisi=false;
+        // 4 liste aynı anda istenir; başarısız olan tek başına yeniden denenir
+        const [rU,rM,rT,rK]=await Promise.all(['getAll','getMusteriler','getTedarikciler','getKasa'].map(oku));
+        const hatalar=[];
+        if(rU.ok){D=rU.data.map(norm);taze.D=true;}else hatalar.push(['D',rU.error]);
+        if(rM.ok){MD=rM.data.map(cleanRec).map(d=>({...d,id:String(d.id),toplamBorc:Number(d.toplamBorc)||0,kayitTarihi:String(d.kayitTarihi||''),sonAlisTarihi:String(d.sonAlisTarihi||'')}));taze.MD=true;}else hatalar.push(['MD',rM.error]);
+        if(rT.ok){TD=rT.data.map(cleanRec).map(d=>({...d,id:String(d.id),kayitTarihi:String(d.kayitTarihi||''),sonAlisTarihi:String(d.sonAlisTarihi||'')}));taze.TD=true;}else hatalar.push(['TD',rT.error]);
+        if(rK.ok){KD=rK.data.map(cleanRec).map(d=>({...d,tutar:Number(d.tutar)||0}));taze.KD=true;}else hatalar.push(['KD',rK.error]);
+        // Yüklenemeyen listelerin elde kalan (önbellek) kopyası korunur, boşaltılmaz
+        if(hatalar.length<4)veriOnbellegeYaz();
+        rAll();
+        if(!hatalar.length){
             setDot('ok','✓ Bağlı');
-            await Promise.all([syncMusteriler(),syncTedarikciler(),syncKasa()]);
-            veriOnbellegeYaz();
-            rAll();
             toast('Senkronize edildi','success');
-        } else if(offlineMode){
+        }else if(hatalar.length===4){
             const c=veriOnbellektenOku();
-            if(c&&!D.length){D=c.D.map(norm);MD=c.MD||[];TD=c.TD||[];KD=c.KD||[];onbellekVerisi=true;rAll();}
-            setDot('offline',c?'Offline · '+new Date(c.t).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'Offline Mod');
-        } else {
-            throw new Error(res.error||'Bilinmeyen hata');
+            setDot(offlineMode?'offline':'er',c?'Eski veri · '+new Date(c.t).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'✗ Yüklenemedi');
+            toast('⚠️ Veriler yüklenemedi: '+(hatalar[0][1]||'bağlantı hatası')+(c?' — son kaydedilen veriler gösteriliyor':''),'error');
+        }else{
+            setDot('er','⚠️ Eksik yüklendi');
+            toast('⚠️ Yüklenemedi: '+hatalar.map(([k,e])=>VERI_ADI[k]+' ('+(e||'hata')+')').join(', ')+' — 🔄 ile tekrar deneyin','error');
         }
     }catch(e){
         setDot('er','✗ Hata');
-        toast('Bağlantı hatası: '+e.message,'error');
+        toast('Hata: '+e.message,'error');
     }
     hideLo();
 }
@@ -2128,7 +2172,7 @@ async function clearAll(){
     if(!await veriYedekIndir('json')){toast('Yedek alınamadığı için silme iptal edildi','error');return;}
     actionHistory.push({type:'clearAll',data:[...D]});
     showLo('Siliniyor...');
-    try{const res=await api({action:'deleteAll'});if(res.ok){D=[];veriOnbellegeYaz();rAll();toast('Tüm veriler silindi (yedek indirildi)','error');}else throw new Error(res.error);}catch(e){toast('Hata: '+e.message,'error');}
+    try{const res=await api({action:'deleteAll'});if(res.ok){D=[];rAll();toast('Tüm veriler silindi (yedek indirildi)','error');}else throw new Error(res.error);}catch(e){toast('Hata: '+e.message,'error');}
     hideLo();
 }
 function undoLastAction(){if(actionHistory.length===0){toast('Geri alınacak işlem yok','error');return;}const last=actionHistory.pop();showLo('Geri alınıyor...');if(last.type==='add'){D=D.filter(x=>x.id!==last.data.id);toast('Ekleme işlemi geri alındı','success');}else if(last.type==='update'){const idx=D.findIndex(x=>x.id===last.data.id);if(idx!==-1)D[idx]=norm(last.oldData);toast('Güncelleme geri alındı','success');}else if(last.type==='delete'){D.push(norm(last.data));toast('Silme işlemi geri alındı','success');}else if(last.type==='sell'){const idx=D.findIndex(x=>x.id===last.data.id);if(idx!==-1)D[idx]=norm(last.oldData);toast('Satış işlemi geri alındı','success');}else if(last.type==='clearAll'){D=last.data;toast('Temizleme işlemi geri alındı','success');}rAll();hideLo();}
@@ -3069,9 +3113,6 @@ window.tarihceGoster = function(id) {
     };
 };
   // ============ SYNC ============
-async function syncMusteriler(){try{const r=await api({action:'getMusteriler'});if(r.ok)MD=r.data.map(cleanRec).map(d=>({...d,id:String(d.id),toplamBorc:Number(d.toplamBorc)||0,kayitTarihi:String(d.kayitTarihi||''),sonAlisTarihi:String(d.sonAlisTarihi||'')}));}catch(e){}}
-async function syncTedarikciler(){try{const r=await api({action:'getTedarikciler'});if(r.ok)TD=r.data.map(cleanRec).map(d=>({...d,id:String(d.id),kayitTarihi:String(d.kayitTarihi||''),sonAlisTarihi:String(d.sonAlisTarihi||'')}));}catch(e){}}
-async function syncKasa(){try{const r=await api({action:'getKasa'});if(r.ok)KD=r.data.map(cleanRec).map(d=>({...d,tutar:Number(d.tutar)||0}));}catch(e){}}
 
 // ============ HELPERS ============
 function getMusteriAdiById(id){if(!id)return'';const m=MD.find(x=>x.id===String(id));return m?m.ad:'';}
